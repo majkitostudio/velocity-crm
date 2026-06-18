@@ -6,6 +6,9 @@ Before starting any task:
 
    * docs/PROJECT_VISION.md
    * docs/ARCHITECTURE_RULES.md
+   * docs/TARGET_ARCHITECTURE.md
+   * docs/IMPLEMENTATION_SEQUENCE.md
+   * docs/adr/README.md (open decisions — do not assume answers)
    * docs/ROADMAP.md
 
 2. Understand the project before making changes.

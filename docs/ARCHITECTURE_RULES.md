@@ -1,5 +1,9 @@
 # Architecture Rules
 
+> **Závazný layered standard:** [TARGET_ARCHITECTURE.md](./TARGET_ARCHITECTURE.md)  
+> **Otevřená rozhodnutí:** [adr/README.md](./adr/README.md)  
+> **Pořadí implementace:** [IMPLEMENTATION_SEQUENCE.md](./IMPLEMENTATION_SEQUENCE.md)
+
 ## Technology Stack
 
 - Use TypeScript with strict mode enabled
@@ -50,10 +54,11 @@
 Before implementing any feature:
 
 1. Read PROJECT_VISION.md
-2. Follow ARCHITECTURE_RULES.md
-3. Explain architectural decisions
-4. Implement the solution
-5. Explain what was created
+2. Follow ARCHITECTURE_RULES.md and TARGET_ARCHITECTURE.md
+3. Check open ADRs in docs/adr/ for unresolved decisions
+4. Explain architectural decisions
+5. Implement the solution
+6. Explain what was created
 
 ## Current Priority
 

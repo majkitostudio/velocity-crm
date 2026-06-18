@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Velocity CRM
 
-## Getting Started
+AI-first CRM for call centers. Internal V1 with multi-tenant-ready architecture.
 
-First, run the development server:
+## Documentation
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+| Document | Purpose |
+|----------|---------|
+| [docs/PROJECT_VISION.md](./docs/PROJECT_VISION.md) | Product vision |
+| [docs/TARGET_ARCHITECTURE.md](./docs/TARGET_ARCHITECTURE.md) | Layered architecture standard |
+| [docs/WORKFLOW_RULES.md](./docs/WORKFLOW_RULES.md) | Approved operator & call workflow rules |
+| [docs/IMPLEMENTATION_SEQUENCE.md](./docs/IMPLEMENTATION_SEQUENCE.md) | Vertical implementation slices |
+| [docs/adr/](./docs/adr/) | Architecture decision records |
+
+## Tech stack
+
+- Next.js 16 (App Router), React 19, TypeScript strict
+- Prisma 7 + PostgreSQL (Supabase)
+- Auth.js (credentials, JWT)
+- Tailwind CSS v4, Zod
+
+## Prerequisites
+
+- Node.js 20+
+- PostgreSQL database (local or Supabase)
+
+## Setup
+
+1. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+2. **Configure environment**
+
+   Copy `.env.example` to `.env` and set values:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   | Variable | Description |
+   |----------|-------------|
+   | `DATABASE_URL` | PostgreSQL connection string |
+   | `AUTH_SECRET` | Random secret for Auth.js (e.g. `openssl rand -base64 32`) |
+
+3. **Database migrate & seed**
+
+   ```bash
+   npm run db:setup
+   ```
+
+   Or step by step:
+
+   ```bash
+   npm run prisma:generate
+   npm run prisma:migrate
+   npm run prisma:seed
+   ```
+
+4. **Start development server**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000).
+
+## Seed users (development only)
+
+Created by `prisma/seed.ts` (ADR-005):
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@velocity.local` | `changeme-admin` |
+| Operator | `operator@velocity.local` | `changeme-operator` |
+
+Change these passwords before any non-local deployment.
+
+## Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run prisma:generate` | Generate Prisma client |
+| `npm run prisma:validate` | Validate schema |
+| `npm run prisma:migrate` | Run migrations (dev) |
+| `npm run prisma:seed` | Seed database |
+| `npm run db:setup` | Migrate + seed |
+
+## Project structure
+
+```text
+app/                  # Next.js App Router (UI)
+src/
+  domain/             # Shared types, errors, workflow constants
+  server/             # Auth, DB, guards
+  features/*/server/  # Business logic (migrating to services/repos)
+prisma/
+  schema.prisma       # Data model
+  seed.ts             # Dev seed (Company + users)
+docs/                 # Architecture & product docs
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture layers
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+UI → Server Actions → Workflow / Services → Repositories → Prisma → PostgreSQL
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+See [TARGET_ARCHITECTURE.md](./docs/TARGET_ARCHITECTURE.md) for full rules.
 
-## Learn More
+## Current implementation status
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Slice 0 (Foundation):** domain errors, events, workflow constants, seed, Zod, migrations
+- **Slice 1 (Auth Shell):** login, logout, middleware, protected CRM layout, dashboard placeholder
+- **Slice 2+:** operator queue UI, contacts, call workflow

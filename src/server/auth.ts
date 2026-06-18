@@ -1,11 +1,13 @@
-import NextAuth, { type NextAuthConfig } from "next-auth";
+import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 
-import { isAppUserRole } from "@/src/domain/auth";
 import { prisma } from "@/src/server/db";
 
-const authConfig = {
+import { authConfig } from "./auth.config";
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -18,9 +20,7 @@ const authConfig = {
             ? credentials.email.toLowerCase().trim()
             : "";
         const password =
-          typeof credentials?.password === "string"
-            ? credentials.password
-            : "";
+          typeof credentials?.password === "string" ? credentials.password : "";
 
         if (!email || !password) {
           return null;
@@ -58,36 +58,4 @@ const authConfig = {
       },
     }),
   ],
-  session: {
-    strategy: "jwt",
-  },
-  callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.companyId = user.companyId;
-        token.role = user.role;
-      }
-
-      return token;
-    },
-    session({ session, token }) {
-      if (session.user) {
-        if (!isAppUserRole(token.role)) {
-          throw new Error("Invalid session role");
-        }
-
-        session.user.id = String(token.id);
-        session.user.companyId = String(token.companyId);
-        session.user.role = token.role;
-      }
-
-      return session;
-    },
-  },
-  pages: {
-    signIn: "/login",
-  },
-} satisfies NextAuthConfig;
-
-export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
+});

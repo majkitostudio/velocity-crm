@@ -1,0 +1,78 @@
+---
+description: Global project rules for Velocity CRM
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Velocity CRM Rules
+
+## General
+
+- Read the existing code before making changes.
+- Keep implementations simple and production-ready.
+- Do not introduce unnecessary dependencies.
+- Explain architectural decisions before implementing significant changes.
+- Never modify unrelated files.
+
+## Architecture
+
+- Follow docs/TARGET_ARCHITECTURE.md as the binding layered standard.
+- Check docs/adr/ for open decisions — do not assume answers.
+- Build with long-term maintainability in mind.
+- The application must remain SaaS-ready.
+- Every business entity belongs to a Company.
+- Data isolation between companies is mandatory.
+
+## Technology
+
+- Next.js App Router
+- TypeScript (strict mode)
+- Prisma ORM
+- PostgreSQL (Supabase)
+- Auth.js
+- Tailwind CSS
+
+## Coding Standards
+
+- Never use `any`.
+- Prefer Server Components.
+- Prefer Server Actions when appropriate.
+- Use async/await.
+- Keep functions focused and small.
+- Prefer composition over inheritance.
+- Use descriptive names.
+
+## CRM Rules
+
+Use a single Contact entity.
+
+Allowed statuses:
+
+- LEAD
+- CUSTOMER
+- VIP
+- LOST
+
+Do not create separate Lead or Customer entities.
+
+## Workflow
+
+For every task:
+
+1. Analyze the request.
+2. Review the current implementation.
+3. Propose the approach.
+4. Implement only the requested scope.
+5. Summarize the completed work.
+
+## Current Priorities
+
+- Database architecture
+- Authentication
+- Contacts
+- Products
+- Orders
+- Callback system
+
+Ignore future modules unless explicitly requested.

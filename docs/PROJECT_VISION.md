@@ -4,10 +4,10 @@
 
 Vybudovat moderní AI CRM systém primárně určený pro call centra zaměřená na:
 
-* přírodní suplementy
-* kosmetické produkty
-* opakované objednávky
-* retenční kampaně
+- přírodní suplementy
+- kosmetické produkty
+- opakované objednávky
+- retenční kampaně
 
 První verze bude používána interně.
 
@@ -23,10 +23,12 @@ Systém má fungovat jako AI asistent operátora.
 
 CRM má pomáhat odpovědět na otázky:
 
-* Koho kontaktovat?
-* Kdy kontaktovat?
-* Co nabídnout?
-* Jaký je další doporučený krok?
+- Koho kontaktovat?
+- Kdy kontaktovat?
+- Co nabídnout?
+- Jaký je další doporučený krok?
+
+Veškeré UI texty jsou v češtině, pokud není výslovně určeno jinak.
 
 ---
 
@@ -36,18 +38,18 @@ Lead přijde do systému.
 
 Lead může být:
 
-* importován z CSV
-* vytvořen ručně operátorem
-* v budoucnu importován automaticky
+- importován z CSV
+- vytvořen ručně operátorem
+- v budoucnu importován automaticky
 
 Operátor otevře lead.
 
 Po ukončení hovoru musí zvolit jeden výsledek:
 
-* Order
-* Call Later
-* Schedule Call
-* Fail
+- Order
+- Call Later
+- Schedule Call
+- Fail
 
 Výsledek hovoru je povinný.
 
@@ -59,28 +61,28 @@ Bez něj nelze lead uzavřít.
 
 ### Dashboard
 
-* Přehled práce operátora
-* Callbacky
-* Nové leady
-* Dnešní výsledky
+- Přehled práce operátora
+- Callbacky
+- Nové leady
+- Dnešní výsledky
 
 ### Contacts
 
-* Jméno
-* Telefon
-* Email
-* Poznámky
-* Historie komunikace
+- Jméno
+- Telefon
+- Email
+- Poznámky
+- Historie komunikace
 
 ### Leads
 
 Stavy:
 
-* New
-* Assigned
-* In Progress
-* Converted
-* Failed
+- New
+- Assigned
+- In Progress
+- Converted
+- Failed
 
 Lead není samostatná entita.
 
@@ -95,24 +97,24 @@ Contact má status:
 
 ### Products
 
-* Produktový katalog
-* Kategorie
-* Cena
+- Produktový katalog
+- Kategorie
+- Cena
 
 ### Orders
 
-* Vytvoření objednávky po hovoru
-* Historie objednávek
+- Vytvoření objednávky po hovoru
+- Historie objednávek
 
 ### Callbacks
 
-* Plánování budoucího kontaktu
-* Připomínky
+- Plánování budoucího kontaktu
+- Připomínky
 
 ### Notes
 
-* Poznámky operátora
-* Historie aktivit
+- Poznámky operátora
+- Historie aktivit
 
 ### AI Assistant
 
@@ -148,18 +150,19 @@ AI aktivně pomáhá operátorovi během práce a doporučuje nejlepší další
 
 Tyto funkce zatím neimplementovat:
 
-* VoIP
-* Telefonní ústředna
-* Nahrávání hovorů
-* Přepisy hovorů
-* SMS marketing
-* Email marketing
-* Fakturace
-* Skladové hospodářství
+- VoIP
+- Telefonní ústředna
+- Nahrávání hovorů
+- Přepisy hovorů
+- SMS marketing
+- Email marketing
+- Fakturace
+- Skladové hospodářství
 
 ---
 
 ## SaaS požadavky na architekturu
+
 Každá data musí být navázána na Company.
 
 Každá firma musí mít oddělená data.
@@ -179,25 +182,25 @@ Do budoucna musí být možné přidat fakturaci a předplatné.
 
 Frontend:
 
-* Next.js
-* TypeScript
-* Tailwind
+- Next.js
+- TypeScript
+- Tailwind
 
 Backend:
 
-* Next.js API Routes
+- Next.js API Routes
 
 Databáze:
 
-* PostgreSQL (Supabase)
+- PostgreSQL (Supabase)
 
 ORM:
 
-* Prisma
+- Prisma
 
 AI:
 
-* OpenAI API
+- OpenAI API
 
 ---
 
@@ -210,3 +213,4 @@ AI:
 5. Callbacks
 6. AI Assistant
 7. SaaS funkce
+
