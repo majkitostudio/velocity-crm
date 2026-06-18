@@ -116,9 +116,9 @@ dashboard/page.tsx → getOperatorQueueAction → queue.service → queue.reposi
 
 ### Definition of Done
 
-- [ ] Operátor vidí svou frontu
-- [ ] Manager vidí nepřiřazené leady a může assignovat
-- [ ] Tenant isolation test: operátor nevidí data jiné company
+- [x] Operátor vidí svou frontu
+- [ ] Manager vidí nepřiřazené leady a může assignovat (odloženo — mimo scope Slice 2 request)
+- [ ] Tenant isolation test: operátor nevidí data jiné company (Slice 9)
 
 ---
 

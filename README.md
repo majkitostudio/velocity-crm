@@ -116,5 +116,4 @@ See [TARGET_ARCHITECTURE.md](./docs/TARGET_ARCHITECTURE.md) for full rules.
 ## Current implementation status
 
 - **Slice 0 (Foundation):** domain errors, events, workflow constants, seed, Zod, migrations
-- **Slice 1 (Auth Shell):** login, logout, middleware, protected CRM layout, dashboard placeholder
-- **Slice 2+:** operator queue UI, contacts, call workflow
+- **Slice 2 (Operator Dashboard):** operator queue on dashboard with overview, sections, empty/loading/error states
