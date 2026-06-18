@@ -1,15 +1,5 @@
 import { PanelShell } from "./panel-shell";
 
-export function ContactActionPanelShell() {
-  return (
-    <PanelShell
-      title="Call workflow"
-      description="Outcome buttons and call logging will be implemented in Slice 4."
-      sliceLabel="Slice 4"
-    />
-  );
-}
-
 export function ContactAiPanelShell() {
   return (
     <PanelShell

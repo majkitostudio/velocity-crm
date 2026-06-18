@@ -108,10 +108,18 @@ export type ContactNoteView = {
   authorName: string | null;
 };
 
+export type ContactCallWorkflowContext = {
+  failCount: number;
+  failThreshold: number;
+  sourceCallbackId: string | null;
+  sourceCallbackScheduledAt: Date | null;
+};
+
 export type ContactDetailView = {
   contact: ContactDetailContact;
   workflowBadge: ContactWorkflowBadge;
   context: ContactContextSummary;
   activity: ContactActivityItem[];
   notes: ContactNoteView[];
+  callWorkflow: ContactCallWorkflowContext;
 };

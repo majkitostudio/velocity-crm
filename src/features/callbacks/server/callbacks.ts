@@ -4,6 +4,8 @@ import { CallbackStatus, type Callback } from "@/src/generated/prisma/client";
 import { canManageCompanyData, requireCurrentUser } from "@/src/server/auth/guards";
 import { prisma } from "@/src/server/db";
 
+import { createCallbackForCompany, findCallbackByIdForCompany } from "./callbacks.repository";
+
 export async function createCallback(input: {
   contactId: string;
   assignedUserId?: string | null;
@@ -45,15 +47,12 @@ export async function createCallback(input: {
     throw new Error("Assigned user not found in current company");
   }
 
-  return prisma.callback.create({
-    data: {
-      companyId: currentUser.companyId,
-      contactId: contact.id,
-      assignedUserId: assignedUser.id,
-      scheduledAt: input.scheduledAt,
-      status: CallbackStatus.OPEN,
-      note: input.note ?? null,
-    },
+  return createCallbackForCompany(prisma, {
+    companyId: currentUser.companyId,
+    contactId: contact.id,
+    assignedUserId: assignedUser.id,
+    scheduledAt: input.scheduledAt,
+    note: input.note ?? null,
   });
 }
 
@@ -63,14 +62,9 @@ export async function updateCallbackStatus(input: {
 }): Promise<Callback> {
   const currentUser = await requireCurrentUser();
 
-  const callback = await prisma.callback.findFirst({
-    where: {
-      id: input.callbackId,
-      companyId: currentUser.companyId,
-    },
-    select: {
-      assignedUserId: true,
-    },
+  const callback = await findCallbackByIdForCompany({
+    companyId: currentUser.companyId,
+    callbackId: input.callbackId,
   });
 
   if (!callback) {

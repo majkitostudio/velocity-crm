@@ -7,6 +7,7 @@ import { NotFoundError } from "@/src/domain/errors";
 
 type ContactPageProps = {
   params: Promise<{ contactId: string }>;
+  searchParams: Promise<{ callbackId?: string }>;
 };
 
 export async function generateMetadata({ params }: ContactPageProps): Promise<Metadata> {
@@ -29,13 +30,19 @@ export async function generateMetadata({ params }: ContactPageProps): Promise<Me
   };
 }
 
-export default async function ContactDetailRoute({ params }: ContactPageProps) {
+export default async function ContactDetailRoute({
+  params,
+  searchParams,
+}: ContactPageProps) {
   const { contactId } = await params;
+  const { callbackId } = await searchParams;
 
   let view;
 
   try {
-    view = await getContactDetailView(contactId);
+    view = await getContactDetailView(contactId, {
+      sourceCallbackId: callbackId ?? null,
+    });
   } catch (error) {
     if (error instanceof NotFoundError) {
       notFound();

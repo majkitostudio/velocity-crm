@@ -19,11 +19,13 @@ import {
   findOpenCallbacksForContact,
 } from "./contacts.repository";
 import { assertContactAccess } from "./contacts.service";
+import { assertSourceCallbackForCall } from "@/src/features/callbacks/server/callbacks.service";
 
 const FAIL_THRESHOLD = 3;
 
 export async function getContactDetailView(
   contactId: string,
+  options?: { sourceCallbackId?: string | null },
 ): Promise<ContactDetailView> {
   const currentUser = await requireCurrentUser();
 
@@ -80,6 +82,27 @@ export async function getContactDetailView(
     throw new NotFoundError("Contact not found");
   }
 
+  let sourceCallbackId: string | null = null;
+  let sourceCallbackScheduledAt: Date | null = null;
+
+  if (options?.sourceCallbackId) {
+    try {
+      const sourceCallback = await assertSourceCallbackForCall({
+        currentUser,
+        contactId,
+        sourceCallbackId: options.sourceCallbackId,
+      });
+
+      if (sourceCallback) {
+        sourceCallbackId = sourceCallback.id;
+        sourceCallbackScheduledAt = sourceCallback.scheduledAt;
+      }
+    } catch {
+      sourceCallbackId = null;
+      sourceCallbackScheduledAt = null;
+    }
+  }
+
   const workflowBadge = buildWorkflowBadge({
     status: contact.status,
     assignedUserId: contact.assignedUserId,
@@ -114,5 +137,11 @@ export async function getContactDetailView(
       createdAt: note.createdAt,
       authorName: note.author.name,
     })),
+    callWorkflow: {
+      failCount,
+      failThreshold: FAIL_THRESHOLD,
+      sourceCallbackId,
+      sourceCallbackScheduledAt,
+    },
   };
 }

@@ -26,10 +26,14 @@ function priorityClassName(priority: OperatorQueueItem["contact"]["priority"]): 
 
 export function QueueItemRow({ item, position }: QueueItemRowProps) {
   const { contact } = item;
+  const href =
+    item.kind === "CALLBACK"
+      ? `/contacts/${contact.id}?callbackId=${item.callbackId}`
+      : `/contacts/${contact.id}`;
 
   return (
     <Link
-      href={`/contacts/${contact.id}`}
+      href={href}
       className="block rounded-xl border border-zinc-200 bg-white px-4 py-4 transition-colors hover:border-emerald-300 hover:bg-emerald-50/30"
     >
       <article className="flex items-start gap-4">

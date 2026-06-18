@@ -1,9 +1,16 @@
 import "server-only";
 
-import { CallOutcome, ContactStatus, type Contact } from "@/src/generated/prisma/client";
+import {
+  CallOutcome,
+  ContactStatus,
+  type Contact,
+  type Prisma,
+} from "@/src/generated/prisma/client";
 import { prisma } from "@/src/server/db";
 
 import type { ContactDetailContact } from "../types";
+
+type TransactionClient = Prisma.TransactionClient;
 
 const contactDetailSelect = {
   id: true,
@@ -69,6 +76,41 @@ export async function countFailOutcomesForContact(input: {
       companyId: input.companyId,
       contactId: input.contactId,
       outcome: CallOutcome.FAIL,
+    },
+  });
+}
+
+export async function countFailOutcomesForContactInTransaction(
+  tx: TransactionClient,
+  input: {
+    companyId: string;
+    contactId: string;
+  },
+): Promise<number> {
+  return tx.callActivity.count({
+    where: {
+      companyId: input.companyId,
+      contactId: input.contactId,
+      outcome: CallOutcome.FAIL,
+    },
+  });
+}
+
+export async function updateContactStatusForCompany(
+  tx: TransactionClient,
+  input: {
+    companyId: string;
+    contactId: string;
+    status: ContactStatus;
+  },
+): Promise<Contact> {
+  return tx.contact.update({
+    where: {
+      id: input.contactId,
+      companyId: input.companyId,
+    },
+    data: {
+      status: input.status,
     },
   });
 }
