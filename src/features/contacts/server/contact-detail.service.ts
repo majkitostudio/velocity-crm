@@ -1,0 +1,118 @@
+import "server-only";
+
+import { NotFoundError } from "@/src/domain/errors";
+import { requireCurrentUser } from "@/src/server/auth/guards";
+
+import type { ContactDetailView } from "../types";
+import { buildActivityTimeline } from "../view/build-activity-timeline";
+import { buildWorkflowBadge } from "../view/build-workflow-badge";
+import {
+  listCallbacksForContact,
+  listCallActivitiesForContact,
+  listNotesForContact,
+  listOrdersForContact,
+} from "./activity.repository";
+import {
+  countFailOutcomesForContact,
+  findContactDetailByIdForCompany,
+  findLatestCallForContact,
+  findOpenCallbacksForContact,
+} from "./contacts.repository";
+import { assertContactAccess } from "./contacts.service";
+
+const FAIL_THRESHOLD = 3;
+
+export async function getContactDetailView(
+  contactId: string,
+): Promise<ContactDetailView> {
+  const currentUser = await requireCurrentUser();
+
+  await assertContactAccess({
+    currentUser,
+    contactId,
+  });
+
+  const [
+    contact,
+    failCount,
+    lastCall,
+    openCallbacks,
+    calls,
+    notes,
+    callbacks,
+    orders,
+  ] = await Promise.all([
+    findContactDetailByIdForCompany({
+      companyId: currentUser.companyId,
+      contactId,
+    }),
+    countFailOutcomesForContact({
+      companyId: currentUser.companyId,
+      contactId,
+    }),
+    findLatestCallForContact({
+      companyId: currentUser.companyId,
+      contactId,
+    }),
+    findOpenCallbacksForContact({
+      companyId: currentUser.companyId,
+      contactId,
+    }),
+    listCallActivitiesForContact({
+      companyId: currentUser.companyId,
+      contactId,
+    }),
+    listNotesForContact({
+      companyId: currentUser.companyId,
+      contactId,
+    }),
+    listCallbacksForContact({
+      companyId: currentUser.companyId,
+      contactId,
+    }),
+    listOrdersForContact({
+      companyId: currentUser.companyId,
+      contactId,
+    }),
+  ]);
+
+  if (!contact) {
+    throw new NotFoundError("Contact not found");
+  }
+
+  const workflowBadge = buildWorkflowBadge({
+    status: contact.status,
+    assignedUserId: contact.assignedUserId,
+    inProgress: true,
+  });
+
+  return {
+    contact,
+    workflowBadge,
+    context: {
+      openCallbacks,
+      failCount,
+      failThreshold: FAIL_THRESHOLD,
+      lastCall: lastCall
+        ? {
+            id: lastCall.id,
+            outcome: lastCall.outcome,
+            createdAt: lastCall.createdAt,
+            operatorName: lastCall.operator.name,
+          }
+        : null,
+    },
+    activity: buildActivityTimeline({
+      calls,
+      notes,
+      callbacks,
+      orders,
+    }),
+    notes: notes.map((note) => ({
+      id: note.id,
+      body: note.body,
+      createdAt: note.createdAt,
+      authorName: note.author.name,
+    })),
+  };
+}

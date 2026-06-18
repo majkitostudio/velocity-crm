@@ -1,0 +1,39 @@
+import type { ContactDetailView } from "../types";
+
+import { ContactActivityTimeline } from "./contact-activity-timeline";
+import { ContactContextCards } from "./contact-context-cards";
+import { ContactDetailHeader } from "./contact-detail-header";
+import { ContactNotesSection } from "./contact-notes-section";
+import {
+  ContactActionPanelShell,
+  ContactAiPanelShell,
+  ContactCallbacksPanelShell,
+  ContactOrdersPanelShell,
+} from "./contact-side-panels";
+
+type ContactDetailPageProps = {
+  view: ContactDetailView;
+};
+
+export function ContactDetailPage({ view }: ContactDetailPageProps) {
+  return (
+    <div className="space-y-6" data-testid="contact-detail-page">
+      <ContactDetailHeader view={view} />
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-6">
+          <ContactContextCards context={view.context} />
+          <ContactActivityTimeline items={view.activity} />
+          <ContactNotesSection contactId={view.contact.id} notes={view.notes} />
+        </div>
+
+        <aside className="space-y-4 xl:sticky xl:top-40 xl:self-start">
+          <ContactActionPanelShell />
+          <ContactCallbacksPanelShell />
+          <ContactOrdersPanelShell />
+          <ContactAiPanelShell />
+        </aside>
+      </div>
+    </div>
+  );
+}
