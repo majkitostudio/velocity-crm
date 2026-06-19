@@ -138,9 +138,9 @@ dashboard/page.tsx → getOperatorQueueAction → queue.service → queue.reposi
 
 ### Definition of Done
 
-- [ ] Detail kontaktu zobrazí základní data a poznámky
-- [ ] Operátor může přidat poznámku
-- [ ] Cross-tenant přístup k cizímu `contactId` vrátí 404 / NotFound
+- [x] Detail kontaktu zobrazí základní data a poznámky
+- [x] Operátor může přidat poznámku
+- [x] Cross-tenant přístup k cizímu `contactId` vrátí 404 / NotFound
 
 ---
 
@@ -173,10 +173,11 @@ ContactPage → completeCallAction → CallWorkflow → services/repos → trans
 
 ### Definition of Done
 
-- [ ] Bez outcome nelze dokončit hovor
-- [ ] `ORDER` vytvoří/ propojí objednávku a nastaví CUSTOMER (po Slice 6 plně)
-- [ ] Callback outcomes vytvoří callback dle schváleného ADR
-- [ ] Integrační test: všechny 4 outcomes v transakci
+- [x] Bez outcome nelze dokončit hovor
+- [x] `ORDER` tlačítko viditelné, dokončení odloženo do Slice 6
+- [x] Callback outcomes vytvoří callback dle schváleného ADR
+- [x] Navigace „Back to queue" po dokončení hovoru
+- [ ] Integrační test: všechny outcomes v transakci (Slice 9)
 
 ---
 

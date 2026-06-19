@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useRef } from "react";
 
 import type { ActionResult } from "@/src/domain/action-result";
@@ -9,12 +10,19 @@ import { CallOutcomeValue } from "@/src/features/calls/constants";
 import { useCallWorkflowState } from "@/src/features/calls/hooks/use-call-workflow-state";
 import { useNavigationGuard } from "@/src/features/calls/hooks/use-navigation-guard";
 import type { CompleteCallResult } from "@/src/features/calls/types";
+import { formatDateTime } from "@/src/features/calls/lib/format-datetime";
 
 type CallWorkflowPanelProps = {
   contactId: string;
   sourceCallbackId: string | null;
+  sourceCallbackScheduledAt: Date | string | null;
+  sourceCallbackNote: string | null;
   failCount: number;
   failThreshold: number;
+  /** Defaults to operator dashboard queue. */
+  returnToQueueHref?: string;
+  /** Reserved for a future slice — when set, shows a second navigation action. */
+  nextContactHref?: string | null;
 };
 
 const initialState: ActionResult<CompleteCallResult> | null = null;
@@ -46,11 +54,24 @@ const outcomeOptions = [
   },
 ] as const;
 
+function toDate(value: Date | string | null): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export function CallWorkflowPanel({
   contactId,
   sourceCallbackId,
+  sourceCallbackScheduledAt,
+  sourceCallbackNote,
   failCount,
   failThreshold,
+  returnToQueueHref = "/dashboard",
+  nextContactHref = null,
 }: CallWorkflowPanelProps) {
   const {
     phase,
@@ -77,12 +98,27 @@ export function CallWorkflowPanel({
   const willBecomeLost =
     selectedOutcome === CallOutcomeValue.FAIL && nextFailCount >= failThreshold;
 
+  const sourceCallbackDate = toDate(sourceCallbackScheduledAt);
+
   return (
     <section
       className="rounded-xl border border-zinc-200 bg-white p-4"
       data-testid="call-workflow-panel"
     >
       <h2 className="text-sm font-semibold text-zinc-900">Call workflow</h2>
+
+      {sourceCallbackId && sourceCallbackDate ? (
+        <div
+          className="mt-3 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-900"
+          data-testid="source-callback-context"
+        >
+          <p className="font-medium">Due callback</p>
+          <p className="mt-1 text-sky-800">{formatDateTime(sourceCallbackDate)}</p>
+          {sourceCallbackNote ? (
+            <p className="mt-1 text-sky-700">{sourceCallbackNote}</p>
+          ) : null}
+        </div>
+      ) : null}
 
       {phase === "idle" ? (
         <div className="mt-4">
@@ -173,7 +209,7 @@ export function CallWorkflowPanel({
               {state?.ok === false && state.fieldErrors?.scheduledAt ? (
                 <p className="text-sm text-red-600">{state.fieldErrors.scheduledAt[0]}</p>
               ) : null}
-              <SubmitSection state={state} isPending={isPending} />
+              <SubmitSection isPending={isPending} />
             </form>
           ) : null}
 
@@ -202,7 +238,7 @@ export function CallWorkflowPanel({
                   placeholder="Optional note about this call…"
                 />
               </label>
-              <SubmitSection state={state} isPending={isPending} />
+              <SubmitSection isPending={isPending} />
             </form>
           ) : null}
 
@@ -214,7 +250,7 @@ export function CallWorkflowPanel({
               {sourceCallbackId ? (
                 <input type="hidden" name="sourceCallbackId" value={sourceCallbackId} />
               ) : null}
-              <SubmitSection state={state} isPending={isPending} />
+              <SubmitSection isPending={isPending} />
             </form>
           ) : null}
         </div>
@@ -225,16 +261,35 @@ export function CallWorkflowPanel({
       ) : null}
 
       {state?.ok ? (
-        <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          Call completed.
-        </p>
+        <div className="mt-3 space-y-3">
+          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+            Call completed.
+          </p>
+          <div className="flex flex-col gap-2">
+            <Link
+              href={returnToQueueHref}
+              className="inline-flex justify-center rounded-lg border border-emerald-700 bg-white px-4 py-2 text-sm font-medium text-emerald-800 transition-colors hover:bg-emerald-50"
+              data-testid="back-to-queue-link"
+            >
+              Back to queue
+            </Link>
+            {nextContactHref ? (
+              <Link
+                href={nextContactHref}
+                className="inline-flex justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-800"
+                data-testid="next-contact-link"
+              >
+                Next contact
+              </Link>
+            ) : null}
+          </div>
+        </div>
       ) : null}
     </section>
   );
 }
 
 type SubmitSectionProps = {
-  state: ActionResult<CompleteCallResult> | null;
   isPending: boolean;
 };
 

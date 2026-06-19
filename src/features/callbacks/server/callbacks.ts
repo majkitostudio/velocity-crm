@@ -1,6 +1,10 @@
 import "server-only";
 
 import { CallbackStatus, type Callback } from "@/src/generated/prisma/client";
+import {
+  ForbiddenError,
+  NotFoundError,
+} from "@/src/domain/errors";
 import { canManageCompanyData, requireCurrentUser } from "@/src/server/auth/guards";
 import { prisma } from "@/src/server/db";
 
@@ -16,7 +20,7 @@ export async function createCallback(input: {
   const assignedUserId = input.assignedUserId ?? currentUser.id;
 
   if (assignedUserId !== currentUser.id && !canManageCompanyData(currentUser.role)) {
-    throw new Error("Only admins and managers can assign callbacks to another user");
+    throw new ForbiddenError("Only admins and managers can assign callbacks to another user");
   }
 
   const contact = await prisma.contact.findFirst({
@@ -30,7 +34,7 @@ export async function createCallback(input: {
   });
 
   if (!contact) {
-    throw new Error("Contact not found in current company");
+    throw new NotFoundError("Contact not found");
   }
 
   const assignedUser = await prisma.user.findFirst({
@@ -44,7 +48,7 @@ export async function createCallback(input: {
   });
 
   if (!assignedUser) {
-    throw new Error("Assigned user not found in current company");
+    throw new NotFoundError("Assigned user not found");
   }
 
   return createCallbackForCompany(prisma, {
@@ -68,14 +72,14 @@ export async function updateCallbackStatus(input: {
   });
 
   if (!callback) {
-    throw new Error("Callback not found in current company");
+    throw new NotFoundError("Callback not found");
   }
 
   if (
     callback.assignedUserId !== currentUser.id &&
     !canManageCompanyData(currentUser.role)
   ) {
-    throw new Error("Forbidden");
+    throw new ForbiddenError();
   }
 
   return prisma.callback.update({

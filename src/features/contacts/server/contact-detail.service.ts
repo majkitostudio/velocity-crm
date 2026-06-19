@@ -84,6 +84,7 @@ export async function getContactDetailView(
 
   let sourceCallbackId: string | null = null;
   let sourceCallbackScheduledAt: Date | null = null;
+  let sourceCallbackNote: string | null = null;
 
   if (options?.sourceCallbackId) {
     try {
@@ -96,10 +97,12 @@ export async function getContactDetailView(
       if (sourceCallback) {
         sourceCallbackId = sourceCallback.id;
         sourceCallbackScheduledAt = sourceCallback.scheduledAt;
+        sourceCallbackNote = sourceCallback.note;
       }
     } catch {
       sourceCallbackId = null;
       sourceCallbackScheduledAt = null;
+      sourceCallbackNote = null;
     }
   }
 
@@ -142,6 +145,7 @@ export async function getContactDetailView(
       failThreshold: FAIL_THRESHOLD,
       sourceCallbackId,
       sourceCallbackScheduledAt,
+      sourceCallbackNote,
     },
   };
 }

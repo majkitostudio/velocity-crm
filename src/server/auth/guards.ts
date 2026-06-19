@@ -2,6 +2,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
+import { ForbiddenError } from "@/src/domain/errors";
 import { auth } from "@/src/server/auth";
 import type { AppUserRole } from "@/src/domain/auth";
 
@@ -35,7 +36,7 @@ export async function requireRole(
   const user = await requireCurrentUser();
 
   if (!allowedRoles.includes(user.role)) {
-    throw new Error("Forbidden");
+    throw new ForbiddenError();
   }
 
   return user;

@@ -113,6 +113,7 @@ export type ContactCallWorkflowContext = {
   failThreshold: number;
   sourceCallbackId: string | null;
   sourceCallbackScheduledAt: Date | null;
+  sourceCallbackNote: string | null;
 };
 
 export type ContactDetailView = {

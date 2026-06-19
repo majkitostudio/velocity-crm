@@ -80,7 +80,7 @@ Všechny side effects probíhají v **jedné transakci** v `CallWorkflow` orches
 ### `FAIL`
 
 - Vytvoří `CallActivity` s `outcome = FAIL`.
-- Spočítá po sobě jdoucí / celkové FAIL pro kontakt z `CallActivity` (MVP: celkový počet `FAIL` outcomes).
+- Spočítá **celkový počet** `FAIL` outcomes pro kontakt z `CallActivity` (bez nového DB pole).
 - Pokud počet `FAIL` ≥ **3** (`FAIL_THRESHOLD`) → `Contact.status` → `LOST`.
 - Jinak `Contact.status` zůstává `LEAD` — lead zůstává ve frontě pro další pokus.
 - Po přechodu na `LOST`: audit `contact.status_changed`.

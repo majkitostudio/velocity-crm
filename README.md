@@ -74,7 +74,10 @@ Created by `prisma/seed.ts` (ADR-005):
 | Role | Email | Password |
 |------|-------|----------|
 | Admin | `admin@velocity.local` | `changeme-admin` |
+| Manager | `manager@velocity.local` | `changeme-manager` |
 | Operator | `operator@velocity.local` | `changeme-operator` |
+
+After `npm run db:setup`, the seed also creates demo contacts, a due callback, call history, and notes so you can log in as the operator and work the queue immediately.
 
 Change these passwords before any non-local deployment.
 

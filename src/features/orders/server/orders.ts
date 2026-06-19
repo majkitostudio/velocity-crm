@@ -1,6 +1,7 @@
 import "server-only";
 
 import { OrderStatus, type Order } from "@/src/generated/prisma/client";
+import { NotFoundError, ValidationError } from "@/src/domain/errors";
 import { requireCurrentUser } from "@/src/server/auth/guards";
 import { prisma } from "@/src/server/db";
 
@@ -18,7 +19,7 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const currentUser = await requireCurrentUser();
 
   if (input.items.length === 0) {
-    throw new Error("Order must contain at least one item");
+    throw new ValidationError("Order must contain at least one item");
   }
 
   const contact = await prisma.contact.findFirst({
@@ -32,7 +33,7 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   });
 
   if (!contact) {
-    throw new Error("Contact not found in current company");
+    throw new NotFoundError("Contact not found");
   }
 
   const products = await prisma.product.findMany({
@@ -49,7 +50,7 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   });
 
   if (products.length !== new Set(input.items.map((item) => item.productId)).size) {
-    throw new Error("One or more products were not found in current company");
+    throw new NotFoundError("One or more products were not found");
   }
 
   return prisma.order.create({

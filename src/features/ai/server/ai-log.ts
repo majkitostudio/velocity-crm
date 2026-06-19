@@ -1,6 +1,7 @@
 import "server-only";
 
 import { AiTaskType, type AiLog } from "@/src/generated/prisma/client";
+import { NotFoundError } from "@/src/domain/errors";
 import { requireCurrentUser } from "@/src/server/auth/guards";
 import { prisma } from "@/src/server/db";
 
@@ -24,7 +25,7 @@ export async function createAiLog(input: {
   });
 
   if (!contact) {
-    throw new Error("Contact not found in current company");
+    throw new NotFoundError("Contact not found");
   }
 
   return prisma.aiLog.create({

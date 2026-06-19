@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { Contact } from "@/src/generated/prisma/client";
-import { NotFoundError } from "@/src/domain/errors";
+import { ConflictError, NotFoundError } from "@/src/domain/errors";
 import { requireCurrentUser } from "@/src/server/auth/guards";
 import type { CurrentUser } from "@/src/server/auth/guards";
 
@@ -88,7 +88,7 @@ export async function createContact(input: {
   });
 
   if (duplicate) {
-    throw new Error("Contact with the same phone or email already exists");
+    throw new ConflictError("Contact with the same phone or email already exists");
   }
 
   return createContactForCompany({

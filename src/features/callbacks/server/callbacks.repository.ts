@@ -22,6 +22,7 @@ export async function findCallbackByIdForCompany(input: {
       assignedUserId: true,
       status: true,
       scheduledAt: true,
+      note: true,
     },
   });
 }

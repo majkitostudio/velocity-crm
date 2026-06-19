@@ -31,6 +31,8 @@ export function ContactDetailPage({ view }: ContactDetailPageProps) {
           <CallWorkflowPanel
             contactId={view.contact.id}
             sourceCallbackId={view.callWorkflow.sourceCallbackId}
+            sourceCallbackScheduledAt={view.callWorkflow.sourceCallbackScheduledAt}
+            sourceCallbackNote={view.callWorkflow.sourceCallbackNote}
             failCount={view.callWorkflow.failCount}
             failThreshold={view.callWorkflow.failThreshold}
           />
