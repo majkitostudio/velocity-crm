@@ -11,6 +11,21 @@ type ContactActivityItemRowProps = {
   item: ContactActivityItem;
 };
 
+function kindAccentClass(kind: ContactActivityItem["kind"]): string {
+  switch (kind) {
+    case "CALL":
+      return "border-l-amber-400";
+    case "NOTE":
+      return "border-l-zinc-400";
+    case "CALLBACK":
+      return "border-l-sky-400";
+    case "ORDER":
+      return "border-l-emerald-500";
+    default:
+      return "border-l-zinc-300";
+  }
+}
+
 function formatPriceCzk(price: string): string {
   const numericPrice = Number(price);
 
@@ -24,7 +39,7 @@ function formatPriceCzk(price: string): string {
 export function ContactActivityItemRow({ item }: ContactActivityItemRowProps) {
   return (
     <article
-      className="flex gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3"
+      className={`flex gap-3 rounded-xl border border-zinc-200 border-l-4 bg-white px-4 py-3 ${kindAccentClass(item.kind)}`}
       data-testid={`activity-${item.kind.toLowerCase()}-item`}
     >
       <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">
@@ -42,7 +57,7 @@ export function ContactActivityItemRow({ item }: ContactActivityItemRowProps) {
         </div>
 
         {item.kind === "CALL" ? (
-          <div className="mt-1 space-y-1 text-sm text-zinc-600" data-testid="activity-order-detail">
+          <div className="mt-1 space-y-1 text-sm text-zinc-600" data-testid="activity-call-detail">
             <p>Outcome: {formatCallOutcome(item.outcome)}</p>
             {item.operatorName ? <p>Operator: {item.operatorName}</p> : null}
             {item.note ? <p className="whitespace-pre-wrap">{item.note}</p> : null}
@@ -57,7 +72,7 @@ export function ContactActivityItemRow({ item }: ContactActivityItemRowProps) {
         ) : null}
 
         {item.kind === "CALLBACK" ? (
-          <div className="mt-1 space-y-1 text-sm text-zinc-600">
+          <div className="mt-1 space-y-1 text-sm text-zinc-600" data-testid="activity-callback-detail">
             <p>Scheduled: {formatDateTime(item.scheduledAt)}</p>
             <p>Status: {formatCallbackStatus(item.status)}</p>
             {item.assigneeName ? <p>Assignee: {item.assigneeName}</p> : null}
@@ -66,7 +81,7 @@ export function ContactActivityItemRow({ item }: ContactActivityItemRowProps) {
         ) : null}
 
         {item.kind === "ORDER" ? (
-          <div className="mt-1 space-y-1 text-sm text-zinc-600">
+          <div className="mt-1 space-y-1 text-sm text-zinc-600" data-testid="activity-order-detail">
             <p>Status: {formatOrderStatus(item.status)}</p>
             <p>
               {item.itemCount} item{item.itemCount === 1 ? "" : "s"}

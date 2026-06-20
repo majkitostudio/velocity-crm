@@ -8,11 +8,11 @@ type ContactActivityTimelineProps = {
 
 export function ContactActivityTimeline({ items }: ContactActivityTimelineProps) {
   return (
-    <section className="space-y-3">
+    <section className="space-y-3" data-testid="activity-feed">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Activity timeline</h2>
+        <h2 className="text-lg font-semibold text-zinc-900">Activity</h2>
         <p className="text-sm text-zinc-600">
-          Complete contact history sorted by when each event was recorded.
+          Unified contact history sorted by when each event was recorded.
         </p>
       </div>
 

@@ -264,6 +264,12 @@ export function CallWorkflowPanel({
       {phase === "active" ? (
         <div className="mt-4 space-y-3">
           <p className="text-sm text-zinc-600">Call in progress</p>
+          <div
+            className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-center"
+            data-testid="call-timer-placeholder"
+          >
+            <p className="font-mono text-2xl font-semibold tracking-wider text-amber-900">00:00</p>
+          </div>
           <button
             type="button"
             onClick={endCall}
@@ -567,14 +573,28 @@ export function CallWorkflowPanel({
 
       {state?.ok ? (
         <div className="mt-3 space-y-3">
-          <p
-            className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
-            data-testid="call-success-message"
-          >
-            {state.data.outcome === CallOutcomeValue.ORDER && state.data.orderId
-              ? `Objednávka vytvořena: ${state.data.orderItemCount ?? 0} položek, celkem ${formatPrice(parsePrice(state.data.orderTotal ?? "0"))}.`
-              : "Call completed."}
-          </p>
+          {state.data.outcome === CallOutcomeValue.ORDER && state.data.orderId ? (
+            <div
+              className="rounded-xl border-2 border-emerald-300 bg-emerald-50 px-4 py-4"
+              data-testid="call-success-message"
+            >
+              <p className="text-base font-semibold text-emerald-950">Objednávka vytvořena</p>
+              <p className="mt-2 text-sm text-emerald-900">
+                {state.data.orderItemCount ?? 0} položek · celkem{" "}
+                {formatPrice(parsePrice(state.data.orderTotal ?? "0"))}
+              </p>
+              <p className="mt-1 font-mono text-xs text-emerald-800">
+                ID: {state.data.orderId}
+              </p>
+            </div>
+          ) : (
+            <p
+              className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
+              data-testid="call-success-message"
+            >
+              Call completed.
+            </p>
+          )}
           <div className="flex flex-col gap-2">
             <Link
               href={returnToQueueHref}

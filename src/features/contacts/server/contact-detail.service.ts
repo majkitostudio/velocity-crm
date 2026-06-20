@@ -16,12 +16,11 @@ import {
   countFailOutcomesForContact,
   findContactDetailByIdForCompany,
   findLatestCallForContact,
-  findOpenCallbacksForContact,
 } from "./contacts.repository";
 import { assertContactAccess } from "./contacts.service";
 import { assertSourceCallbackForCall } from "@/src/features/callbacks/server/callbacks.service";
-
-const FAIL_THRESHOLD = 3;
+import { listOpenCallbacksForContact } from "@/src/features/callbacks/server/callbacks.repository";
+import { FAIL_THRESHOLD } from "@/src/domain/workflow";
 
 export async function getContactDetailView(
   contactId: string,
@@ -56,7 +55,7 @@ export async function getContactDetailView(
       companyId: currentUser.companyId,
       contactId,
     }),
-    findOpenCallbacksForContact({
+    listOpenCallbacksForContact({
       companyId: currentUser.companyId,
       contactId,
     }),

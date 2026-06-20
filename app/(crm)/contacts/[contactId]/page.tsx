@@ -3,11 +3,12 @@ import { notFound } from "next/navigation";
 
 import { ContactDetailPage } from "@/src/features/contacts/components/contact-detail-page";
 import { getContactDetailView } from "@/src/features/contacts/server/contact-detail.service";
+import { getContactCallbacksPanelView } from "@/src/features/callbacks/server/callbacks.service";
 import { NotFoundError } from "@/src/domain/errors";
 
 type ContactPageProps = {
   params: Promise<{ contactId: string }>;
-  searchParams: Promise<{ callbackId?: string }>;
+  searchParams: Promise<{ callback?: string; callbackId?: string }>;
 };
 
 export async function generateMetadata({ params }: ContactPageProps): Promise<Metadata> {
@@ -35,14 +36,22 @@ export default async function ContactDetailRoute({
   searchParams,
 }: ContactPageProps) {
   const { contactId } = await params;
-  const { callbackId } = await searchParams;
+  const { callback, callbackId } = await searchParams;
+  const sourceCallbackId = callback ?? callbackId ?? null;
 
   let view;
+  let callbacksPanel;
 
   try {
-    view = await getContactDetailView(contactId, {
-      sourceCallbackId: callbackId ?? null,
-    });
+    [view, callbacksPanel] = await Promise.all([
+      getContactDetailView(contactId, {
+        sourceCallbackId,
+      }),
+      getContactCallbacksPanelView({
+        contactId,
+        highlightedCallbackId: sourceCallbackId,
+      }),
+    ]);
   } catch (error) {
     if (error instanceof NotFoundError) {
       notFound();
@@ -51,5 +60,5 @@ export default async function ContactDetailRoute({
     throw error;
   }
 
-  return <ContactDetailPage view={view} />;
+  return <ContactDetailPage view={view} callbacksPanel={callbacksPanel} />;
 }

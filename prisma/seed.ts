@@ -734,7 +734,7 @@ async function main() {
   );
   console.log("  Inactive catalog: Archivní kategorie + Archivní produkt");
   console.log("  Orders: single product, multi product, free product");
-  console.log(`  Callback URL: /contacts/${withCallback.id}?callbackId=${SEED_CALLBACK_DUE_ID}`);
+  console.log(`  Callback URL: /contacts/${withCallback.id}?callback=${SEED_CALLBACK_DUE_ID}`);
 }
 
 main()

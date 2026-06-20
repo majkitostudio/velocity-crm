@@ -2,14 +2,29 @@ import type { CurrentUser } from "@/src/server/auth/guards";
 import type { OperatorQueueSnapshot } from "@/src/features/operator-queue/types";
 import { DashboardOverview } from "@/src/features/operator-queue/components/dashboard-overview";
 import { EmptyQueueState } from "@/src/features/operator-queue/components/empty-queue-state";
-import { QueueCallbacksSection } from "@/src/features/operator-queue/components/queue-callbacks-section";
-import { QueueLeadsSection } from "@/src/features/operator-queue/components/queue-leads-section";
 import { QueueItemRow } from "@/src/features/operator-queue/components/queue-item-row";
 
 type OperatorDashboardProps = {
   user: CurrentUser;
   queue: OperatorQueueSnapshot;
 };
+
+function QueueGroupHeader({
+  title,
+  count,
+}: {
+  title: string;
+  count: number;
+}) {
+  return (
+    <div className="sticky top-14 z-10 -mx-1 bg-zinc-50/95 px-1 py-2 backdrop-blur">
+      <h2 className="text-sm font-semibold text-zinc-900">
+        {title}
+        <span className="ml-2 text-xs font-normal text-zinc-500">({count})</span>
+      </h2>
+    </div>
+  );
+}
 
 export function OperatorDashboard({ user, queue }: OperatorDashboardProps) {
   return (
@@ -31,32 +46,29 @@ export function OperatorDashboard({ user, queue }: OperatorDashboardProps) {
           description="Due callbacks and assigned leads will appear here when they are ready to work."
         />
       ) : (
-        <>
-          <section className="space-y-3" data-testid="operator-full-queue">
-            <div>
-              <h2 className="text-lg font-semibold text-zinc-900">Full queue</h2>
-              <p className="text-sm text-zinc-600">
-                Combined order: callbacks first, then leads. Priority and age apply
-                within each group.
-              </p>
+        <section className="space-y-4" data-testid="operator-queue">
+          {queue.callbacks.length > 0 ? (
+            <div className="space-y-2" data-testid="queue-callbacks-list">
+              <QueueGroupHeader title="Due callbacks" count={queue.callbacks.length} />
+              {queue.callbacks.map((item, index) => (
+                <QueueItemRow key={item.callbackId} item={item} position={index + 1} />
+              ))}
             </div>
-            <div className="space-y-3" data-testid="operator-full-queue-list">
-              {queue.items.map((item, index) => (
+          ) : null}
+
+          {queue.leads.length > 0 ? (
+            <div className="space-y-2" data-testid="queue-leads-list">
+              <QueueGroupHeader title="Assigned leads" count={queue.leads.length} />
+              {queue.leads.map((item, index) => (
                 <QueueItemRow
-                  key={item.kind === "CALLBACK" ? item.callbackId : item.contact.id}
+                  key={item.contact.id}
                   item={item}
-                  position={index + 1}
+                  position={queue.callbacks.length + index + 1}
                 />
               ))}
             </div>
-          </section>
-
-          <QueueCallbacksSection
-            callbacks={queue.callbacks}
-            queueOffset={0}
-          />
-          <QueueLeadsSection leads={queue.leads} queueOffset={queue.callbacks.length} />
-        </>
+          ) : null}
+        </section>
       )}
     </div>
   );

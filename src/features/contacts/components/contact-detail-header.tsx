@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PhoneActions } from "@/src/components/ui/phone-actions";
 import type { ContactDetailView } from "../types";
 import {
   contactStatusClassName,
@@ -56,22 +57,20 @@ export function ContactDetailHeader({ view }: ContactDetailHeaderProps) {
       </div>
 
       <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-emerald-800">
-          Phone
-        </p>
+        <p className="text-xs font-medium uppercase tracking-wide text-emerald-800">Phone</p>
         {contact.phone ? (
-          <p
-            className="mt-1 font-mono text-2xl font-semibold tracking-wide text-emerald-950 sm:text-3xl"
-            data-testid="contact-phone"
-          >
-            {contact.phone}
-          </p>
+          <>
+            <p
+              className="mt-1 font-mono text-2xl font-semibold tracking-wide text-emerald-950 sm:text-3xl"
+              data-testid="contact-phone"
+            >
+              {contact.phone}
+            </p>
+            <PhoneActions phone={contact.phone} />
+          </>
         ) : (
           <p className="mt-1 text-sm text-emerald-900">No phone number on file</p>
         )}
-        <p className="mt-1 text-xs text-emerald-700">
-          Copy and click-to-call actions will be available in a future slice.
-        </p>
       </div>
     </header>
   );

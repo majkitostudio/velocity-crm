@@ -1,21 +1,19 @@
 import { CallWorkflowPanel } from "@/src/features/calls/components/call-workflow-panel";
+import { ContactCallbacksPanel } from "@/src/features/callbacks/components/contact-callbacks-panel";
+import type { ContactCallbacksPanelView } from "@/src/features/callbacks/types";
 import type { ContactDetailView } from "../types";
 
 import { ContactActivityTimeline } from "./contact-activity-timeline";
 import { ContactContextCards } from "./contact-context-cards";
 import { ContactDetailHeader } from "./contact-detail-header";
 import { ContactNotesSection } from "./contact-notes-section";
-import {
-  ContactAiPanelShell,
-  ContactCallbacksPanelShell,
-  ContactOrdersPanelShell,
-} from "./contact-side-panels";
 
 type ContactDetailPageProps = {
   view: ContactDetailView;
+  callbacksPanel: ContactCallbacksPanelView;
 };
 
-export function ContactDetailPage({ view }: ContactDetailPageProps) {
+export function ContactDetailPage({ view, callbacksPanel }: ContactDetailPageProps) {
   return (
     <div className="space-y-6" data-testid="contact-detail-page">
       <ContactDetailHeader view={view} />
@@ -36,9 +34,7 @@ export function ContactDetailPage({ view }: ContactDetailPageProps) {
             failCount={view.callWorkflow.failCount}
             failThreshold={view.callWorkflow.failThreshold}
           />
-          <ContactCallbacksPanelShell />
-          <ContactOrdersPanelShell />
-          <ContactAiPanelShell />
+          <ContactCallbacksPanel view={callbacksPanel} />
         </aside>
       </div>
     </div>

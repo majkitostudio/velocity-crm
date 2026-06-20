@@ -6,7 +6,7 @@ test("operator can complete the main order workflow", async ({ page }) => {
   await loginAs(page, "operator");
 
   await expect(page.getByTestId("operator-dashboard")).toBeVisible();
-  await expect(page.getByTestId("operator-full-queue-list")).toBeVisible();
+  await expect(page.getByTestId("operator-queue")).toBeVisible();
 
   await page.getByTestId("queue-item-link").first().click();
 
