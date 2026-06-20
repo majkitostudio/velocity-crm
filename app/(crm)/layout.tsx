@@ -26,6 +26,12 @@ export default async function CrmLayout({
                 Dashboard
               </Link>
               <Link
+                href="/contacts"
+                className="text-sm text-zinc-600 transition-colors hover:text-zinc-900"
+              >
+                Kontakty
+              </Link>
+              <Link
                 href="/callbacks"
                 className="text-sm text-zinc-600 transition-colors hover:text-zinc-900"
               >

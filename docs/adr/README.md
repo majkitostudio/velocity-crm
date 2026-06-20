@@ -11,6 +11,7 @@ Tento adresář obsahuje architektonická rozhodnutí pro Velocity CRM.
 | [003](./003-fail-outcome-behavior.md) | Chování outcome `FAIL` | **Přijato** |
 | [004](./004-contact-tags-scope.md) | Tags u kontaktů v MVP | **Otevřené** |
 | [005](./005-saas-bootstrap-v1.md) | SaaS bootstrap pro V1 | **Přijato** |
+| [006](./006-contacts-list-and-navigation.md) | Seznam kontaktů, filtry URL, breadcrumb | **Přijato** |
 
 Schválená workflow pravidla: [WORKFLOW_RULES.md](../WORKFLOW_RULES.md)
 

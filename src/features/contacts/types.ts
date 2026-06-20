@@ -7,6 +7,8 @@ import type {
   OrderStatus,
 } from "@/src/generated/prisma/client";
 
+import type { ListContactsSort } from "./schemas";
+
 export type ContactWorkflowBadge =
   | "NEW"
   | "ASSIGNED"
@@ -107,6 +109,48 @@ export type ContactNoteView = {
   body: string;
   createdAt: Date;
   authorName: string | null;
+};
+
+export type ContactListItemView = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  status: ContactStatus;
+  source: ContactSource;
+  priority: ContactPriority;
+  assignedUserId: string | null;
+  assigneeName: string | null;
+  workflowBadge: ContactWorkflowBadge;
+  nextOpenCallbackAt: Date | null;
+  lastCallOutcome: CallOutcome | null;
+  lastCallAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ContactListAssigneeOption = {
+  id: string;
+  name: string | null;
+  email: string;
+};
+
+export type ContactsPageView = {
+  items: ContactListItemView[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  sort: ListContactsSort;
+  statusFilter: ContactStatus | "ALL";
+  sourceFilter: ContactSource | "ALL";
+  priorityFilter: ContactPriority | "ALL";
+  selectedOperatorId: string | null;
+  searchQuery: string;
+  canManageAssignments: boolean;
+  assignableOperators: ContactListAssigneeOption[];
+  listPath: string;
+  returnTo: string;
 };
 
 export type ContactCallWorkflowContext = {
