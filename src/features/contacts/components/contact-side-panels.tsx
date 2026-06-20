@@ -14,8 +14,8 @@ export function ContactOrdersPanelShell() {
   return (
     <PanelShell
       title="Orders"
-      description="Order creation and history will be implemented in Slices 6–8."
-      sliceLabel="Slice 6–8"
+      description="Completed orders are shown in the activity timeline. Full order detail will be implemented in a future slice."
+      sliceLabel="Future slice"
     />
   );
 }

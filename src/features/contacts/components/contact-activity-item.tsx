@@ -11,6 +11,16 @@ type ContactActivityItemRowProps = {
   item: ContactActivityItem;
 };
 
+function formatPriceCzk(price: string): string {
+  const numericPrice = Number(price);
+
+  if (Number.isNaN(numericPrice)) {
+    return `${price} Kč`;
+  }
+
+  return `${numericPrice.toFixed(2)} Kč`;
+}
+
 export function ContactActivityItemRow({ item }: ContactActivityItemRowProps) {
   return (
     <article className="flex gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3">
@@ -58,6 +68,7 @@ export function ContactActivityItemRow({ item }: ContactActivityItemRowProps) {
             <p>
               {item.itemCount} item{item.itemCount === 1 ? "" : "s"}
             </p>
+            <p>Total: {formatPriceCzk(item.total)}</p>
             {item.operatorName ? <p>Operator: {item.operatorName}</p> : null}
           </div>
         ) : null}

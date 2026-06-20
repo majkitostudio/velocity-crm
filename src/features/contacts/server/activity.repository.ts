@@ -106,6 +106,12 @@ export async function listOrdersForContact(input: {
           items: true,
         },
       },
+      items: {
+        select: {
+          quantity: true,
+          unitPrice: true,
+        },
+      },
     },
   });
 }

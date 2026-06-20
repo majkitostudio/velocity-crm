@@ -41,8 +41,10 @@ enum CallOutcome {
 }
 
 enum OrderStatus {
-  NEW
-  CONFIRMED
+  CREATED
+  PROCESSING
+  SHIPPED
+  DELIVERED
   CANCELLED
 }
 
@@ -213,7 +215,7 @@ model Order {
   companyId  String
   contactId  String
   operatorId String
-  status     OrderStatus @default(NEW)
+  status     OrderStatus @default(CREATED)
   note       String?
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
@@ -246,15 +248,16 @@ model OrderItem {
 }
 
 model CallActivity {
-  id         String      @id @default(cuid())
-  companyId  String
-  contactId  String
-  operatorId String
-  callbackId String?
-  orderId    String?
-  outcome    CallOutcome
-  note       String?
-  createdAt  DateTime    @default(now())
+  id             String      @id @default(cuid())
+  companyId      String
+  contactId      String
+  operatorId     String
+  callbackId     String?
+  orderId        String?
+  outcome        CallOutcome
+  note           String?
+  idempotencyKey String      @default(cuid())
+  createdAt      DateTime    @default(now())
 
   company  Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
   contact  Contact   @relation(fields: [contactId], references: [id], onDelete: Restrict)
@@ -266,6 +269,7 @@ model CallActivity {
   @@index([companyId, operatorId])
   @@index([companyId, outcome])
   @@index([companyId, createdAt])
+  @@unique([companyId, operatorId, idempotencyKey])
 }
 
 model Callback {

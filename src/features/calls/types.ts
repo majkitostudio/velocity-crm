@@ -7,6 +7,9 @@ export type CompleteCallResult = {
   outcome: CallOutcome;
   contactStatus: ContactStatus;
   callbackId?: string;
+  orderId?: string;
+  orderTotal?: string;
+  orderItemCount?: number;
   failCount: number;
   contactBecameLost: boolean;
 };
@@ -14,5 +17,5 @@ export type CompleteCallResult = {
 export type CallWorkflowPhase = "idle" | "active" | "disposition";
 
 export type CallWorkflowOutcome = (typeof CallOutcomeValue)[
-  "CALL_LATER" | "SCHEDULE_CALL" | "FAIL"
+  "ORDER" | "CALL_LATER" | "SCHEDULE_CALL" | "FAIL"
 ];

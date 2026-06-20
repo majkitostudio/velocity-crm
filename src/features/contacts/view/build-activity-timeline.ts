@@ -32,6 +32,10 @@ type TimelineOrder = {
   createdAt: Date;
   operator: { name: string | null };
   _count: { items: number };
+  items: {
+    quantity: number;
+    unitPrice: { toString(): string };
+  }[];
 };
 
 type TimelineSource = {
@@ -40,6 +44,18 @@ type TimelineSource = {
   callbacks: TimelineCallback[];
   orders: TimelineOrder[];
 };
+
+function parsePriceToCents(value: string): bigint {
+  const [wholePart, decimalPart = ""] = value.split(".");
+  const centsPart = decimalPart.padEnd(2, "0").slice(0, 2);
+  return BigInt(wholePart) * BigInt(100) + BigInt(centsPart);
+}
+
+function formatCents(cents: bigint): string {
+  const whole = cents / BigInt(100);
+  const fraction = cents % BigInt(100);
+  return `${whole.toString()}.${fraction.toString().padStart(2, "0")}`;
+}
 
 export function buildActivityTimeline(source: TimelineSource): ContactActivityItem[] {
   const items: ContactActivityItem[] = [
@@ -73,6 +89,13 @@ export function buildActivityTimeline(source: TimelineSource): ContactActivityIt
       occurredAt: order.createdAt,
       status: order.status,
       itemCount: order._count.items,
+      total: formatCents(
+        order.items.reduce(
+          (total, item) =>
+            total + parsePriceToCents(item.unitPrice.toString()) * BigInt(item.quantity),
+          BigInt(0),
+        ),
+      ),
       operatorName: order.operator.name,
     })),
   ];

@@ -15,6 +15,18 @@ import { completeCall } from "./server/call-workflow";
 import { completeCallSchema } from "./schemas";
 import type { CompleteCallResult } from "./types";
 
+function parseOrderItemsPayload(value: FormDataEntryValue | null): unknown {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    return null;
+  }
+}
+
 function parseScheduledAt(value: string): Date | null {
   const parsed = new Date(value);
 
@@ -39,6 +51,8 @@ export async function completeCallAction(
     contactId: formData.get("contactId"),
     outcome: formData.get("outcome"),
     note: formData.get("note") || null,
+    orderNote: formData.get("orderNote") || null,
+    orderItems: parseOrderItemsPayload(formData.get("orderItems")),
     sourceCallbackId,
     scheduledAt: formData.get("scheduledAt") || undefined,
     idempotencyKey: formData.get("idempotencyKey"),
@@ -69,6 +83,13 @@ export async function completeCallAction(
       sourceCallbackId: parsed.data.sourceCallbackId,
       scheduledAt,
       idempotencyKey: parsed.data.idempotencyKey,
+      order:
+        parsed.data.outcome === "ORDER"
+          ? {
+              note: parsed.data.orderNote,
+              items: parsed.data.orderItems,
+            }
+          : undefined,
     });
 
     revalidatePath(`/contacts/${parsed.data.contactId}`);

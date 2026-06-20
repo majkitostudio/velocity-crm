@@ -21,8 +21,15 @@ export type ProductCatalogView = {
   products: ProductCatalogItem[];
 };
 
+export type OrderProductCatalogItem = {
+  id: string;
+  name: string;
+  price: string;
+  categoryName: string | null;
+};
+
 export type ProductPriceSnapshot = {
   productId: string;
   name: string;
-  unitPrice: string;
+  catalogUnitPrice: string;
 };

@@ -47,8 +47,10 @@ const callbackStatusLabels: Record<CallbackStatus, string> = {
 };
 
 const orderStatusLabels: Record<OrderStatus, string> = {
-  NEW: "New",
-  CONFIRMED: "Confirmed",
+  CREATED: "Created",
+  PROCESSING: "Processing",
+  SHIPPED: "Shipped",
+  DELIVERED: "Delivered",
   CANCELLED: "Cancelled",
 };
 

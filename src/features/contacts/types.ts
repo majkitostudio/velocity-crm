@@ -92,6 +92,7 @@ export type ContactActivityOrderItem = {
   occurredAt: Date;
   status: OrderStatus;
   itemCount: number;
+  total: string;
   operatorName: string | null;
 };
 

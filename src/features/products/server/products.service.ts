@@ -11,6 +11,7 @@ import {
 import { prisma } from "@/src/server/db";
 
 import type {
+  OrderProductCatalogItem,
   ProductCatalogItem,
   ProductCatalogView,
   ProductPriceSnapshot,
@@ -111,6 +112,21 @@ export async function getProductCatalogView(): Promise<ProductCatalogView> {
     })),
     products: products.map(mapProduct),
   };
+}
+
+export async function getActiveOrderProductCatalog(): Promise<OrderProductCatalogItem[]> {
+  const currentUser = await requireCurrentUser();
+  const products = await listProductsForCompany({
+    companyId: currentUser.companyId,
+    includeInactive: false,
+  });
+
+  return products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: product.price.toString(),
+    categoryName: product.category?.name ?? null,
+  }));
 }
 
 export async function createProductCategory(input: { name: string }) {
@@ -285,7 +301,7 @@ export async function getActiveProductPriceSnapshots(input: {
       {
         productId: product.id,
         name: product.name,
-        unitPrice: product.price.toString(),
+        catalogUnitPrice: product.price.toString(),
       },
     ]),
   );

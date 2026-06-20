@@ -13,11 +13,13 @@ import { isDomainError } from "@/src/domain/errors";
 import {
   createProduct,
   createProductCategory,
+  getActiveOrderProductCatalog,
   setProductActive,
   setProductCategoryActive,
   updateProduct,
   updateProductCategory,
 } from "./server/products.service";
+import type { OrderProductCatalogItem } from "./types";
 import {
   createProductCategorySchema,
   createProductSchema,
@@ -166,5 +168,20 @@ export async function setProductActiveAction(
     return actionSuccess({ id: product.id });
   } catch (error) {
     return handleActionError(error);
+  }
+}
+
+export async function getOrderProductCatalogAction(): Promise<
+  ActionResult<OrderProductCatalogItem[]>
+> {
+  try {
+    const products = await getActiveOrderProductCatalog();
+    return actionSuccess(products);
+  } catch (error) {
+    if (isDomainError(error)) {
+      return actionFailure(error.message);
+    }
+
+    throw error;
   }
 }

@@ -19,6 +19,7 @@ export async function createCallActivityForCompany(
     note?: string | null;
     callbackId?: string | null;
     orderId?: string | null;
+    idempotencyKey: string;
   },
 ): Promise<CallActivity> {
   return tx.callActivity.create({
@@ -30,6 +31,21 @@ export async function createCallActivityForCompany(
       note: input.note ?? null,
       callbackId: input.callbackId ?? null,
       orderId: input.orderId ?? null,
+      idempotencyKey: input.idempotencyKey,
+    },
+  });
+}
+
+export async function findCallActivityByIdempotencyKeyForOperator(input: {
+  companyId: string;
+  operatorId: string;
+  idempotencyKey: string;
+}) {
+  return prisma.callActivity.findFirst({
+    where: {
+      companyId: input.companyId,
+      operatorId: input.operatorId,
+      idempotencyKey: input.idempotencyKey,
     },
   });
 }

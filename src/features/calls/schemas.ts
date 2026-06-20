@@ -1,4 +1,5 @@
 import { CallOutcome } from "@/src/generated/prisma/client";
+import { orderItemsSchema, orderNoteSchema } from "@/src/features/orders/schemas";
 import { z } from "zod";
 
 const completeCallBaseSchema = z.object({
@@ -21,7 +22,14 @@ export const completeFailSchema = completeCallBaseSchema.extend({
   outcome: z.literal(CallOutcome.FAIL),
 });
 
+export const completeOrderSchema = completeCallBaseSchema.extend({
+  outcome: z.literal(CallOutcome.ORDER),
+  orderNote: orderNoteSchema,
+  orderItems: orderItemsSchema,
+});
+
 export const completeCallSchema = z.discriminatedUnion("outcome", [
+  completeOrderSchema,
   completeCallLaterSchema,
   completeScheduleCallSchema,
   completeFailSchema,
