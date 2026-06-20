@@ -25,6 +25,12 @@ export default async function CrmLayout({
               >
                 Dashboard
               </Link>
+              <Link
+                href="/products"
+                className="text-sm text-zinc-600 transition-colors hover:text-zinc-900"
+              >
+                Produkty
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-3">

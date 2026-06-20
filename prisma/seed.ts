@@ -38,6 +38,19 @@ const SEED_CONTACT_IDS = {
 
 const SEED_CALLBACK_DUE_ID = "seed-callback-due";
 
+const SEED_PRODUCT_CATEGORY_IDS = {
+  supplements: "seed-product-category-supplements",
+  cosmetics: "seed-product-category-cosmetics",
+} as const;
+
+const SEED_PRODUCT_IDS = {
+  omega3: "seed-product-omega-3",
+  vitaminD3: "seed-product-vitamin-d3",
+  magnesium: "seed-product-magnesium",
+  dayCream: "seed-product-day-cream",
+  nightSerum: "seed-product-night-serum",
+} as const;
+
 const SEED_CALL_IDS = {
   failOne: "seed-call-fail-1",
   failTwo: "seed-call-fail-2",
@@ -129,6 +142,54 @@ async function upsertContact(input: {
   });
 }
 
+async function upsertProductCategory(input: {
+  id: string;
+  companyId: string;
+  name: string;
+}) {
+  return prisma.productCategory.upsert({
+    where: { id: input.id },
+    update: {
+      companyId: input.companyId,
+      name: input.name,
+      isActive: true,
+    },
+    create: {
+      id: input.id,
+      companyId: input.companyId,
+      name: input.name,
+      isActive: true,
+    },
+  });
+}
+
+async function upsertProduct(input: {
+  id: string;
+  companyId: string;
+  categoryId: string;
+  name: string;
+  price: string;
+}) {
+  return prisma.product.upsert({
+    where: { id: input.id },
+    update: {
+      companyId: input.companyId,
+      categoryId: input.categoryId,
+      name: input.name,
+      price: input.price,
+      isActive: true,
+    },
+    create: {
+      id: input.id,
+      companyId: input.companyId,
+      categoryId: input.categoryId,
+      name: input.name,
+      price: input.price,
+      isActive: true,
+    },
+  });
+}
+
 async function main() {
   const company = await prisma.company.upsert({
     where: { id: SEED_COMPANY_ID },
@@ -160,6 +221,57 @@ async function main() {
       name: "Test Operator",
       role: UserRole.OPERATOR,
       companyId: company.id,
+    }),
+  ]);
+
+  const [supplementsCategory, cosmeticsCategory] = await Promise.all([
+    upsertProductCategory({
+      id: SEED_PRODUCT_CATEGORY_IDS.supplements,
+      companyId: company.id,
+      name: "Doplňky stravy",
+    }),
+    upsertProductCategory({
+      id: SEED_PRODUCT_CATEGORY_IDS.cosmetics,
+      companyId: company.id,
+      name: "Kosmetika",
+    }),
+  ]);
+
+  await Promise.all([
+    upsertProduct({
+      id: SEED_PRODUCT_IDS.omega3,
+      companyId: company.id,
+      categoryId: supplementsCategory.id,
+      name: "Omega 3",
+      price: "499.00",
+    }),
+    upsertProduct({
+      id: SEED_PRODUCT_IDS.vitaminD3,
+      companyId: company.id,
+      categoryId: supplementsCategory.id,
+      name: "Vitamin D3",
+      price: "249.00",
+    }),
+    upsertProduct({
+      id: SEED_PRODUCT_IDS.magnesium,
+      companyId: company.id,
+      categoryId: supplementsCategory.id,
+      name: "Magnesium",
+      price: "329.00",
+    }),
+    upsertProduct({
+      id: SEED_PRODUCT_IDS.dayCream,
+      companyId: company.id,
+      categoryId: cosmeticsCategory.id,
+      name: "Denní krém",
+      price: "599.00",
+    }),
+    upsertProduct({
+      id: SEED_PRODUCT_IDS.nightSerum,
+      companyId: company.id,
+      categoryId: cosmeticsCategory.id,
+      name: "Noční sérum",
+      price: "899.00",
     }),
   ]);
 
@@ -364,6 +476,7 @@ async function main() {
   console.log("Demo data:");
   console.log(`  Operator queue: callback "${withCallback.name}" + leads "${leadHigh.name}", "${leadNormal.name}"`);
   console.log(`  Fail history: "${leadNormal.name}" has 2 FAIL calls (threshold test)`);
+  console.log("  Product catalog: Omega 3, Vitamin D3, Magnesium, Denní krém, Noční sérum");
   console.log(`  Callback URL: /contacts/${withCallback.id}?callbackId=${SEED_CALLBACK_DUE_ID}`);
 }
 
