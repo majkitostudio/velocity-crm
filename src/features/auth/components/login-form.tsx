@@ -11,7 +11,7 @@ export function LoginForm() {
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
 
   return (
-    <form action={formAction} className="flex w-full flex-col gap-4">
+    <form action={formAction} className="flex w-full flex-col gap-4" data-testid="login-form">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-sm font-medium text-zinc-700">
           Email
@@ -24,6 +24,7 @@ export function LoginForm() {
           required
           className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-emerald-600 focus:ring-2"
           placeholder="admin@velocity.local"
+          data-testid="login-email-input"
         />
         {state?.ok === false && state.fieldErrors?.email ? (
           <p className="text-sm text-red-600">{state.fieldErrors.email[0]}</p>
@@ -41,6 +42,7 @@ export function LoginForm() {
           autoComplete="current-password"
           required
           className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-emerald-600 focus:ring-2"
+          data-testid="login-password-input"
         />
         {state?.ok === false && state.fieldErrors?.password ? (
           <p className="text-sm text-red-600">{state.fieldErrors.password[0]}</p>
@@ -57,6 +59,7 @@ export function LoginForm() {
         type="submit"
         disabled={isPending}
         className="mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+        data-testid="login-submit-button"
       >
         {isPending ? "Signing in…" : "Sign in"}
       </button>

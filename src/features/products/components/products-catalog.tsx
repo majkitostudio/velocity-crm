@@ -191,7 +191,11 @@ function CategoryRow({ category }: { category: ProductCategoryView }) {
   );
 
   return (
-    <div className="space-y-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
+    <div
+      className="space-y-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3"
+      data-testid="product-category-row"
+      data-category-id={category.id}
+    >
       <form action={updateAction} className="space-y-2">
         <input type="hidden" name="categoryId" value={category.id} />
         <label className="flex flex-col gap-1.5">
@@ -260,7 +264,11 @@ function ProductRow({
 
   if (!canManage) {
     return (
-      <article className="rounded-xl border border-zinc-200 bg-white p-4">
+      <article
+        className="rounded-xl border border-zinc-200 bg-white p-4"
+        data-testid="product-row"
+        data-product-id={product.id}
+      >
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="font-medium text-zinc-900">{product.name}</h3>
@@ -278,7 +286,11 @@ function ProductRow({
   }
 
   return (
-    <article className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4">
+    <article
+      className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4"
+      data-testid="product-row"
+      data-product-id={product.id}
+    >
       <form action={updateAction} className="space-y-3">
         <input type="hidden" name="productId" value={product.id} />
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -395,7 +407,7 @@ export function ProductsCatalog({ view }: ProductsCatalogProps) {
   ).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="products-catalog">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900">Produkty</h1>
@@ -420,7 +432,7 @@ export function ProductsCatalog({ view }: ProductsCatalogProps) {
         </section>
       ) : null}
 
-      <section className="rounded-xl border border-zinc-200 bg-white p-4">
+      <section className="rounded-xl border border-zinc-200 bg-white p-4" data-testid="products-filter">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px]">
           <label className="flex flex-col gap-1.5">
             <span className="text-sm font-medium text-zinc-700">Hledat produkt</span>

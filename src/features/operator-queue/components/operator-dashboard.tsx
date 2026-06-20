@@ -13,7 +13,7 @@ type OperatorDashboardProps = {
 
 export function OperatorDashboard({ user, queue }: OperatorDashboardProps) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="operator-dashboard">
       <div>
         <h1 className="text-2xl font-semibold text-zinc-900">Dashboard</h1>
         <p className="mt-1 text-sm text-zinc-600">
@@ -32,7 +32,7 @@ export function OperatorDashboard({ user, queue }: OperatorDashboardProps) {
         />
       ) : (
         <>
-          <section className="space-y-3">
+          <section className="space-y-3" data-testid="operator-full-queue">
             <div>
               <h2 className="text-lg font-semibold text-zinc-900">Full queue</h2>
               <p className="text-sm text-zinc-600">
@@ -40,7 +40,7 @@ export function OperatorDashboard({ user, queue }: OperatorDashboardProps) {
                 within each group.
               </p>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3" data-testid="operator-full-queue-list">
               {queue.items.map((item, index) => (
                 <QueueItemRow
                   key={item.kind === "CALLBACK" ? item.callbackId : item.contact.id}

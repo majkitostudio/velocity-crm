@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 
 import type { ActionResult } from "@/src/domain/action-result";
@@ -111,6 +112,7 @@ export function CallWorkflowPanel({
   } = useCallWorkflowState();
   const [state, formAction, isPending] = useActionState(completeCallAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
   const [orderProducts, setOrderProducts] = useState<OrderProductCatalogItem[]>([]);
   const [orderRows, setOrderRows] = useState<OrderFormRow[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
@@ -122,8 +124,9 @@ export function CallWorkflowPanel({
     if (state?.ok) {
       reset();
       formRef.current?.reset();
+      router.refresh();
     }
-  }, [state, reset]);
+  }, [state, reset, router]);
 
   const nextFailCount = failCount + 1;
   const willBecomeLost =
@@ -300,6 +303,7 @@ export function CallWorkflowPanel({
                       : "border-zinc-200 bg-white text-zinc-800 hover:border-emerald-300"
                 }`}
                 title={option.disabled ? option.hint ?? undefined : undefined}
+                data-testid={`outcome-${option.value.toLowerCase()}-button`}
               >
                 {option.label}
                 {option.disabled && option.hint ? (
@@ -310,7 +314,12 @@ export function CallWorkflowPanel({
           </div>
 
           {selectedOutcome === CallOutcomeValue.ORDER ? (
-            <form ref={formRef} action={formAction} className="space-y-4">
+            <form
+              ref={formRef}
+              action={formAction}
+              className="space-y-4"
+              data-testid="order-form"
+            >
               <input type="hidden" name="contactId" value={contactId} />
               <input type="hidden" name="outcome" value={CallOutcomeValue.ORDER} />
               <input type="hidden" name="idempotencyKey" value={idempotencyKey ?? ""} />
@@ -320,13 +329,19 @@ export function CallWorkflowPanel({
               ) : null}
 
               {isLoadingProducts ? (
-                <p className="rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
+                <p
+                  className="rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-600"
+                  data-testid="order-catalog-loading"
+                >
                   Načítám produktový katalog…
                 </p>
               ) : null}
 
               {orderCatalogError ? (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p
+                  className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+                  data-testid="order-catalog-error"
+                >
                   {orderCatalogError}
                 </p>
               ) : null}
@@ -344,6 +359,7 @@ export function CallWorkflowPanel({
                   <div
                     key={row.rowId}
                     className="space-y-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3"
+                    data-testid="order-item-row"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm font-medium text-zinc-800">
@@ -368,6 +384,7 @@ export function CallWorkflowPanel({
                           changeOrderProduct(row.rowId, event.target.value)
                         }
                         className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-emerald-600 focus:ring-2"
+                        data-testid="order-product-select"
                       >
                         {orderProducts.map((product) => (
                           <option
@@ -399,6 +416,7 @@ export function CallWorkflowPanel({
                             })
                           }
                           className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-emerald-600 focus:ring-2"
+                          data-testid="order-quantity-input"
                         />
                       </label>
 
@@ -415,6 +433,7 @@ export function CallWorkflowPanel({
                             })
                           }
                           className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-emerald-600 focus:ring-2"
+                          data-testid="order-unit-price-input"
                         />
                       </label>
                     </div>
@@ -435,6 +454,7 @@ export function CallWorkflowPanel({
                 onClick={addOrderRow}
                 disabled={orderRows.length >= orderProducts.length}
                 className="w-full rounded-lg border border-emerald-700 bg-white px-4 py-2 text-sm font-medium text-emerald-800 transition-colors hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                data-testid="order-add-product-button"
               >
                 Přidat produkt
               </button>
@@ -448,10 +468,14 @@ export function CallWorkflowPanel({
                   rows={3}
                   className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-emerald-600 focus:ring-2"
                   placeholder="Interní poznámka, individuální cena nebo přání zákazníka…"
+                  data-testid="order-note-input"
                 />
               </label>
 
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+              <div
+                className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
+                data-testid="order-summary"
+              >
                 <p className="font-medium">Souhrn objednávky</p>
                 <p className="mt-1">
                   {orderRows.length} položek, celkem {formatPrice(orderTotal)}
@@ -543,7 +567,10 @@ export function CallWorkflowPanel({
 
       {state?.ok ? (
         <div className="mt-3 space-y-3">
-          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          <p
+            className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
+            data-testid="call-success-message"
+          >
             {state.data.outcome === CallOutcomeValue.ORDER && state.data.orderId
               ? `Objednávka vytvořena: ${state.data.orderItemCount ?? 0} položek, celkem ${formatPrice(parsePrice(state.data.orderTotal ?? "0"))}.`
               : "Call completed."}

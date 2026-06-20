@@ -10,7 +10,7 @@ type QueueLeadsSectionProps = {
 
 export function QueueLeadsSection({ leads, queueOffset }: QueueLeadsSectionProps) {
   return (
-    <section className="space-y-3">
+    <section className="space-y-3" data-testid="queue-leads-section">
       <div>
         <h2 className="text-lg font-semibold text-zinc-900">Assigned leads</h2>
         <p className="text-sm text-zinc-600">
@@ -24,7 +24,7 @@ export function QueueLeadsSection({ leads, queueOffset }: QueueLeadsSectionProps
           description="New leads assigned to you will appear in this section."
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3" data-testid="queue-leads-list">
           {leads.map((item, index) => (
             <QueueItemRow
               key={item.contact.id}

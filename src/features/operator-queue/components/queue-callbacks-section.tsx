@@ -13,7 +13,7 @@ export function QueueCallbacksSection({
   queueOffset,
 }: QueueCallbacksSectionProps) {
   return (
-    <section className="space-y-3">
+    <section className="space-y-3" data-testid="queue-callbacks-section">
       <div>
         <h2 className="text-lg font-semibold text-zinc-900">Due callbacks</h2>
         <p className="text-sm text-zinc-600">
@@ -27,7 +27,7 @@ export function QueueCallbacksSection({
           description="Scheduled callbacks will appear here when they are ready to call."
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3" data-testid="queue-callbacks-list">
           {callbacks.map((item, index) => (
             <QueueItemRow
               key={item.callbackId}

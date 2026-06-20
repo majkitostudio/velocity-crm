@@ -11,7 +11,7 @@ export default async function CrmLayout({
   const user = await requireCurrentUser();
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-zinc-50">
+    <div className="flex min-h-full flex-1 flex-col bg-zinc-50" data-testid="crm-shell">
       <header className="border-b border-zinc-200 bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-6">
@@ -38,7 +38,9 @@ export default async function CrmLayout({
               <p className="text-sm font-medium text-zinc-900">
                 {user.name ?? user.email}
               </p>
-              <p className="text-xs text-zinc-500">{user.role}</p>
+              <p className="text-xs text-zinc-500" data-testid="crm-user-role">
+                {user.role}
+              </p>
             </div>
             <LogoutButton />
           </div>

@@ -35,6 +35,9 @@ export function QueueItemRow({ item, position }: QueueItemRowProps) {
     <Link
       href={href}
       className="block rounded-xl border border-zinc-200 bg-white px-4 py-4 transition-colors hover:border-emerald-300 hover:bg-emerald-50/30"
+      data-testid="queue-item-link"
+      data-contact-id={contact.id}
+      data-queue-kind={item.kind}
     >
       <article className="flex items-start gap-4">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-600">

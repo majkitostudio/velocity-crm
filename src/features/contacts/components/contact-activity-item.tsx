@@ -23,7 +23,10 @@ function formatPriceCzk(price: string): string {
 
 export function ContactActivityItemRow({ item }: ContactActivityItemRowProps) {
   return (
-    <article className="flex gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3">
+    <article
+      className="flex gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3"
+      data-testid={`activity-${item.kind.toLowerCase()}-item`}
+    >
       <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">
         {activityKindLabel(item.kind).slice(0, 1)}
       </div>
@@ -39,7 +42,7 @@ export function ContactActivityItemRow({ item }: ContactActivityItemRowProps) {
         </div>
 
         {item.kind === "CALL" ? (
-          <div className="mt-1 space-y-1 text-sm text-zinc-600">
+          <div className="mt-1 space-y-1 text-sm text-zinc-600" data-testid="activity-order-detail">
             <p>Outcome: {formatCallOutcome(item.outcome)}</p>
             {item.operatorName ? <p>Operator: {item.operatorName}</p> : null}
             {item.note ? <p className="whitespace-pre-wrap">{item.note}</p> : null}

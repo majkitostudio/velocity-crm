@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import { PrismaPg } from "@prisma/adapter-pg";
 import { hash } from "bcryptjs";
 
@@ -7,6 +9,7 @@ import {
   ContactPriority,
   ContactSource,
   ContactStatus,
+  OrderStatus,
   PrismaClient,
   UserRole,
 } from "../src/generated/prisma/client";
@@ -31,16 +34,20 @@ const SEED_CONTACT_IDS = {
   leadHigh: "seed-contact-lead-high",
   leadNormal: "seed-contact-lead-normal",
   withCallback: "seed-contact-with-callback",
+  withFutureCallback: "seed-contact-with-future-callback",
   customer: "seed-contact-customer",
   lost: "seed-contact-lost",
+  failThree: "seed-contact-fail-three",
   unassigned: "seed-contact-unassigned",
 } as const;
 
 const SEED_CALLBACK_DUE_ID = "seed-callback-due";
+const SEED_CALLBACK_FUTURE_ID = "seed-callback-future";
 
 const SEED_PRODUCT_CATEGORY_IDS = {
   supplements: "seed-product-category-supplements",
   cosmetics: "seed-product-category-cosmetics",
+  inactive: "seed-product-category-inactive",
 } as const;
 
 const SEED_PRODUCT_IDS = {
@@ -49,11 +56,16 @@ const SEED_PRODUCT_IDS = {
   magnesium: "seed-product-magnesium",
   dayCream: "seed-product-day-cream",
   nightSerum: "seed-product-night-serum",
+  freeSample: "seed-product-free-sample",
+  inactive: "seed-product-inactive",
 } as const;
 
 const SEED_CALL_IDS = {
   failOne: "seed-call-fail-1",
   failTwo: "seed-call-fail-2",
+  failThreeOne: "seed-call-fail-three-1",
+  failThreeTwo: "seed-call-fail-three-2",
+  failThreeThree: "seed-call-fail-three-3",
   callLater: "seed-call-call-later",
   scheduleCall: "seed-call-schedule-call",
 } as const;
@@ -63,9 +75,28 @@ const SEED_NOTE_IDS = {
   withCallback: "seed-note-with-callback",
 } as const;
 
+const SEED_ORDER_IDS = {
+  singleProduct: "seed-order-single-product",
+  multiProduct: "seed-order-multi-product",
+  freeProduct: "seed-order-free-product",
+} as const;
+
+const SEED_ORDER_ITEM_IDS = {
+  singleProductOmega3: "seed-order-item-single-omega-3",
+  multiProductVitaminD3: "seed-order-item-multi-vitamin-d3",
+  multiProductMagnesium: "seed-order-item-multi-magnesium",
+  freeProductSample: "seed-order-item-free-sample",
+} as const;
+
 function hoursAgo(hours: number): Date {
   const date = new Date();
   date.setHours(date.getHours() - hours);
+  return date;
+}
+
+function hoursFromNow(hours: number): Date {
+  const date = new Date();
+  date.setHours(date.getHours() + hours);
   return date;
 }
 
@@ -146,19 +177,22 @@ async function upsertProductCategory(input: {
   id: string;
   companyId: string;
   name: string;
+  isActive?: boolean;
 }) {
+  const isActive = input.isActive ?? true;
+
   return prisma.productCategory.upsert({
     where: { id: input.id },
     update: {
       companyId: input.companyId,
       name: input.name,
-      isActive: true,
+      isActive,
     },
     create: {
       id: input.id,
       companyId: input.companyId,
       name: input.name,
-      isActive: true,
+      isActive,
     },
   });
 }
@@ -169,7 +203,10 @@ async function upsertProduct(input: {
   categoryId: string;
   name: string;
   price: string;
+  isActive?: boolean;
 }) {
+  const isActive = input.isActive ?? true;
+
   return prisma.product.upsert({
     where: { id: input.id },
     update: {
@@ -177,7 +214,7 @@ async function upsertProduct(input: {
       categoryId: input.categoryId,
       name: input.name,
       price: input.price,
-      isActive: true,
+      isActive,
     },
     create: {
       id: input.id,
@@ -185,7 +222,66 @@ async function upsertProduct(input: {
       categoryId: input.categoryId,
       name: input.name,
       price: input.price,
-      isActive: true,
+      isActive,
+    },
+  });
+}
+
+async function upsertOrder(input: {
+  id: string;
+  companyId: string;
+  contactId: string;
+  operatorId: string;
+  status: OrderStatus;
+  note: string;
+  createdAt: Date;
+}) {
+  return prisma.order.upsert({
+    where: { id: input.id },
+    update: {
+      companyId: input.companyId,
+      contactId: input.contactId,
+      operatorId: input.operatorId,
+      status: input.status,
+      note: input.note,
+      createdAt: input.createdAt,
+    },
+    create: {
+      id: input.id,
+      companyId: input.companyId,
+      contactId: input.contactId,
+      operatorId: input.operatorId,
+      status: input.status,
+      note: input.note,
+      createdAt: input.createdAt,
+    },
+  });
+}
+
+async function upsertOrderItem(input: {
+  id: string;
+  companyId: string;
+  orderId: string;
+  productId: string;
+  quantity: number;
+  unitPrice: string;
+}) {
+  return prisma.orderItem.upsert({
+    where: { id: input.id },
+    update: {
+      companyId: input.companyId,
+      orderId: input.orderId,
+      productId: input.productId,
+      quantity: input.quantity,
+      unitPrice: input.unitPrice,
+    },
+    create: {
+      id: input.id,
+      companyId: input.companyId,
+      orderId: input.orderId,
+      productId: input.productId,
+      quantity: input.quantity,
+      unitPrice: input.unitPrice,
     },
   });
 }
@@ -224,7 +320,7 @@ async function main() {
     }),
   ]);
 
-  const [supplementsCategory, cosmeticsCategory] = await Promise.all([
+  const [supplementsCategory, cosmeticsCategory, inactiveCategory] = await Promise.all([
     upsertProductCategory({
       id: SEED_PRODUCT_CATEGORY_IDS.supplements,
       companyId: company.id,
@@ -235,9 +331,15 @@ async function main() {
       companyId: company.id,
       name: "Kosmetika",
     }),
+    upsertProductCategory({
+      id: SEED_PRODUCT_CATEGORY_IDS.inactive,
+      companyId: company.id,
+      name: "Archivní kategorie",
+      isActive: false,
+    }),
   ]);
 
-  await Promise.all([
+  const [omega3, vitaminD3, magnesium, , , freeSample] = await Promise.all([
     upsertProduct({
       id: SEED_PRODUCT_IDS.omega3,
       companyId: company.id,
@@ -273,9 +375,25 @@ async function main() {
       name: "Noční sérum",
       price: "899.00",
     }),
+    upsertProduct({
+      id: SEED_PRODUCT_IDS.freeSample,
+      companyId: company.id,
+      categoryId: supplementsCategory.id,
+      name: "Vzorek zdarma",
+      price: "0.00",
+    }),
+    upsertProduct({
+      id: SEED_PRODUCT_IDS.inactive,
+      companyId: company.id,
+      categoryId: inactiveCategory.id,
+      name: "Archivní produkt",
+      price: "199.00",
+      isActive: false,
+    }),
   ]);
 
-  const [leadHigh, leadNormal, withCallback] = await Promise.all([
+  const [leadHigh, leadNormal, withCallback, withFutureCallback, failThree] =
+    await Promise.all([
       upsertContact({
         id: SEED_CONTACT_IDS.leadHigh,
         companyId: company.id,
@@ -311,6 +429,30 @@ async function main() {
         phone: "+420601100003",
         email: "jana.dvorakova@example.local",
         createdAt: daysAgo(1),
+      }),
+      upsertContact({
+        id: SEED_CONTACT_IDS.withFutureCallback,
+        companyId: company.id,
+        assignedUserId: operator.id,
+        status: ContactStatus.LEAD,
+        source: ContactSource.API,
+        priority: ContactPriority.NORMAL,
+        name: "Lukáš Procházka",
+        phone: "+420601100007",
+        email: "lukas.prochazka@example.local",
+        createdAt: daysAgo(1),
+      }),
+      upsertContact({
+        id: SEED_CONTACT_IDS.failThree,
+        companyId: company.id,
+        assignedUserId: operator.id,
+        status: ContactStatus.LOST,
+        source: ContactSource.CSV,
+        priority: ContactPriority.LOW,
+        name: "Klára Veselá",
+        phone: "+420601100008",
+        email: "klara.vesela@example.local",
+        createdAt: daysAgo(7),
       }),
     ]);
 
@@ -378,6 +520,27 @@ async function main() {
     },
   });
 
+  await prisma.callback.upsert({
+    where: { id: SEED_CALLBACK_FUTURE_ID },
+    update: {
+      companyId: company.id,
+      contactId: withFutureCallback.id,
+      assignedUserId: operator.id,
+      scheduledAt: hoursFromNow(24),
+      status: CallbackStatus.OPEN,
+      note: "Future callback for tomorrow morning.",
+    },
+    create: {
+      id: SEED_CALLBACK_FUTURE_ID,
+      companyId: company.id,
+      contactId: withFutureCallback.id,
+      assignedUserId: operator.id,
+      scheduledAt: hoursFromNow(24),
+      status: CallbackStatus.OPEN,
+      note: "Future callback for tomorrow morning.",
+    },
+  });
+
   const callSeeds = [
     {
       id: SEED_CALL_IDS.failOne,
@@ -392,6 +555,27 @@ async function main() {
       outcome: CallOutcome.FAIL,
       note: "Voicemail only.",
       createdAt: daysAgo(1),
+    },
+    {
+      id: SEED_CALL_IDS.failThreeOne,
+      contactId: failThree.id,
+      outcome: CallOutcome.FAIL,
+      note: "No answer on first threshold scenario attempt.",
+      createdAt: daysAgo(5),
+    },
+    {
+      id: SEED_CALL_IDS.failThreeTwo,
+      contactId: failThree.id,
+      outcome: CallOutcome.FAIL,
+      note: "No answer on second threshold scenario attempt.",
+      createdAt: daysAgo(4),
+    },
+    {
+      id: SEED_CALL_IDS.failThreeThree,
+      contactId: failThree.id,
+      outcome: CallOutcome.FAIL,
+      note: "Third failed attempt for lost threshold scenario.",
+      createdAt: daysAgo(3),
     },
     {
       id: SEED_CALL_IDS.callLater,
@@ -431,6 +615,71 @@ async function main() {
       },
     });
   }
+
+  const [singleProductOrder, multiProductOrder, freeProductOrder] = await Promise.all([
+    upsertOrder({
+      id: SEED_ORDER_IDS.singleProduct,
+      companyId: company.id,
+      contactId: customer.id,
+      operatorId: operator.id,
+      status: OrderStatus.CREATED,
+      note: "Seed order with one product.",
+      createdAt: daysAgo(4),
+    }),
+    upsertOrder({
+      id: SEED_ORDER_IDS.multiProduct,
+      companyId: company.id,
+      contactId: leadHigh.id,
+      operatorId: operator.id,
+      status: OrderStatus.PROCESSING,
+      note: "Seed order with multiple products.",
+      createdAt: daysAgo(2),
+    }),
+    upsertOrder({
+      id: SEED_ORDER_IDS.freeProduct,
+      companyId: company.id,
+      contactId: leadNormal.id,
+      operatorId: operator.id,
+      status: OrderStatus.CREATED,
+      note: "Seed order containing a free product.",
+      createdAt: daysAgo(1),
+    }),
+  ]);
+
+  await Promise.all([
+    upsertOrderItem({
+      id: SEED_ORDER_ITEM_IDS.singleProductOmega3,
+      companyId: company.id,
+      orderId: singleProductOrder.id,
+      productId: omega3.id,
+      quantity: 1,
+      unitPrice: "499.00",
+    }),
+    upsertOrderItem({
+      id: SEED_ORDER_ITEM_IDS.multiProductVitaminD3,
+      companyId: company.id,
+      orderId: multiProductOrder.id,
+      productId: vitaminD3.id,
+      quantity: 2,
+      unitPrice: "249.00",
+    }),
+    upsertOrderItem({
+      id: SEED_ORDER_ITEM_IDS.multiProductMagnesium,
+      companyId: company.id,
+      orderId: multiProductOrder.id,
+      productId: magnesium.id,
+      quantity: 1,
+      unitPrice: "329.00",
+    }),
+    upsertOrderItem({
+      id: SEED_ORDER_ITEM_IDS.freeProductSample,
+      companyId: company.id,
+      orderId: freeProductOrder.id,
+      productId: freeSample.id,
+      quantity: 1,
+      unitPrice: "0.00",
+    }),
+  ]);
 
   await Promise.all([
     prisma.note.upsert({
@@ -474,9 +723,17 @@ async function main() {
   console.log(`  Operator: ${operator.email} / ${SEED_OPERATOR_PASSWORD}`);
   console.log("");
   console.log("Demo data:");
-  console.log(`  Operator queue: callback "${withCallback.name}" + leads "${leadHigh.name}", "${leadNormal.name}"`);
+  console.log(
+    `  Operator queue: callback "${withCallback.name}" + leads "${leadHigh.name}", "${leadNormal.name}"`,
+  );
+  console.log(`  Future callback: "${withFutureCallback.name}" is scheduled for tomorrow`);
   console.log(`  Fail history: "${leadNormal.name}" has 2 FAIL calls (threshold test)`);
-  console.log("  Product catalog: Omega 3, Vitamin D3, Magnesium, Denní krém, Noční sérum");
+  console.log(`  Lost threshold history: "${failThree.name}" has 3 FAIL calls`);
+  console.log(
+    "  Product catalog: Omega 3, Vitamin D3, Magnesium, Denní krém, Noční sérum, Vzorek zdarma",
+  );
+  console.log("  Inactive catalog: Archivní kategorie + Archivní produkt");
+  console.log("  Orders: single product, multi product, free product");
   console.log(`  Callback URL: /contacts/${withCallback.id}?callbackId=${SEED_CALLBACK_DUE_ID}`);
 }
 
