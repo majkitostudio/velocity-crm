@@ -141,6 +141,8 @@ npx playwright install
 
 Playwright stores trace, screenshot, and video artifacts for failed tests in ignored report folders.
 
+E2E runs use `workers: 1` on purpose. Tests share one Next.js dev server (`npm run dev`); parallel workers caused flaky login redirects and navigation under on-demand compilation. Operator auth is prepared once in `globalSetup` and reused via `storageState`; dedicated auth specs still exercise the real login flow serially.
+
 ## Local troubleshooting
 
 - If PostgreSQL is unavailable, check Docker Desktop and `docker compose ps`.

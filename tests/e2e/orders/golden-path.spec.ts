@@ -1,16 +1,15 @@
 import { expect, test } from "@playwright/test";
 
-import { loginAs } from "../helpers/auth";
+import { waitForContactDetail } from "../helpers/auth";
 
 test("operator can complete the main order workflow", async ({ page }) => {
-  await loginAs(page, "operator");
+  await page.goto("/dashboard");
 
   await expect(page.getByTestId("operator-dashboard")).toBeVisible();
   await expect(page.getByTestId("operator-queue")).toBeVisible();
 
   await page.getByTestId("queue-item-link").first().click();
-
-  await expect(page.getByTestId("contact-detail-page")).toBeVisible();
+  await waitForContactDetail(page);
   await expect(page.getByTestId("call-workflow-panel")).toBeVisible();
   await expect(page.getByTestId("activity-timeline")).toBeVisible();
 
