@@ -1,5 +1,4 @@
-import Link from "next/link";
-
+import { Breadcrumb } from "@/src/components/ui/breadcrumb";
 import { PhoneActions } from "@/src/components/ui/phone-actions";
 import type { ContactDetailView } from "../types";
 import {
@@ -12,9 +11,15 @@ import {
 
 type ContactDetailHeaderProps = {
   view: ContactDetailView;
+  returnTo: string;
+  showCreatedMessage?: boolean;
 };
 
-export function ContactDetailHeader({ view }: ContactDetailHeaderProps) {
+export function ContactDetailHeader({
+  view,
+  returnTo,
+  showCreatedMessage = false,
+}: ContactDetailHeaderProps) {
   const { contact, workflowBadge } = view;
   const assigneeLabel = contact.assignedUser
     ? formatAssigneeName(contact.assignedUser)
@@ -22,21 +27,29 @@ export function ContactDetailHeader({ view }: ContactDetailHeaderProps) {
 
   return (
     <header className="sticky top-0 z-20 -mx-4 border-b border-zinc-200 bg-white/95 px-4 py-4 backdrop-blur supports-[backdrop-filter]:bg-white/80 sm:-mx-6 sm:px-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-          <Link
-            href="/dashboard"
-            className="inline-flex w-fit items-center gap-1 text-sm font-medium text-emerald-700 transition-colors hover:text-emerald-900"
-          >
-            <span aria-hidden="true">←</span>
-            Dashboard
-          </Link>
+      <div className="space-y-3">
+        <Breadcrumb
+          items={[
+            { label: "Kontakty", href: returnTo },
+            { label: contact.name },
+          ]}
+        />
 
-          <div className="min-w-0 sm:border-l sm:border-zinc-200 sm:pl-4">
-            <h1 className="truncate text-xl font-semibold text-zinc-900 sm:text-2xl">
-              {contact.name}
-            </h1>
-          </div>
+        {showCreatedMessage ? (
+          <p
+            className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
+            data-testid="contact-created-message"
+          >
+            Kontakt byl úspěšně vytvořen.
+          </p>
+        ) : null}
+      </div>
+
+      <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <h1 className="truncate text-xl font-semibold text-zinc-900 sm:text-2xl">
+            {contact.name}
+          </h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 lg:justify-end">

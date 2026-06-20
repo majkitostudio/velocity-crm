@@ -4,11 +4,12 @@ import { notFound } from "next/navigation";
 import { ContactDetailPage } from "@/src/features/contacts/components/contact-detail-page";
 import { getContactDetailView } from "@/src/features/contacts/server/contact-detail.service";
 import { getContactCallbacksPanelView } from "@/src/features/callbacks/server/callbacks.service";
+import { parseReturnToPath } from "@/src/features/contacts/lib/list-navigation";
 import { NotFoundError } from "@/src/domain/errors";
 
 type ContactPageProps = {
   params: Promise<{ contactId: string }>;
-  searchParams: Promise<{ callback?: string; callbackId?: string }>;
+  searchParams: Promise<{ callback?: string; callbackId?: string; returnTo?: string; created?: string }>;
 };
 
 export async function generateMetadata({ params }: ContactPageProps): Promise<Metadata> {
@@ -36,8 +37,10 @@ export default async function ContactDetailRoute({
   searchParams,
 }: ContactPageProps) {
   const { contactId } = await params;
-  const { callback, callbackId } = await searchParams;
+  const { callback, callbackId, returnTo, created } = await searchParams;
   const sourceCallbackId = callback ?? callbackId ?? null;
+  const contactsReturnTo = parseReturnToPath(returnTo);
+  const showCreatedMessage = created === "1";
 
   let view;
   let callbacksPanel;
@@ -60,5 +63,12 @@ export default async function ContactDetailRoute({
     throw error;
   }
 
-  return <ContactDetailPage view={view} callbacksPanel={callbacksPanel} />;
+  return (
+    <ContactDetailPage
+      view={view}
+      callbacksPanel={callbacksPanel}
+      returnTo={contactsReturnTo}
+      showCreatedMessage={showCreatedMessage}
+    />
+  );
 }

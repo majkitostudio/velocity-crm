@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import {
   actionFailure,
@@ -11,7 +12,44 @@ import {
 import { isDomainError } from "@/src/domain/errors";
 import { createNote } from "@/src/features/notes/server/notes.service";
 
-import { createNoteSchema } from "./schemas";
+import { parseReturnToPath } from "./lib/list-navigation";
+import { createContactSchema, createNoteSchema } from "./schemas";
+import { createContact } from "./server/contacts.service";
+
+export async function createContactAction(
+  _prevState: ActionResult<{ contactId: string }> | null,
+  formData: FormData,
+): Promise<ActionResult<{ contactId: string }>> {
+  const parsed = createContactSchema.safeParse({
+    name: formData.get("name"),
+    phone: formData.get("phone"),
+    email: formData.get("email"),
+    priority: formData.get("priority") || undefined,
+    assignedUserId: formData.get("assignedUserId") || undefined,
+    returnTo: formData.get("returnTo") || undefined,
+  });
+
+  if (!parsed.success) {
+    return actionFailure("Opravte chyby ve formuláři.", zodFieldErrors(parsed.error));
+  }
+
+  try {
+    const contact = await createContact(parsed.data);
+
+    revalidatePath("/contacts");
+
+    const returnTo = parseReturnToPath(parsed.data.returnTo);
+    redirect(
+      `/contacts/${contact.id}?returnTo=${encodeURIComponent(returnTo)}&created=1`,
+    );
+  } catch (error) {
+    if (isDomainError(error)) {
+      return actionFailure(error.message);
+    }
+
+    throw error;
+  }
+}
 
 export async function createNoteAction(
   _prevState: ActionResult<{ noteId: string }> | null,

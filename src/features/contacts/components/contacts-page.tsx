@@ -5,6 +5,7 @@ import type { ContactsPageView } from "../types";
 import { ContactListRow } from "./contact-list-row";
 import { ContactsFilterBar } from "./contacts-filter-bar";
 import { ContactsPagination } from "./contacts-pagination";
+import { CreateContactDialog } from "./create-contact-dialog";
 
 type ContactsPageProps = {
   view: ContactsPageView;
@@ -15,11 +16,18 @@ export function ContactsPage({ view }: ContactsPageProps) {
     <div className="space-y-6" data-testid="contacts-page">
       <div className="space-y-2">
         <Breadcrumb items={[{ label: "Kontakty" }]} />
-        <div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Kontakty</h1>
-          <p className="mt-1 text-sm text-zinc-600">
-            Přehled kontaktů. Kliknutím otevřete detail a zahájíte hovor.
-          </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-900">Kontakty</h1>
+            <p className="mt-1 text-sm text-zinc-600">
+              Přehled kontaktů. Kliknutím otevřete detail a zahájíte hovor.
+            </p>
+          </div>
+          <CreateContactDialog
+            returnTo={view.returnTo}
+            canManageAssignments={view.canManageAssignments}
+            assignableOperators={view.assignableOperators}
+          />
         </div>
       </div>
 

@@ -59,3 +59,10 @@ export const createNoteSchema = z.object({
 });
 
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;
+
+export {
+  createContactSchema,
+  optionalEmailFieldSchema,
+  phoneFieldSchema,
+  type CreateContactInput,
+} from "./lib/contact-form-schemas";

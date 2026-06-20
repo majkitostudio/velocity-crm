@@ -11,12 +11,23 @@ import { ContactNotesSection } from "./contact-notes-section";
 type ContactDetailPageProps = {
   view: ContactDetailView;
   callbacksPanel: ContactCallbacksPanelView;
+  returnTo: string;
+  showCreatedMessage?: boolean;
 };
 
-export function ContactDetailPage({ view, callbacksPanel }: ContactDetailPageProps) {
+export function ContactDetailPage({
+  view,
+  callbacksPanel,
+  returnTo,
+  showCreatedMessage = false,
+}: ContactDetailPageProps) {
   return (
     <div className="space-y-6" data-testid="contact-detail-page">
-      <ContactDetailHeader view={view} />
+      <ContactDetailHeader
+        view={view}
+        returnTo={returnTo}
+        showCreatedMessage={showCreatedMessage}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
