@@ -37,7 +37,7 @@ Batch lookup přes `findExistingContactsByPhonesAndEmails` místo N× dotazů.
 
 ### Minimální `ContactImportBatch`
 
-Batch záznam se vytváří až při execute importu. `stats` JSON drží souhrn (`created`, `skipped`, `failed`, `createdContactIds`, `skipReasons`, volitelně `assignedUserId` / `assignedUserName`). Preview je stateless (response z action).
+Batch záznam se vytváří na začátku execute importu (kvůli `importBatchId` v `CONTACT_CREATED` payload) a po dokončení se aktualizuje `stats`. `stats` JSON drží souhrn (`created`, `skipped`, `failed`, `createdContactIds`, `skipReasons`, volitelně `assignedUserId` / `assignedUserName`). Preview je stateless (response z action).
 
 ### Oprávnění
 

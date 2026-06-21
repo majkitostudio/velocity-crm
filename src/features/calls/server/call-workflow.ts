@@ -26,7 +26,7 @@ import type { CompleteCallResult } from "../types";
 import type { OrderItemDraft } from "@/src/features/orders/types";
 import { createOrderForCallInTransaction } from "@/src/features/orders/server/order-workflow";
 import { getOrderCreatedResultById } from "@/src/features/orders/server/orders.service";
-import { recordCallWorkflowActivities } from "./call-workflow-activities";
+import { recordCallWorkflowActivities, recordCallWorkflowCallbackCompleted, recordCallWorkflowCallbackCreated } from "./call-workflow-activities";
 
 export type CompleteCallInput = {
   contactId: string;
@@ -139,7 +139,7 @@ export async function completeCall(
 
   try {
     return await prisma.$transaction(async (tx) => {
-      let createdCallbackId: string | undefined;
+      let createdCallback: Awaited<ReturnType<typeof createCallbackInTransaction>> | undefined;
       let linkedCallbackId: string | null = sourceCallback?.id ?? null;
       let orderResult: Awaited<ReturnType<typeof createOrderForCallInTransaction>> | null =
         null;
@@ -158,27 +158,25 @@ export async function completeCall(
       }
 
       if (input.outcome === CallOutcome.CALL_LATER) {
-        const callback = await createCallbackInTransaction(tx, {
+        createdCallback = await createCallbackInTransaction(tx, {
           companyId: currentUser.companyId,
           contactId: contact.id,
           assignedUserId: currentUser.id,
           scheduledAt: callLaterScheduledAt(),
           note: input.note ?? null,
         });
-        createdCallbackId = callback.id;
-        linkedCallbackId = callback.id;
+        linkedCallbackId = createdCallback.id;
       }
 
       if (input.outcome === CallOutcome.SCHEDULE_CALL && input.scheduledAt) {
-        const callback = await createCallbackInTransaction(tx, {
+        createdCallback = await createCallbackInTransaction(tx, {
           companyId: currentUser.companyId,
           contactId: contact.id,
           assignedUserId: currentUser.id,
           scheduledAt: input.scheduledAt,
           note: input.note ?? null,
         });
-        createdCallbackId = callback.id;
-        linkedCallbackId = callback.id;
+        linkedCallbackId = createdCallback.id;
       }
 
       const callActivity = await createCallActivityForCompany(tx, {
@@ -193,9 +191,18 @@ export async function completeCall(
       });
 
       if (sourceCallback && shouldCompleteSourceCallback(input.outcome)) {
-        await completeSourceCallbackInTransaction(tx, {
+        const completedCallback = await completeSourceCallbackInTransaction(tx, {
           companyId: currentUser.companyId,
           callbackId: sourceCallback.id,
+        });
+
+        await recordCallWorkflowCallbackCompleted({
+          tx,
+          currentUser,
+          contactId: contact.id,
+          callbackId: completedCallback.id,
+          status: completedCallback.status,
+          correlationId: input.idempotencyKey,
         });
       }
 
@@ -270,14 +277,22 @@ export async function completeCall(
         };
       }
 
-      if (createdCallbackId) {
+      if (createdCallback) {
+        await recordCallWorkflowCallbackCreated({
+          tx,
+          currentUser,
+          contactId: contact.id,
+          callback: createdCallback,
+          correlationId: input.idempotencyKey,
+        });
+
         await recordAuditEvent({
           tx,
           companyId: currentUser.companyId,
           actorUserId: currentUser.id,
           action: AuditActions.CALLBACK_CREATED,
           entityType: AuditEntityTypes.CALLBACK,
-          entityId: createdCallbackId,
+          entityId: createdCallback.id,
           contactId: contact.id,
           metadata: {
             source: input.outcome,
@@ -324,7 +339,7 @@ export async function completeCall(
         callActivityId: callActivity.id,
         outcome: input.outcome,
         contactStatus,
-        callbackId: createdCallbackId,
+        callbackId: createdCallback?.id,
         orderId: orderResult?.orderId,
         orderTotal: orderResult?.total,
         orderItemCount: orderResult?.itemCount,

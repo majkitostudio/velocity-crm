@@ -26,7 +26,6 @@ import { recordContactBusinessEvent } from "./record-contact-business-event";
 import {
   createContactForCompany,
   findContactByIdForCompany,
-  findContactDetailByIdForCompany,
   findContactDuplicateInCompany,
 } from "./contacts.repository";
 
@@ -68,20 +67,6 @@ export async function getContactById(contactId: string): Promise<Contact | null>
 
     throw error;
   }
-}
-
-export async function getContactDetailById(contactId: string) {
-  const currentUser = await requireCurrentUser();
-
-  await assertContactAccess({
-    currentUser,
-    contactId,
-  });
-
-  return findContactDetailByIdForCompany({
-    companyId: currentUser.companyId,
-    contactId,
-  });
 }
 
 export async function createContact(input: CreateContactInput): Promise<Contact> {

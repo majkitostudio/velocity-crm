@@ -22,7 +22,9 @@ export function ContactNotesSection({ contactId, notes }: ContactNotesSectionPro
       <ContactNoteForm contactId={contactId} />
 
       {notes.length === 0 ? (
-        <p className="text-sm text-zinc-600">No notes yet.</p>
+        <p className="text-sm text-zinc-600" data-testid="notes-empty-state">
+          Zatím žádné poznámky.
+        </p>
       ) : (
         <ul className="space-y-3" data-testid="notes-list">
           {notes.map((note) => (

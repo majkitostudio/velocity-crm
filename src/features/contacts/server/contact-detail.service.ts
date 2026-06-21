@@ -1,11 +1,13 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { NotFoundError } from "@/src/domain/errors";
 import { requireCurrentUser } from "@/src/server/auth/guards";
 
 import type { ContactDetailView } from "../types";
 import { buildWorkflowBadge } from "../view/build-workflow-badge";
-import { listNotesForContact } from "./activity.repository";
+import { listNotesForContact } from "./notes.read.repository";
 import {
   countFailOutcomesForContact,
   findContactDetailByIdForCompany,
@@ -16,7 +18,7 @@ import { assertSourceCallbackForCall } from "@/src/features/callbacks/server/cal
 import { listOpenCallbacksForContact } from "@/src/features/callbacks/server/callbacks.repository";
 import { FAIL_THRESHOLD } from "@/src/domain/workflow";
 
-export async function getContactDetailView(
+export const getContactDetailView = cache(async function getContactDetailView(
   contactId: string,
   options?: { sourceCallbackId?: string | null },
 ): Promise<ContactDetailView> {
@@ -114,4 +116,4 @@ export async function getContactDetailView(
       sourceCallbackNote,
     },
   };
-}
+});

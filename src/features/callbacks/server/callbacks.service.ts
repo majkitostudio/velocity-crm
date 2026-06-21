@@ -473,23 +473,28 @@ export async function rescheduleCallback(input: {
     currentUser,
   });
 
-  const updated = await updateCallbackForCompany(prisma, {
-    companyId: currentUser.companyId,
-    callbackId: input.callbackId,
-    scheduledAt: input.scheduledAt,
-    note: input.note ?? callback.note,
-  });
+  const updated = await prisma.$transaction(async (tx) => {
+    const rescheduled = await updateCallbackForCompany(tx, {
+      companyId: currentUser.companyId,
+      callbackId: input.callbackId,
+      scheduledAt: input.scheduledAt,
+      note: input.note ?? callback.note,
+    });
 
-  await recordCallbackAudit({
-    companyId: currentUser.companyId,
-    actorUserId: currentUser.id,
-    action: AuditActions.CALLBACK_UPDATED,
-    callbackId: updated.id,
-    contactId: callback.contactId,
-    metadata: {
-      transition: "reschedule",
-      scheduledAt: input.scheduledAt.toISOString(),
-    },
+    await recordCallbackAudit({
+      tx,
+      companyId: currentUser.companyId,
+      actorUserId: currentUser.id,
+      action: AuditActions.CALLBACK_UPDATED,
+      callbackId: rescheduled.id,
+      contactId: callback.contactId,
+      metadata: {
+        transition: "reschedule",
+        scheduledAt: input.scheduledAt.toISOString(),
+      },
+    });
+
+    return rescheduled;
   });
 
   return updated;

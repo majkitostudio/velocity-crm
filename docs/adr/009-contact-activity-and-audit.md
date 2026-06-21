@@ -7,7 +7,7 @@
 
 ## Kontext
 
-Slice 8 dokončil modul Contacts (seznam, detail, ruční vytvoření, CSV import). Historie kontaktu na detailu je dnes **virtuální read-model**: čtyři paralelní dotazy (`CallActivity`, `Note`, `Callback`, `Order`) se slučují v paměti a řadí podle data.
+Slice 8 dokončil modul Contacts (seznam, detail, ruční vytvoření, CSV import). Historie kontaktu na detailu byla dříve **virtuální read-model** (čtyři paralelní dotazy sloučené v paměti). Od Slice 9 čte timeline výhradně z `ContactActivity` (viz commit 5).
 
 Tento přístup má limity:
 
@@ -314,7 +314,7 @@ Workflow/Service → recordContactBusinessEvent → Writers → Repository
 **Read path migrace:**
 
 - Timeline primárně z `ContactActivity` (cursor pagination 25–50).
-- Volitelný legacy fallback pro kontakty bez backfillu.
+- Volitelný legacy fallback pro kontakty bez backfillu — **neimplementováno** ve Slice 9; kontakty bez záznamů v `ContactActivity` zobrazí prázdnou historii.
 - Backfill historie — **ne** v MVP Slice 9.
 
 ---

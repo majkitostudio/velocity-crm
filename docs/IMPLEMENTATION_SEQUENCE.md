@@ -118,7 +118,7 @@ dashboard/page.tsx → getOperatorQueueAction → queue.service → queue.reposi
 
 - [x] Operátor vidí svou frontu
 - [ ] Manager vidí nepřiřazené leady a může assignovat (odloženo — mimo scope Slice 2 request)
-- [ ] Tenant isolation test: operátor nevidí data jiné company (Slice 9)
+- [x] Tenant isolation test: operátor nevidí data jiné company — `tests/e2e/contacts/activity-tenant-isolation.spec.ts`
 
 ---
 
@@ -270,7 +270,7 @@ ContactPage → completeCallAction → CallWorkflow → services/repos → trans
 
 - [ ] Manager importuje CSV s validací a deduplikací
 - [ ] Contacts list filtruje podle status, source, priority
-- [ ] Import neporuší tenant isolation
+- [x] Import neporuší tenant isolation — E2E + tenant seed `seed-company-other`
 
 ---
 
@@ -306,12 +306,12 @@ Každý commit: `build` + `lint` green; E2E od commitu 4.
 
 ### Definition of Done
 
-- [ ] Timeline čte z `ContactActivity` se stránkováním
-- [ ] Všechny kritické workflow zapisují activity + audit v transakci
-- [ ] ContactActivity se nečte pro business rozhodování (ADR-009)
-- [ ] Cross-tenant testy procházejí
-- [ ] CI běží na každý push
-- [ ] ADR-009 schváleno a implementace v souladu
+- [x] Timeline čte z `ContactActivity` se stránkováním
+- [x] Všechny kritické workflow zapisují activity + audit v transakci
+- [x] ContactActivity se nečte pro business rozhodování (ADR-009)
+- [x] Cross-tenant testy procházejí
+- [x] CI běží na každý push
+- [x] ADR-009 schváleno a implementace v souladu
 
 ---
 
