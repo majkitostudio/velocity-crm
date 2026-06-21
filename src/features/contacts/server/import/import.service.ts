@@ -116,14 +116,14 @@ async function buildImportPreview(input: {
   };
 }
 
-async function resolveImportAssigneeId(input: {
+async function resolveImportAssignee(input: {
   currentUser: CurrentUser;
   requestedAssigneeId?: string | null;
-}): Promise<string | null> {
+}): Promise<{ id: string | null; name: string | null }> {
   const requestedAssigneeId = input.requestedAssigneeId?.trim();
 
   if (!requestedAssigneeId) {
-    return null;
+    return { id: null, name: null };
   }
 
   const operator = (await findAssignableOperatorsForCompany(input.currentUser.companyId)).find(
@@ -134,7 +134,10 @@ async function resolveImportAssigneeId(input: {
     throw new ValidationError("Operátor nebyl nalezen.");
   }
 
-  return operator.id;
+  return {
+    id: operator.id,
+    name: operator.name ?? operator.email,
+  };
 }
 
 export async function getImportPageView(
@@ -223,7 +226,7 @@ export async function executeImport(input: {
   const currentUser = await requireCurrentUser();
   assertCanImport(currentUser.role);
 
-  const assignedUserId = await resolveImportAssigneeId({
+  const assignee = await resolveImportAssignee({
     currentUser,
     requestedAssigneeId: input.assignedUserId,
   });
@@ -268,7 +271,7 @@ export async function executeImport(input: {
     try {
       const chunkIds = await createImportedContactsChunk({
         companyId: currentUser.companyId,
-        assignedUserId,
+        assignedUserId: assignee.id,
         drafts: chunk,
       });
       createdContactIds.push(...chunkIds);
@@ -286,6 +289,8 @@ export async function executeImport(input: {
     failed: previewStats.failed + insertFailures,
     createdContactIds,
     skipReasons: previewStats.skipReasons,
+    assignedUserId: assignee.id,
+    assignedUserName: assignee.name,
   };
 
   const batch = await createImportBatchRecord({
@@ -299,5 +304,9 @@ export async function executeImport(input: {
   return {
     batchId: batch.id,
     stats,
+    fileName: batch.fileName,
+    importedAt: batch.createdAt.toISOString(),
+    assignedUserName: assignee.name,
+    status: batch.status,
   };
 }

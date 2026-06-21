@@ -8,6 +8,9 @@ type ContactsPaginationProps = {
 };
 
 function buildPageHref(view: ContactsPageView, page: number): string {
+  const importBatchParam =
+    view.importBatchFilter?.kind === "active" ? view.importBatchFilter.batchId : undefined;
+
   return buildContactsListPath({
     page: page > 1 ? page : undefined,
     limit: view.limit !== 50 ? view.limit : undefined,
@@ -17,6 +20,7 @@ function buildPageHref(view: ContactsPageView, page: number): string {
     priority: view.priorityFilter !== "ALL" ? view.priorityFilter : undefined,
     operator: view.selectedOperatorId ?? undefined,
     q: view.searchQuery || undefined,
+    importBatch: importBatchParam,
   });
 }
 

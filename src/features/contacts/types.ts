@@ -142,6 +142,19 @@ export type ImportPageView = {
   mappableFields: readonly ContactFieldCatalogEntry[];
 };
 
+export type ImportBatchListFilter =
+  | {
+      batchId: string;
+      fileName: string | null;
+      importedAt: Date;
+      createdCount: number;
+      kind: "active";
+    }
+  | {
+      batchId: string;
+      kind: "not_found";
+    };
+
 export type ContactsPageView = {
   items: ContactListItemView[];
   total: number;
@@ -158,6 +171,8 @@ export type ContactsPageView = {
   assignableOperators: ContactListAssigneeOption[];
   listPath: string;
   returnTo: string;
+  importBatchFilter: ImportBatchListFilter | null;
+  allContactsPath: string;
 };
 
 export type ContactCallWorkflowContext = {

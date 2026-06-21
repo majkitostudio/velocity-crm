@@ -35,7 +35,9 @@ Service vrstva automaticky filtruje `assignedUserId = currentUser.id`. Manažer/
 
 ### Filtry a stránkování — URL `searchParams`
 
-Všechny filtry (`status`, `source`, `priority`, `operator`, `sort`, `page`, `q`) jsou v URL. Server Components načítají data podle parametrů (vzor `/callbacks`).
+Filtry (`status`, `source`, `priority`, `operator`, `sort`, `page`, `q`, `importBatch`) jsou v URL. Server Components načítají data podle parametrů (vzor `/callbacks`).
+
+Parametr `importBatch` filtruje seznam na kontakty z daného importu (`createdContactIds` v `ContactImportBatch.stats`). Pouze manager/admin; operátor dostane `ForbiddenError`.
 
 ### Vyhledávání — debounce / Enter
 
@@ -53,5 +55,4 @@ Detail kontaktu: `/contacts/[id]?returnTo=<encoded /contacts?...>`. Breadcrumb a
 
 - `contacts-list.service.ts` vynucuje role scope před dotazem do DB.
 - List řádky generují odkaz na detail s `returnTo`.
-- Commit 2 nahradí jednorázový odkaz „← Dashboard“ breadcrumbem s `returnTo`.
-- Import summary (commit 4) může reuse stejné URL filtry.
+- Import summary (Commit 4) naviguje na `/contacts?importBatch=<id>` se zachováním `returnTo` pro detail.

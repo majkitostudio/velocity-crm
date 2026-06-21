@@ -45,6 +45,7 @@ export const listContactsQuerySchema = z.object({
   priority: z.enum(listContactsPriorityValues).default("ALL"),
   operator: z.string().trim().optional(),
   q: z.string().trim().optional(),
+  importBatch: z.string().trim().min(1).optional(),
 });
 
 export type ListContactsQuery = z.infer<typeof listContactsQuerySchema>;

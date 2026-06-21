@@ -27,6 +27,18 @@ export async function createImportBatchRecord(input: {
   });
 }
 
+export async function findImportBatchByIdForCompany(input: {
+  companyId: string;
+  batchId: string;
+}) {
+  return prisma.contactImportBatch.findFirst({
+    where: {
+      id: input.batchId,
+      companyId: input.companyId,
+    },
+  });
+}
+
 export async function createImportedContactsChunk(input: {
   companyId: string;
   assignedUserId: string | null;

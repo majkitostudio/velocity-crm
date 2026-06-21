@@ -8,6 +8,7 @@ import {
 import { findAssignableOperatorsForCompany } from "@/src/features/callbacks/server/callbacks.repository";
 
 import { buildContactsListPath } from "../lib/list-navigation";
+import { parseImportBatchStats } from "../lib/import-batch-stats";
 import { UNASSIGNED_OPERATOR_FILTER } from "../lib/list-labels";
 import {
   CONTACT_LIST_DEFAULT_LIMIT,
@@ -15,8 +16,9 @@ import {
   listContactsQuerySchema,
   type ListContactsQuery,
 } from "../schemas";
-import type { ContactListItemView, ContactsPageView } from "../types";
+import type { ContactListItemView, ContactsPageView, ImportBatchListFilter } from "../types";
 import { buildWorkflowBadge } from "../view/build-workflow-badge";
+import { findImportBatchByIdForCompany } from "./import/import.repository";
 import {
   countContactsForCompany,
   findLatestCallsForContacts,
@@ -75,6 +77,19 @@ function buildListPath(query: ListContactsQuery): string {
     priority: query.priority !== "ALL" ? query.priority : undefined,
     operator: query.operator,
     q: query.q,
+    importBatch: query.importBatch,
+  });
+}
+
+function buildAllContactsPath(query: ListContactsQuery): string {
+  return buildContactsListPath({
+    limit: query.limit !== CONTACT_LIST_DEFAULT_LIMIT ? query.limit : undefined,
+    sort: query.sort !== "priority_desc" ? query.sort : undefined,
+    status: query.status !== "ALL" ? query.status : undefined,
+    source: query.source !== "ALL" ? query.source : undefined,
+    priority: query.priority !== "ALL" ? query.priority : undefined,
+    operator: query.operator,
+    q: query.q,
   });
 }
 
@@ -97,13 +112,49 @@ export async function getContactsPageView(
       ? rawQuery.operator[0]
       : rawQuery.operator,
     q: Array.isArray(rawQuery.q) ? rawQuery.q[0] : rawQuery.q,
+    importBatch: Array.isArray(rawQuery.importBatch)
+      ? rawQuery.importBatch[0]
+      : rawQuery.importBatch,
   });
+
+  if (parsed.importBatch && !canManageCompanyData(currentUser.role)) {
+    throw new ForbiddenError();
+  }
 
   const searchQuery = resolveSearchQuery(parsed.q);
   const query: ListContactsQuery = {
     ...parsed,
     q: searchQuery || undefined,
   };
+
+  let importBatchFilter: ImportBatchListFilter | null = null;
+  let importBatchContactIds: string[] | undefined;
+
+  if (query.importBatch) {
+    const batch = await findImportBatchByIdForCompany({
+      companyId: currentUser.companyId,
+      batchId: query.importBatch,
+    });
+
+    if (!batch) {
+      importBatchFilter = {
+        batchId: query.importBatch,
+        kind: "not_found",
+      };
+      importBatchContactIds = [];
+    } else {
+      const stats = parseImportBatchStats(batch.stats);
+
+      importBatchFilter = {
+        batchId: batch.id,
+        fileName: batch.fileName,
+        importedAt: batch.createdAt,
+        createdCount: stats?.created ?? 0,
+        kind: "active",
+      };
+      importBatchContactIds = stats?.createdContactIds ?? [];
+    }
+  }
 
   let assignedUserId: string | null | undefined;
 
@@ -126,6 +177,7 @@ export async function getContactsPageView(
     source: query.source !== "ALL" ? query.source : undefined,
     priority: query.priority !== "ALL" ? query.priority : undefined,
     searchQuery: searchQuery || undefined,
+    contactIds: importBatchContactIds,
   };
 
   const [total] = await Promise.all([countContactsForCompany(where)]);
@@ -166,6 +218,7 @@ export async function getContactsPageView(
   });
 
   const listPath = buildListPath({ ...query, page });
+  const allContactsPath = buildAllContactsPath(query);
   const selectedOperatorId =
     currentUser.role === "OPERATOR"
       ? currentUser.id
@@ -191,5 +244,7 @@ export async function getContactsPageView(
       : [],
     listPath,
     returnTo: listPath,
+    importBatchFilter,
+    allContactsPath,
   };
 }

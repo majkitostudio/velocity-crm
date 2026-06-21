@@ -3,7 +3,7 @@
 import type { ContactFieldCatalogEntry } from "../../lib/contact-fields";
 import { isCompleteImportColumnMapping } from "../../lib/contact-fields";
 import type { ContactFieldKey } from "../../lib/contact-fields";
-import type { ImportColumnMapping } from "../../server/import/import.types";
+import type { ImportColumnMapping } from "../../lib/import-types";
 
 type ImportMappingStepProps = {
   fields: readonly ContactFieldCatalogEntry[];

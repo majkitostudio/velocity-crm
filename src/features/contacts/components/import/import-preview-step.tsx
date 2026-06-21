@@ -4,7 +4,7 @@ import type {
   ImportPreviewResult,
   ImportPreviewSections,
   PreviewRow,
-} from "../../server/import/import.types";
+} from "../../lib/import-types";
 
 type ImportPreviewStepProps = {
   preview: ImportPreviewResult & { sections: ImportPreviewSections };

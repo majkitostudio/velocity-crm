@@ -18,7 +18,7 @@ import type {
   ImportPreviewResult,
   ImportPreviewSections,
   ParseImportResult,
-} from "../../server/import/import.types";
+} from "../../lib/import-types";
 import { ImportConfirmStep } from "./import-confirm-step";
 import { ImportMappingStep } from "./import-mapping-step";
 import { ImportPreviewStep } from "./import-preview-step";

@@ -43,6 +43,7 @@ export type ContactListWhere = {
   source?: ContactSource;
   priority?: ContactPriority;
   searchQuery?: string;
+  contactIds?: string[];
 };
 
 function buildSearchWhere(searchQuery: string): Prisma.ContactWhereInput {
@@ -74,6 +75,10 @@ function buildWhere(input: ContactListWhere): Prisma.ContactWhereInput {
 
   if (input.priority) {
     where.priority = input.priority;
+  }
+
+  if (input.contactIds !== undefined) {
+    where.id = { in: input.contactIds };
   }
 
   if (input.searchQuery) {

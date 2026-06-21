@@ -62,6 +62,9 @@ function operatorLabel(input: { name: string | null; email: string }): string {
 }
 
 export function ContactsFilterBar({ view }: ContactsFilterBarProps) {
+  const importBatchParam =
+    view.importBatchFilter?.kind === "active" ? view.importBatchFilter.batchId : undefined;
+
   const searchListParams = {
     limit: view.limit !== 50 ? view.limit : undefined,
     sort: view.sort !== "priority_desc" ? view.sort : undefined,
@@ -69,6 +72,7 @@ export function ContactsFilterBar({ view }: ContactsFilterBarProps) {
     source: view.sourceFilter !== "ALL" ? view.sourceFilter : undefined,
     priority: view.priorityFilter !== "ALL" ? view.priorityFilter : undefined,
     operator: view.selectedOperatorId ?? undefined,
+    importBatch: importBatchParam,
   };
 
   return (

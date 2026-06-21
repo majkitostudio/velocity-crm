@@ -3,11 +3,11 @@
 **Stav:** Přijato  
 **Datum:** 2026-06-20  
 **Schváleno:** 2026-06-20  
-**Související:** [ADR-006](./006-contacts-list-and-navigation.md), Slice 8 import (Commit 3)
+**Související:** [ADR-006](./006-contacts-list-and-navigation.md), [ADR-008](./008-csv-contact-import-pipeline.md)
 
 ## Kontext
 
-Telefon je primární identifikátor kontaktu v call centru. Ruční vytvoření, import CSV a budoucí deduplikace musí používat stejnou normalizaci a validaci, jinak `@@unique([companyId, phone])` nebude spolehlivě fungovat.
+Telefon je primární identifikátor kontaktu v call centru. Ruční vytvoření, import CSV a deduplikace musí používat stejnou normalizaci a validaci, jinak `@@unique([companyId, phone])` nebude spolehlivě fungovat.
 
 ## Varianty
 
@@ -24,7 +24,12 @@ Modul `src/features/contacts/lib/phone.ts`:
 - české lokální formáty (`0…`, 9 číslic) → `+420…`
 - validace: `^\+[1-9]\d{7,14}$`
 
-Použití v Zod schématu (create) i v service před dedup dotazem. Import (Commit 3) reuse stejné funkce.
+Email: lowercase trim v `email.ts` (stejný pattern, jednodušší pravidla).
+
+Sdílené validační funkce v `contact-field-validation.ts` volají `phone.ts` / `email.ts` a používají je:
+
+- Zod schémata (`contact-form-schemas.ts`) pro ruční vytvoření,
+- import normalizer (`contact-normalizer.ts`) pro CSV pipeline.
 
 **Nevýhody:** mezinárodní edge cases vyžadují pozdější rozšíření (libphonenumber).
 
@@ -34,12 +39,10 @@ Použití v Zod schématu (create) i v service před dedup dotazem. Import (Comm
 
 ## Rozhodnutí
 
-**Varianta B** — lightweight normalizace v `phone.ts`, sdílená across create/import.
-
-Email: lowercase trim v `email.ts` (stejný pattern, jednodušší pravidla).
+**Varianta B** — lightweight normalizace v `phone.ts` / `email.ts`, jednotné validační jádro v `contact-field-validation.ts`.
 
 ## Důsledky
 
-- `createContactSchema` transformuje telefon před uložením.
-- `createContact` service volá normalizaci před `findContactDuplicateInCompany`.
-- Import adapter (Commit 3) importuje stejné helpery, ne duplicitní logiku.
+- `createContactSchema` validuje a normalizuje telefon/e-mail přes sdílené helpery.
+- `createContact` service volá deduplikaci na normalizovaných hodnotách.
+- Import pipeline reuse stejné funkce, ne duplicitní logiku.

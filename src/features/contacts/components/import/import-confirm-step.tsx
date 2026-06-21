@@ -1,7 +1,7 @@
 "use client";
 
 import type { ContactListAssigneeOption } from "../../types";
-import type { ImportPreviewResult } from "../../server/import/import.types";
+import type { ImportPreviewResult } from "../../lib/import-types";
 
 type ImportConfirmStepProps = {
   preview: ImportPreviewResult;

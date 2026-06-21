@@ -31,7 +31,7 @@ import type {
   ImportPreviewResult,
   ImportPreviewSections,
   ParseImportResult,
-} from "./server/import/import.types";
+} from "./lib/import-types";
 
 export async function createContactAction(
   _prevState: ActionResult<{ contactId: string }> | null,
