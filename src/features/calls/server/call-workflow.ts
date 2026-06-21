@@ -26,6 +26,7 @@ import type { CompleteCallResult } from "../types";
 import type { OrderItemDraft } from "@/src/features/orders/types";
 import { createOrderForCallInTransaction } from "@/src/features/orders/server/order-workflow";
 import { getOrderCreatedResultById } from "@/src/features/orders/server/orders.service";
+import { recordCallWorkflowActivities } from "./call-workflow-activities";
 
 export type CompleteCallInput = {
   contactId: string;
@@ -213,21 +214,6 @@ export async function completeCall(
         });
         contactStatus = updated.status;
 
-        await recordAuditEvent({
-          tx,
-          companyId: currentUser.companyId,
-          actorUserId: currentUser.id,
-          action: AuditActions.CONTACT_STATUS_CHANGED,
-          entityType: AuditEntityTypes.CONTACT,
-          entityId: contact.id,
-          contactId: contact.id,
-          metadata: {
-            from: contact.status,
-            to: "CUSTOMER",
-            reason: "order_created",
-            orderId: orderResult?.orderId ?? null,
-          },
-        });
       }
 
       if (input.outcome === CallOutcome.FAIL) {
@@ -245,21 +231,6 @@ export async function completeCall(
           contactStatus = updated.status;
           contactBecameLost = true;
 
-          await recordAuditEvent({
-            tx,
-            companyId: currentUser.companyId,
-            actorUserId: currentUser.id,
-            action: AuditActions.CONTACT_STATUS_CHANGED,
-            entityType: AuditEntityTypes.CONTACT,
-            entityId: contact.id,
-            contactId: contact.id,
-            metadata: {
-              from: contact.status,
-              to: "LOST",
-              reason: "fail_threshold",
-              failCount,
-            },
-          });
         }
 
         await recordAuditEvent({
@@ -276,6 +247,18 @@ export async function completeCall(
             contactBecameLost,
             idempotencyKey: input.idempotencyKey,
           },
+        });
+
+        await recordCallWorkflowActivities({
+          tx,
+          currentUser,
+          contact,
+          callActivityId: callActivity.id,
+          outcome: input.outcome,
+          note: input.note,
+          correlationId: input.idempotencyKey,
+          contactStatus,
+          orderResult: null,
         });
 
         return {
@@ -318,6 +301,18 @@ export async function completeCall(
           orderId: orderResult?.orderId ?? null,
           orderTotal: orderResult?.total ?? null,
         },
+      });
+
+      await recordCallWorkflowActivities({
+        tx,
+        currentUser,
+        contact,
+        callActivityId: callActivity.id,
+        outcome: input.outcome,
+        note: input.note,
+        correlationId: input.idempotencyKey,
+        contactStatus,
+        orderResult,
       });
 
       const failCount = await countFailOutcomesForContactInTransaction(tx, {

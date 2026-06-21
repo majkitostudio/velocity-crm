@@ -4,10 +4,13 @@ import {
   CallbackStatus,
   ContactStatus,
   type Contact,
+  type Prisma,
 } from "@/src/generated/prisma/client";
 import { prisma } from "@/src/server/db";
 
 import type { QueueContact } from "../types";
+
+type TransactionClient = Prisma.TransactionClient;
 
 const queueContactSelect = {
   id: true,
@@ -96,7 +99,7 @@ export async function findUnassignedLeadsForCompany(
 export async function findOperatorInCompany(input: {
   companyId: string;
   operatorId: string;
-}): Promise<{ id: string } | null> {
+}): Promise<{ id: string; name: string | null; email: string } | null> {
   return prisma.user.findFirst({
     where: {
       id: input.operatorId,
@@ -105,16 +108,21 @@ export async function findOperatorInCompany(input: {
     },
     select: {
       id: true,
+      name: true,
+      email: true,
     },
   });
 }
 
-export async function assignContactToOperatorInCompany(input: {
-  companyId: string;
-  contactId: string;
-  operatorId: string;
-}): Promise<Contact> {
-  return prisma.contact.update({
+export async function assignContactToOperatorInCompany(
+  client: typeof prisma | TransactionClient,
+  input: {
+    companyId: string;
+    contactId: string;
+    operatorId: string;
+  },
+): Promise<Contact> {
+  return client.contact.update({
     where: {
       id: input.contactId,
       companyId: input.companyId,

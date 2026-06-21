@@ -1,6 +1,10 @@
 import "server-only";
 
 import { CallbackStatus, type Callback, type Prisma } from "@/src/generated/prisma/client";
+import {
+  ActivitySourceEntity,
+  ContactActivityKind,
+} from "@/src/domain/activity";
 import { AuditActions, AuditEntityTypes } from "@/src/domain/events";
 import {
   ConflictError,
@@ -15,6 +19,12 @@ import {
 } from "@/src/server/auth/guards";
 import { recordAuditEvent } from "@/src/server/audit";
 import { prisma } from "@/src/server/db";
+
+import {
+  buildCallbackCompletedPayload,
+  buildCallbackCreatedPayload,
+} from "@/src/features/contacts/lib/activity-payload-builders";
+import { recordContactBusinessEvent } from "@/src/features/contacts/server/record-contact-business-event";
 
 import { OPERATOR_CALLBACK_MIN_LEAD_MINUTES } from "../constants";
 import type {
@@ -302,24 +312,54 @@ export async function createCallback(input: {
     throw new ConflictError("Kontakt už má otevřený callback.");
   }
 
-  const callback = await createCallbackForCompany(prisma, {
-    companyId: currentUser.companyId,
-    contactId: input.contactId,
-    assignedUserId,
-    scheduledAt: input.scheduledAt,
-    note: input.note ?? null,
-  });
-
-  await recordCallbackAudit({
-    companyId: currentUser.companyId,
-    actorUserId: currentUser.id,
-    action: AuditActions.CALLBACK_CREATED,
-    callbackId: callback.id,
-    contactId: input.contactId,
-    metadata: {
+  const callback = await prisma.$transaction(async (tx) => {
+    const created = await createCallbackForCompany(tx, {
+      companyId: currentUser.companyId,
+      contactId: input.contactId,
       assignedUserId,
-      scheduledAt: input.scheduledAt.toISOString(),
-    },
+      scheduledAt: input.scheduledAt,
+      note: input.note ?? null,
+    });
+
+    const assignee = await findUserByIdForCompany({
+      companyId: currentUser.companyId,
+      userId: assignedUserId,
+    });
+
+    await recordContactBusinessEvent({
+      tx,
+      companyId: currentUser.companyId,
+      contactId: input.contactId,
+      actorUserId: currentUser.id,
+      occurredAt: created.createdAt,
+      activity: {
+        kind: ContactActivityKind.CALLBACK_CREATED,
+        payload: buildCallbackCreatedPayload({
+          scheduledAt: input.scheduledAt,
+          assigneeName: assignee?.name ?? assignee?.email ?? null,
+          note: input.note ?? null,
+        }),
+        sourceEntity: {
+          type: ActivitySourceEntity.CALLBACK,
+          id: created.id,
+        },
+      },
+    });
+
+    await recordCallbackAudit({
+      tx,
+      companyId: currentUser.companyId,
+      actorUserId: currentUser.id,
+      action: AuditActions.CALLBACK_CREATED,
+      callbackId: created.id,
+      contactId: input.contactId,
+      metadata: {
+        assignedUserId,
+        scheduledAt: input.scheduledAt.toISOString(),
+      },
+    });
+
+    return created;
   });
 
   return callback;
@@ -366,6 +406,31 @@ export async function createCallbacks(
       });
 
       created.push(callback);
+
+      const assignee = await findUserByIdForCompany({
+        companyId: currentUser.companyId,
+        userId: assignedUserId,
+      });
+
+      await recordContactBusinessEvent({
+        tx,
+        companyId: currentUser.companyId,
+        contactId: item.contactId,
+        actorUserId: currentUser.id,
+        occurredAt: callback.createdAt,
+        activity: {
+          kind: ContactActivityKind.CALLBACK_CREATED,
+          payload: buildCallbackCreatedPayload({
+            scheduledAt: item.scheduledAt,
+            assigneeName: assignee?.name ?? assignee?.email ?? null,
+            note: item.note ?? null,
+          }),
+          sourceEntity: {
+            type: ActivitySourceEntity.CALLBACK,
+            id: callback.id,
+          },
+        },
+      });
     }
 
     for (const callback of created) {
@@ -454,22 +519,51 @@ export async function cancelCallback(input: {
       ? [callback.note, `Zrušeno: ${input.reason}`].filter(Boolean).join("\n")
       : callback.note;
 
-  const updated = await updateCallbackForCompany(prisma, {
-    companyId: currentUser.companyId,
-    callbackId: input.callbackId,
-    status: nextStatus,
-    note,
-  });
+  const updated = await prisma.$transaction(async (tx) => {
+    const cancelled = await updateCallbackForCompany(tx, {
+      companyId: currentUser.companyId,
+      callbackId: input.callbackId,
+      status: nextStatus,
+      note,
+    });
 
-  await recordCallbackAudit({
-    companyId: currentUser.companyId,
-    actorUserId: currentUser.id,
-    action: AuditActions.CALLBACK_UPDATED,
-    callbackId: updated.id,
-    contactId: callback.contactId,
-    metadata: {
-      transition: "cancel",
-    },
+    const assignee = await findUserByIdForCompany({
+      companyId: currentUser.companyId,
+      userId: cancelled.assignedUserId,
+    });
+
+    await recordContactBusinessEvent({
+      tx,
+      companyId: currentUser.companyId,
+      contactId: cancelled.contactId,
+      actorUserId: currentUser.id,
+      occurredAt: cancelled.updatedAt,
+      activity: {
+        kind: ContactActivityKind.CALLBACK_COMPLETED,
+        payload: buildCallbackCompletedPayload({
+          status: nextStatus,
+          assigneeName: assignee?.name ?? assignee?.email ?? null,
+        }),
+        sourceEntity: {
+          type: ActivitySourceEntity.CALLBACK,
+          id: cancelled.id,
+        },
+      },
+    });
+
+    await recordCallbackAudit({
+      tx,
+      companyId: currentUser.companyId,
+      actorUserId: currentUser.id,
+      action: AuditActions.CALLBACK_UPDATED,
+      callbackId: cancelled.id,
+      contactId: cancelled.contactId,
+      metadata: {
+        transition: "cancel",
+      },
+    });
+
+    return cancelled;
   });
 
   return updated;

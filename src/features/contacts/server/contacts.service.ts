@@ -7,13 +7,22 @@ import {
 } from "@/src/generated/prisma/client";
 import { ConflictError, NotFoundError, ValidationError } from "@/src/domain/errors";
 import {
+  ActivitySourceEntity,
+  ContactActivityKind,
+  ContactCreationSource,
+} from "@/src/domain/activity";
+import { AuditActions, AuditEntityTypes } from "@/src/domain/events";
+import {
   canManageCompanyData,
   requireCurrentUser,
 } from "@/src/server/auth/guards";
 import type { CurrentUser } from "@/src/server/auth/guards";
+import { prisma } from "@/src/server/db";
 import { findAssignableOperatorsForCompany } from "@/src/features/callbacks/server/callbacks.repository";
 
 import type { CreateContactInput } from "../schemas";
+import { buildContactCreatedPayload } from "../lib/activity-payload-builders";
+import { recordContactBusinessEvent } from "./record-contact-business-event";
 import {
   createContactForCompany,
   findContactByIdForCompany,
@@ -95,17 +104,49 @@ export async function createContact(input: CreateContactInput): Promise<Contact>
     );
   }
 
-  return createContactForCompany({
-    companyId: currentUser.companyId,
-    data: {
-      name: input.name,
-      phone: input.phone,
-      email: input.email,
-      assignedUserId,
-      status: ContactStatus.LEAD,
-      source: ContactSource.MANUAL,
-      priority: input.priority,
-    },
+  return prisma.$transaction(async (tx) => {
+    const contact = await createContactForCompany(tx, {
+      companyId: currentUser.companyId,
+      data: {
+        name: input.name,
+        phone: input.phone,
+        email: input.email,
+        assignedUserId,
+        status: ContactStatus.LEAD,
+        source: ContactSource.MANUAL,
+        priority: input.priority,
+      },
+    });
+
+    await recordContactBusinessEvent({
+      tx,
+      companyId: currentUser.companyId,
+      contactId: contact.id,
+      actorUserId: currentUser.id,
+      occurredAt: contact.createdAt,
+      activity: {
+        kind: ContactActivityKind.CONTACT_CREATED,
+        payload: buildContactCreatedPayload({
+          source: ContactCreationSource.MANUAL,
+          contactName: contact.name,
+        }),
+        sourceEntity: {
+          type: ActivitySourceEntity.CONTACT,
+          id: contact.id,
+        },
+      },
+      audit: {
+        action: AuditActions.CONTACT_CREATED,
+        entityType: AuditEntityTypes.CONTACT,
+        entityId: contact.id,
+        metadata: {
+          source: ContactSource.MANUAL,
+          assignedUserId,
+        },
+      },
+    });
+
+    return contact;
   });
 }
 

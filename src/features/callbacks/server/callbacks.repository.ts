@@ -165,6 +165,8 @@ export async function findUserByIdForCompany(input: {
     },
     select: {
       id: true,
+      name: true,
+      email: true,
     },
   });
 }

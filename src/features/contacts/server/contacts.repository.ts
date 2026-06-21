@@ -227,23 +227,26 @@ export async function findContactDuplicateInCompany(input: {
   });
 }
 
-export async function createContactForCompany(input: {
-  companyId: string;
-  data: {
-    assignedUserId?: string | null;
-    status?: ContactStatus;
-    source?: Contact["source"];
-    priority?: Contact["priority"];
-    name: string;
-    phone?: string | null;
-    email?: string | null;
-    street?: string | null;
-    city?: string | null;
-    zipCode?: string | null;
-    country?: string | null;
-  };
-}): Promise<Contact> {
-  return prisma.contact.create({
+export async function createContactForCompany(
+  client: typeof prisma | TransactionClient,
+  input: {
+    companyId: string;
+    data: {
+      assignedUserId?: string | null;
+      status?: ContactStatus;
+      source?: Contact["source"];
+      priority?: Contact["priority"];
+      name: string;
+      phone?: string | null;
+      email?: string | null;
+      street?: string | null;
+      city?: string | null;
+      zipCode?: string | null;
+      country?: string | null;
+    };
+  },
+): Promise<Contact> {
+  return client.contact.create({
     data: {
       companyId: input.companyId,
       assignedUserId: input.data.assignedUserId ?? null,

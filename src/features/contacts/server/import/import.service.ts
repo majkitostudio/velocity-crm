@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { ImportBatchStatus } from "@/src/generated/prisma/client";
 import { ForbiddenError, ValidationError } from "@/src/domain/errors";
+import { AuditActions, AuditEntityTypes } from "@/src/domain/events";
 import { findAssignableOperatorsForCompany } from "@/src/features/callbacks/server/callbacks.repository";
 import {
   canManageCompanyData,
@@ -19,6 +20,7 @@ import {
 import { buildContactsListPath } from "../../lib/list-navigation";
 import type { ImportPageView } from "../../types";
 import { findExistingContactsByPhonesAndEmails } from "../contacts.repository";
+import { recordAuditEvent } from "@/src/server/audit";
 import { mapRowsToDrafts } from "./column-mapper";
 import { normalizeContactDrafts } from "./contact-normalizer";
 import { csvImportAdapter } from "./csv-import.adapter";
@@ -37,6 +39,7 @@ import {
 import {
   createImportBatchRecord,
   createImportedContactsChunk,
+  updateImportBatchRecord,
 } from "./import.repository";
 import type {
   ExecuteImportResult,
@@ -262,6 +265,23 @@ export async function executeImport(input: {
   const previewStats = summarizePreviewRows(previewRows);
   const readyDrafts = getReadyDrafts({ normalizedRows, previewRows });
 
+  const batch = await createImportBatchRecord({
+    companyId: currentUser.companyId,
+    actorUserId: currentUser.id,
+    fileName: input.fileName ?? null,
+    status: ImportBatchStatus.COMPLETED,
+    stats: {
+      total: previewStats.total,
+      created: 0,
+      skipped: previewStats.skipped,
+      failed: previewStats.failed,
+      createdContactIds: [],
+      skipReasons: previewStats.skipReasons,
+      assignedUserId: assignee.id,
+      assignedUserName: assignee.name,
+    },
+  });
+
   const createdContactIds: string[] = [];
   let batchStatus: ImportBatchStatus = ImportBatchStatus.COMPLETED;
 
@@ -272,6 +292,11 @@ export async function executeImport(input: {
       const chunkIds = await createImportedContactsChunk({
         companyId: currentUser.companyId,
         assignedUserId: assignee.id,
+        actorUserId: currentUser.id,
+        importBatchId: batch.id,
+        fileName: input.fileName ?? null,
+        correlationId: batch.id,
+        rowOffset: index,
         drafts: chunk,
       });
       createdContactIds.push(...chunkIds);
@@ -293,20 +318,33 @@ export async function executeImport(input: {
     assignedUserName: assignee.name,
   };
 
-  const batch = await createImportBatchRecord({
+  const updatedBatch = await updateImportBatchRecord({
+    batchId: batch.id,
     companyId: currentUser.companyId,
-    actorUserId: currentUser.id,
-    fileName: input.fileName ?? null,
     status: batchStatus,
     stats,
   });
 
+  await recordAuditEvent({
+    companyId: currentUser.companyId,
+    actorUserId: currentUser.id,
+    action: AuditActions.IMPORT_BATCH_COMPLETED,
+    entityType: AuditEntityTypes.CONTACT_IMPORT_BATCH,
+    entityId: updatedBatch.id,
+    metadata: {
+      fileName: input.fileName ?? null,
+      created: stats.created,
+      skipped: stats.skipped,
+      failed: stats.failed,
+    },
+  });
+
   return {
-    batchId: batch.id,
+    batchId: updatedBatch.id,
     stats,
-    fileName: batch.fileName,
-    importedAt: batch.createdAt.toISOString(),
+    fileName: updatedBatch.fileName,
+    importedAt: updatedBatch.createdAt.toISOString(),
     assignedUserName: assignee.name,
-    status: batch.status,
+    status: updatedBatch.status,
   };
 }

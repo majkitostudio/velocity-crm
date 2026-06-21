@@ -3,11 +3,20 @@ import "server-only";
 import { ContactPriority } from "@/src/generated/prisma/client";
 import { ForbiddenError } from "@/src/domain/errors";
 import {
+  ActivitySourceEntity,
+  ContactActivityKind,
+} from "@/src/domain/activity";
+import { AuditActions, AuditEntityTypes } from "@/src/domain/events";
+import {
   canManageCompanyData,
   requireCurrentUser,
   requireRole,
 } from "@/src/server/auth/guards";
 import type { CurrentUser } from "@/src/server/auth/guards";
+import { prisma } from "@/src/server/db";
+import { findContactByIdForCompany } from "@/src/features/contacts/server/contacts.repository";
+import { buildContactAssignedPayload } from "@/src/features/contacts/lib/activity-payload-builders";
+import { recordContactBusinessEvent } from "@/src/features/contacts/server/record-contact-business-event";
 
 import type {
   OperatorQueueCallbackItem,
@@ -147,10 +156,52 @@ export async function assignContactToOperator(input: {
     throw new ForbiddenError("Operator not found in current company");
   }
 
-  const contact = await assignContactToOperatorInCompany({
+  const existing = await findContactByIdForCompany({
     companyId: currentUser.companyId,
     contactId: input.contactId,
-    operatorId: operator.id,
+  });
+
+  if (!existing) {
+    throw new ForbiddenError("Contact not found in current company");
+  }
+
+  const contact = await prisma.$transaction(async (tx) => {
+    const updated = await assignContactToOperatorInCompany(tx, {
+      companyId: currentUser.companyId,
+      contactId: input.contactId,
+      operatorId: operator.id,
+    });
+
+    await recordContactBusinessEvent({
+      tx,
+      companyId: currentUser.companyId,
+      contactId: updated.id,
+      actorUserId: currentUser.id,
+      occurredAt: updated.updatedAt,
+      activity: {
+        kind: ContactActivityKind.CONTACT_ASSIGNED,
+        payload: buildContactAssignedPayload({
+          fromUserId: existing.assignedUserId,
+          toUserId: operator.id,
+          toUserName: operator.name ?? operator.email ?? null,
+        }),
+        sourceEntity: {
+          type: ActivitySourceEntity.CONTACT,
+          id: updated.id,
+        },
+      },
+      audit: {
+        action: AuditActions.CONTACT_ASSIGNED,
+        entityType: AuditEntityTypes.CONTACT,
+        entityId: updated.id,
+        metadata: {
+          fromUserId: existing.assignedUserId,
+          toUserId: operator.id,
+        },
+      },
+    });
+
+    return updated;
   });
 
   return {
