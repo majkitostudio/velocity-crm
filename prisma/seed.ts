@@ -4,8 +4,10 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { hash } from "bcryptjs";
 
 import {
+  ActivitySourceEntity,
   CallOutcome,
   CallbackStatus,
+  ContactActivityKind,
   ContactPriority,
   ContactSource,
   ContactStatus,
@@ -13,6 +15,8 @@ import {
   PrismaClient,
   UserRole,
 } from "../src/generated/prisma/client";
+
+import { TENANT_ISOLATION_SEED } from "./fixtures/tenant-isolation";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -293,6 +297,14 @@ async function main() {
     create: {
       id: SEED_COMPANY_ID,
       name: SEED_COMPANY_NAME,
+    },
+  });
+
+  await prisma.contactActivity.deleteMany({
+    where: {
+      companyId: {
+        in: [company.id, TENANT_ISOLATION_SEED.otherCompanyId],
+      },
     },
   });
 
@@ -716,6 +728,8 @@ async function main() {
     }),
   ]);
 
+  await seedTenantIsolationFixture();
+
   console.log("Seed complete:");
   console.log(`  Company: ${company.name} (${company.id})`);
   console.log(`  Admin:    ${admin.email} / ${SEED_ADMIN_PASSWORD}`);
@@ -735,6 +749,77 @@ async function main() {
   console.log("  Inactive catalog: Archivní kategorie + Archivní produkt");
   console.log("  Orders: single product, multi product, free product");
   console.log(`  Callback URL: /contacts/${withCallback.id}?callback=${SEED_CALLBACK_DUE_ID}`);
+  console.log(
+    `  Tenant isolation: /contacts/${TENANT_ISOLATION_SEED.otherContactId} (other company)`,
+  );
+}
+
+async function seedTenantIsolationFixture() {
+  const otherCompany = await prisma.company.upsert({
+    where: { id: TENANT_ISOLATION_SEED.otherCompanyId },
+    update: { name: TENANT_ISOLATION_SEED.otherCompanyName },
+    create: {
+      id: TENANT_ISOLATION_SEED.otherCompanyId,
+      name: TENANT_ISOLATION_SEED.otherCompanyName,
+    },
+  });
+
+  const otherOperator = await upsertUser({
+    email: TENANT_ISOLATION_SEED.otherOperatorEmail,
+    password: TENANT_ISOLATION_SEED.otherOperatorPassword,
+    name: "Other Tenant Operator",
+    role: UserRole.OPERATOR,
+    companyId: otherCompany.id,
+  });
+
+  const otherContact = await upsertContact({
+    id: TENANT_ISOLATION_SEED.otherContactId,
+    companyId: otherCompany.id,
+    assignedUserId: otherOperator.id,
+    status: ContactStatus.LEAD,
+    source: ContactSource.MANUAL,
+    priority: ContactPriority.NORMAL,
+    name: "Other Tenant Contact",
+    phone: "+420601999999",
+    email: "other-tenant@example.local",
+  });
+
+  await prisma.contactActivity.upsert({
+    where: { id: TENANT_ISOLATION_SEED.otherActivityId },
+    update: {
+      companyId: otherCompany.id,
+      contactId: otherContact.id,
+      actorUserId: otherOperator.id,
+      kind: ContactActivityKind.CONTACT_CREATED,
+      occurredAt: hoursAgo(2),
+      sourceEntityType: ActivitySourceEntity.CONTACT,
+      sourceEntityId: otherContact.id,
+      payload: {
+        version: 1,
+        summary: "Kontakt vytvořen — ruční vytvoření",
+        data: {
+          source: "MANUAL",
+        },
+      },
+    },
+    create: {
+      id: TENANT_ISOLATION_SEED.otherActivityId,
+      companyId: otherCompany.id,
+      contactId: otherContact.id,
+      actorUserId: otherOperator.id,
+      kind: ContactActivityKind.CONTACT_CREATED,
+      occurredAt: hoursAgo(2),
+      sourceEntityType: ActivitySourceEntity.CONTACT,
+      sourceEntityId: otherContact.id,
+      payload: {
+        version: 1,
+        summary: "Kontakt vytvořen — ruční vytvoření",
+        data: {
+          source: "MANUAL",
+        },
+      },
+    },
+  });
 }
 
 main()

@@ -107,6 +107,7 @@ Change these passwords before any non-local deployment.
 | `npm run db:reset` | Destructively reset the local database and run seed |
 | `npm run test:e2e` | Run Playwright E2E tests |
 | `npm run test:e2e:ui` | Run Playwright in UI mode |
+| `npm run test:integration` | Run database integration tests (tenant isolation) |
 
 ## End-to-end tests
 
@@ -130,6 +131,7 @@ npm install
 cp .env.example .env
 npm run db:up
 npm run db:setup
+npm run test:integration
 npm run test:e2e
 ```
 
