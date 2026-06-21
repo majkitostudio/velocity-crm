@@ -3,13 +3,22 @@ import { notFound } from "next/navigation";
 
 import { ContactDetailPage } from "@/src/features/contacts/components/contact-detail-page";
 import { getContactDetailView } from "@/src/features/contacts/server/contact-detail.service";
+import { getContactActivityTimelineFromSearchParams } from "@/src/features/contacts/server/contact-activity.service";
 import { getContactCallbacksPanelView } from "@/src/features/callbacks/server/callbacks.service";
 import { parseReturnToPath } from "@/src/features/contacts/lib/list-navigation";
 import { NotFoundError } from "@/src/domain/errors";
 
 type ContactPageProps = {
   params: Promise<{ contactId: string }>;
-  searchParams: Promise<{ callback?: string; callbackId?: string; returnTo?: string; created?: string }>;
+  searchParams: Promise<{
+    callback?: string;
+    callbackId?: string;
+    returnTo?: string;
+    created?: string;
+    activity?: string;
+    activityPeriod?: string;
+    activityCursor?: string;
+  }>;
 };
 
 export async function generateMetadata({ params }: ContactPageProps): Promise<Metadata> {
@@ -37,18 +46,24 @@ export default async function ContactDetailRoute({
   searchParams,
 }: ContactPageProps) {
   const { contactId } = await params;
-  const { callback, callbackId, returnTo, created } = await searchParams;
+  const resolvedSearchParams = await searchParams;
+  const { callback, callbackId, returnTo, created } = resolvedSearchParams;
   const sourceCallbackId = callback ?? callbackId ?? null;
   const contactsReturnTo = parseReturnToPath(returnTo);
   const showCreatedMessage = created === "1";
 
   let view;
+  let activityTimeline;
   let callbacksPanel;
 
   try {
-    [view, callbacksPanel] = await Promise.all([
+    [view, activityTimeline, callbacksPanel] = await Promise.all([
       getContactDetailView(contactId, {
         sourceCallbackId,
+      }),
+      getContactActivityTimelineFromSearchParams({
+        contactId,
+        searchParams: resolvedSearchParams,
       }),
       getContactCallbacksPanelView({
         contactId,
@@ -66,6 +81,7 @@ export default async function ContactDetailRoute({
   return (
     <ContactDetailPage
       view={view}
+      activityTimeline={activityTimeline}
       callbacksPanel={callbacksPanel}
       returnTo={contactsReturnTo}
       showCreatedMessage={showCreatedMessage}

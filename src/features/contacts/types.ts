@@ -4,11 +4,15 @@ import type {
   ContactPriority,
   ContactSource,
   ContactStatus,
-  OrderStatus,
 } from "@/src/generated/prisma/client";
 
 import type { ContactFieldCatalogEntry } from "./lib/contact-fields";
 import type { ListContactsSort } from "./schemas";
+
+export type {
+  ContactActivityTimelineItemView,
+  ContactActivityTimelineView,
+} from "./types/activity-timeline";
 
 export type ContactWorkflowBadge =
   | "NEW"
@@ -61,49 +65,6 @@ export type ContactLastCall = {
   createdAt: Date;
   operatorName: string | null;
 };
-
-export type ContactActivityCallItem = {
-  kind: "CALL";
-  id: string;
-  occurredAt: Date;
-  outcome: CallOutcome;
-  note: string | null;
-  operatorName: string | null;
-};
-
-export type ContactActivityNoteItem = {
-  kind: "NOTE";
-  id: string;
-  occurredAt: Date;
-  body: string;
-  authorName: string | null;
-};
-
-export type ContactActivityCallbackItem = {
-  kind: "CALLBACK";
-  id: string;
-  occurredAt: Date;
-  scheduledAt: Date;
-  status: CallbackStatus;
-  note: string | null;
-  assigneeName: string | null;
-};
-
-export type ContactActivityOrderItem = {
-  kind: "ORDER";
-  id: string;
-  occurredAt: Date;
-  status: OrderStatus;
-  itemCount: number;
-  total: string;
-  operatorName: string | null;
-};
-
-export type ContactActivityItem =
-  | ContactActivityCallItem
-  | ContactActivityNoteItem
-  | ContactActivityCallbackItem
-  | ContactActivityOrderItem;
 
 export type ContactNoteView = {
   id: string;
@@ -187,7 +148,6 @@ export type ContactDetailView = {
   contact: ContactDetailContact;
   workflowBadge: ContactWorkflowBadge;
   context: ContactContextSummary;
-  activity: ContactActivityItem[];
   notes: ContactNoteView[];
   callWorkflow: ContactCallWorkflowContext;
 };

@@ -4,14 +4,8 @@ import { NotFoundError } from "@/src/domain/errors";
 import { requireCurrentUser } from "@/src/server/auth/guards";
 
 import type { ContactDetailView } from "../types";
-import { buildActivityTimeline } from "../view/build-activity-timeline";
 import { buildWorkflowBadge } from "../view/build-workflow-badge";
-import {
-  listCallbacksForContact,
-  listCallActivitiesForContact,
-  listNotesForContact,
-  listOrdersForContact,
-} from "./activity.repository";
+import { listNotesForContact } from "./activity.repository";
 import {
   countFailOutcomesForContact,
   findContactDetailByIdForCompany,
@@ -33,16 +27,7 @@ export async function getContactDetailView(
     contactId,
   });
 
-  const [
-    contact,
-    failCount,
-    lastCall,
-    openCallbacks,
-    calls,
-    notes,
-    callbacks,
-    orders,
-  ] = await Promise.all([
+  const [contact, failCount, lastCall, openCallbacks, notes] = await Promise.all([
     findContactDetailByIdForCompany({
       companyId: currentUser.companyId,
       contactId,
@@ -59,19 +44,7 @@ export async function getContactDetailView(
       companyId: currentUser.companyId,
       contactId,
     }),
-    listCallActivitiesForContact({
-      companyId: currentUser.companyId,
-      contactId,
-    }),
     listNotesForContact({
-      companyId: currentUser.companyId,
-      contactId,
-    }),
-    listCallbacksForContact({
-      companyId: currentUser.companyId,
-      contactId,
-    }),
-    listOrdersForContact({
       companyId: currentUser.companyId,
       contactId,
     }),
@@ -127,12 +100,6 @@ export async function getContactDetailView(
           }
         : null,
     },
-    activity: buildActivityTimeline({
-      calls,
-      notes,
-      callbacks,
-      orders,
-    }),
     notes: notes.map((note) => ({
       id: note.id,
       body: note.body,

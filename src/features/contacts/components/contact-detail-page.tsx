@@ -2,6 +2,7 @@ import { CallWorkflowPanel } from "@/src/features/calls/components/call-workflow
 import { ContactCallbacksPanel } from "@/src/features/callbacks/components/contact-callbacks-panel";
 import type { ContactCallbacksPanelView } from "@/src/features/callbacks/types";
 import type { ContactDetailView } from "../types";
+import type { ContactActivityTimelineView } from "../types/activity-timeline";
 
 import { ContactActivityTimeline } from "./contact-activity-timeline";
 import { ContactContextCards } from "./contact-context-cards";
@@ -10,6 +11,7 @@ import { ContactNotesSection } from "./contact-notes-section";
 
 type ContactDetailPageProps = {
   view: ContactDetailView;
+  activityTimeline: ContactActivityTimelineView;
   callbacksPanel: ContactCallbacksPanelView;
   returnTo: string;
   showCreatedMessage?: boolean;
@@ -17,6 +19,7 @@ type ContactDetailPageProps = {
 
 export function ContactDetailPage({
   view,
+  activityTimeline,
   callbacksPanel,
   returnTo,
   showCreatedMessage = false,
@@ -32,7 +35,11 @@ export function ContactDetailPage({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
           <ContactContextCards context={view.context} />
-          <ContactActivityTimeline items={view.activity} />
+          <ContactActivityTimeline
+            contactId={view.contact.id}
+            returnTo={returnTo}
+            timeline={activityTimeline}
+          />
           <ContactNotesSection contactId={view.contact.id} notes={view.notes} />
         </div>
 

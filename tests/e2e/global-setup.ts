@@ -16,7 +16,8 @@ export const operatorAuthFile = path.join(
 async function globalSetup(config: FullConfig) {
   const baseURL = config.projects[0]?.use?.baseURL ?? "http://localhost:3000";
 
-  // Restore deterministic queue/callback state after prior E2E runs.
+  // Apply schema and restore deterministic queue/callback state after prior E2E runs.
+  execSync("npx prisma migrate deploy", { stdio: "inherit", cwd: process.cwd() });
   execSync("npm run prisma:seed", { stdio: "inherit", cwd: process.cwd() });
 
   mkdirSync(path.dirname(operatorAuthFile), { recursive: true });

@@ -118,18 +118,3 @@ export function contactStatusClassName(status: ContactStatus): string {
       return "bg-zinc-100 text-zinc-700";
   }
 }
-
-export function activityKindLabel(
-  kind: "CALL" | "NOTE" | "CALLBACK" | "ORDER",
-): string {
-  switch (kind) {
-    case "CALL":
-      return "Call";
-    case "NOTE":
-      return "Note";
-    case "CALLBACK":
-      return "Callback";
-    case "ORDER":
-      return "Order";
-  }
-}
