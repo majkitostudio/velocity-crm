@@ -34,11 +34,13 @@ export async function createOrderForCallInTransaction(
   const adjustedItems = result.items.filter((item) => item.priceChanged);
 
   await recordAuditEvent({
+    tx,
     companyId: input.currentUser.companyId,
     actorUserId: input.currentUser.id,
     action: AuditActions.ORDER_CREATED,
     entityType: AuditEntityTypes.ORDER,
     entityId: result.orderId,
+    contactId: input.contactId,
     metadata: {
       source: "call_workflow",
       contactId: input.contactId,

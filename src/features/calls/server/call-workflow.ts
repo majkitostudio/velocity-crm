@@ -214,11 +214,13 @@ export async function completeCall(
         contactStatus = updated.status;
 
         await recordAuditEvent({
+          tx,
           companyId: currentUser.companyId,
           actorUserId: currentUser.id,
           action: AuditActions.CONTACT_STATUS_CHANGED,
           entityType: AuditEntityTypes.CONTACT,
           entityId: contact.id,
+          contactId: contact.id,
           metadata: {
             from: contact.status,
             to: "CUSTOMER",
@@ -244,11 +246,13 @@ export async function completeCall(
           contactBecameLost = true;
 
           await recordAuditEvent({
+            tx,
             companyId: currentUser.companyId,
             actorUserId: currentUser.id,
             action: AuditActions.CONTACT_STATUS_CHANGED,
             entityType: AuditEntityTypes.CONTACT,
             entityId: contact.id,
+            contactId: contact.id,
             metadata: {
               from: contact.status,
               to: "LOST",
@@ -259,11 +263,13 @@ export async function completeCall(
         }
 
         await recordAuditEvent({
+          tx,
           companyId: currentUser.companyId,
           actorUserId: currentUser.id,
           action: AuditActions.CALL_COMPLETED,
           entityType: AuditEntityTypes.CALL_ACTIVITY,
           entityId: callActivity.id,
+          contactId: contact.id,
           metadata: {
             outcome: input.outcome,
             failCount,
@@ -283,11 +289,13 @@ export async function completeCall(
 
       if (createdCallbackId) {
         await recordAuditEvent({
+          tx,
           companyId: currentUser.companyId,
           actorUserId: currentUser.id,
           action: AuditActions.CALLBACK_CREATED,
           entityType: AuditEntityTypes.CALLBACK,
           entityId: createdCallbackId,
+          contactId: contact.id,
           metadata: {
             source: input.outcome,
             sourceCallbackId: sourceCallback?.id ?? null,
@@ -296,11 +304,13 @@ export async function completeCall(
       }
 
       await recordAuditEvent({
+        tx,
         companyId: currentUser.companyId,
         actorUserId: currentUser.id,
         action: AuditActions.CALL_COMPLETED,
         entityType: AuditEntityTypes.CALL_ACTIVITY,
         entityId: callActivity.id,
+        contactId: contact.id,
         metadata: {
           outcome: input.outcome,
           idempotencyKey: input.idempotencyKey,

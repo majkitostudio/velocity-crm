@@ -249,18 +249,22 @@ export async function completeSourceCallbackInTransaction(
 }
 
 async function recordCallbackAudit(input: {
+  tx?: TransactionClient;
   companyId: string;
   actorUserId: string;
   action: (typeof AuditActions)[keyof typeof AuditActions];
   callbackId: string;
+  contactId: string;
   metadata?: Record<string, unknown>;
 }) {
   await recordAuditEvent({
+    tx: input.tx,
     companyId: input.companyId,
     actorUserId: input.actorUserId,
     action: input.action,
     entityType: AuditEntityTypes.CALLBACK,
     entityId: input.callbackId,
+    contactId: input.contactId,
     metadata: input.metadata,
   });
 }
@@ -311,8 +315,8 @@ export async function createCallback(input: {
     actorUserId: currentUser.id,
     action: AuditActions.CALLBACK_CREATED,
     callbackId: callback.id,
+    contactId: input.contactId,
     metadata: {
-      contactId: input.contactId,
       assignedUserId,
       scheduledAt: input.scheduledAt.toISOString(),
     },
@@ -366,10 +370,12 @@ export async function createCallbacks(
 
     for (const callback of created) {
       await recordCallbackAudit({
+        tx,
         companyId: currentUser.companyId,
         actorUserId: currentUser.id,
         action: AuditActions.CALLBACK_CREATED,
         callbackId: callback.id,
+        contactId: callback.contactId,
       });
     }
 
@@ -414,6 +420,7 @@ export async function rescheduleCallback(input: {
     actorUserId: currentUser.id,
     action: AuditActions.CALLBACK_UPDATED,
     callbackId: updated.id,
+    contactId: callback.contactId,
     metadata: {
       transition: "reschedule",
       scheduledAt: input.scheduledAt.toISOString(),
@@ -459,6 +466,7 @@ export async function cancelCallback(input: {
     actorUserId: currentUser.id,
     action: AuditActions.CALLBACK_UPDATED,
     callbackId: updated.id,
+    contactId: callback.contactId,
     metadata: {
       transition: "cancel",
     },
