@@ -162,6 +162,47 @@ export async function findOpenCallbacksForContact(input: {
   });
 }
 
+export type ExistingContactLookup = {
+  phones: Set<string>;
+  emails: Set<string>;
+};
+
+export async function findExistingContactsByPhonesAndEmails(input: {
+  companyId: string;
+  phones: string[];
+  emails: string[];
+}): Promise<ExistingContactLookup> {
+  const uniquePhones = [...new Set(input.phones.filter(Boolean))];
+  const uniqueEmails = [...new Set(input.emails.filter(Boolean))];
+
+  if (uniquePhones.length === 0 && uniqueEmails.length === 0) {
+    return { phones: new Set(), emails: new Set() };
+  }
+
+  const conditions = [
+    uniquePhones.length > 0 ? { phone: { in: uniquePhones } } : null,
+    uniqueEmails.length > 0 ? { email: { in: uniqueEmails } } : null,
+  ].filter((condition): condition is { phone: { in: string[] } } | { email: { in: string[] } } =>
+    Boolean(condition),
+  );
+
+  const contacts = await prisma.contact.findMany({
+    where: {
+      companyId: input.companyId,
+      OR: conditions,
+    },
+    select: {
+      phone: true,
+      email: true,
+    },
+  });
+
+  return {
+    phones: new Set(contacts.map((contact) => contact.phone).filter(Boolean) as string[]),
+    emails: new Set(contacts.map((contact) => contact.email).filter(Boolean) as string[]),
+  };
+}
+
 export async function findContactDuplicateInCompany(input: {
   companyId: string;
   phone?: string | null;

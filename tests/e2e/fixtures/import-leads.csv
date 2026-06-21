@@ -1,0 +1,7 @@
+name,phone,email
+E2E Import Lead 1,+4206019100001,import1@velocity.local
+E2E Import Lead 2,+4206019100002,import2@velocity.local
+Duplicate Seed,+420601100001,duplicate@velocity.local
+Dup In File A,+4206019100003,dupA@velocity.local
+Dup In File B,+4206019100003,dupB@velocity.local
+Invalid Phone,not-a-phone,invalid@velocity.local

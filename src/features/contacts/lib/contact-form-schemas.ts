@@ -1,56 +1,63 @@
 import { ContactPriority } from "@/src/generated/prisma/client";
 import { z } from "zod";
 
-import { normalizeEmail, isValidEmail } from "./email";
 import {
-  formatPhoneValidationMessage,
-  isValidPhone,
-  normalizePhone,
-} from "./phone";
+  validateContactName,
+  validateContactPhone,
+  validateOptionalContactEmail,
+} from "./contact-field-validation";
 
 export const phoneFieldSchema = z
   .string()
   .trim()
-  .min(1, "Telefon je povinný")
-  .transform((value, context) => {
-    const normalized = normalizePhone(value);
-
-    if (!normalized) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Telefon je povinný",
-      });
-
-      return z.NEVER;
+  .superRefine((value, ctx) => {
+    const result = validateContactPhone(value);
+    if (!result.ok) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: result.message });
     }
-
-    if (!isValidPhone(normalized)) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: formatPhoneValidationMessage(),
-      });
-
-      return z.NEVER;
+  })
+  .transform((value) => {
+    const result = validateContactPhone(value);
+    if (!result.ok) {
+      throw new Error(result.message);
     }
-
-    return normalized;
+    return result.value;
   });
 
 export const optionalEmailFieldSchema = z
   .string()
   .trim()
   .optional()
-  .transform((value) => normalizeEmail(value))
-  .refine((value) => value === null || isValidEmail(value), {
-    message: "Neplatný e-mail",
+  .transform((value) => validateOptionalContactEmail(value))
+  .superRefine((result, ctx) => {
+    if (!result.ok) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: result.message });
+    }
+  })
+  .transform((result) => {
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+    return result.value;
   });
 
 export const createContactSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "Jméno je povinné")
-    .max(200, "Jméno je příliš dlouhé"),
+    .superRefine((value, ctx) => {
+      const result = validateContactName(value);
+      if (!result.ok) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: result.message });
+      }
+    })
+    .transform((value) => {
+      const result = validateContactName(value);
+      if (!result.ok) {
+        throw new Error(result.message);
+      }
+      return result.value;
+    }),
   phone: phoneFieldSchema,
   email: optionalEmailFieldSchema,
   priority: z.nativeEnum(ContactPriority).default(ContactPriority.NORMAL),

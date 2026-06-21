@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Breadcrumb } from "@/src/components/ui/breadcrumb";
 import { EmptyState } from "@/src/components/ui/empty-state";
 
@@ -23,11 +25,22 @@ export function ContactsPage({ view }: ContactsPageProps) {
               Přehled kontaktů. Kliknutím otevřete detail a zahájíte hovor.
             </p>
           </div>
-          <CreateContactDialog
-            returnTo={view.returnTo}
-            canManageAssignments={view.canManageAssignments}
-            assignableOperators={view.assignableOperators}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            {view.canManageAssignments ? (
+              <Link
+                href={`/contacts/import?returnTo=${encodeURIComponent(view.returnTo)}`}
+                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
+                data-testid="contacts-import-link"
+              >
+                Import CSV
+              </Link>
+            ) : null}
+            <CreateContactDialog
+              returnTo={view.returnTo}
+              canManageAssignments={view.canManageAssignments}
+              assignableOperators={view.assignableOperators}
+            />
+          </div>
         </div>
       </div>
 

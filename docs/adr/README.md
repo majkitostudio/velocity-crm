@@ -13,6 +13,7 @@ Tento adresář obsahuje architektonická rozhodnutí pro Velocity CRM.
 | [005](./005-saas-bootstrap-v1.md) | SaaS bootstrap pro V1 | **Přijato** |
 | [006](./006-contacts-list-and-navigation.md) | Seznam kontaktů, filtry URL, breadcrumb | **Přijato** |
 | [007](./007-contact-phone-normalization.md) | Normalizace telefonu a e-mailu | **Přijato** |
+| [008](./008-csv-contact-import-pipeline.md) | CSV import pipeline a katalog polí | **Přijato** |
 
 Schválená workflow pravidla: [WORKFLOW_RULES.md](../WORKFLOW_RULES.md)
 

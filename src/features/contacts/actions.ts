@@ -13,8 +13,25 @@ import { isDomainError } from "@/src/domain/errors";
 import { createNote } from "@/src/features/notes/server/notes.service";
 
 import { parseReturnToPath } from "./lib/list-navigation";
-import { createContactSchema, createNoteSchema } from "./schemas";
+import {
+  createContactSchema,
+  createNoteSchema,
+  executeImportSchema,
+  parseImportSchema,
+  validateImportSchema,
+} from "./schemas";
 import { createContact } from "./server/contacts.service";
+import {
+  executeImport,
+  parseImport,
+  validateImport,
+} from "./server/import/import.service";
+import type {
+  ExecuteImportResult,
+  ImportPreviewResult,
+  ImportPreviewSections,
+  ParseImportResult,
+} from "./server/import/import.types";
 
 export async function createContactAction(
   _prevState: ActionResult<{ contactId: string }> | null,
@@ -42,6 +59,72 @@ export async function createContactAction(
     redirect(
       `/contacts/${contact.id}?returnTo=${encodeURIComponent(returnTo)}&created=1`,
     );
+  } catch (error) {
+    if (isDomainError(error)) {
+      return actionFailure(error.message);
+    }
+
+    throw error;
+  }
+}
+
+export async function parseImportAction(
+  input: unknown,
+): Promise<ActionResult<ParseImportResult>> {
+  const parsed = parseImportSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return actionFailure("Neplatný soubor pro import.", zodFieldErrors(parsed.error));
+  }
+
+  try {
+    const result = await parseImport(parsed.data);
+    return actionSuccess(result);
+  } catch (error) {
+    if (isDomainError(error)) {
+      return actionFailure(error.message);
+    }
+
+    throw error;
+  }
+}
+
+export async function validateImportAction(
+  input: unknown,
+): Promise<ActionResult<ImportPreviewResult & { sections: ImportPreviewSections }>> {
+  const parsed = validateImportSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return actionFailure("Neplatné mapování sloupců.", zodFieldErrors(parsed.error));
+  }
+
+  try {
+    const result = await validateImport(parsed.data);
+    return actionSuccess(result);
+  } catch (error) {
+    if (isDomainError(error)) {
+      return actionFailure(error.message);
+    }
+
+    throw error;
+  }
+}
+
+export async function executeImportAction(
+  input: unknown,
+): Promise<ActionResult<ExecuteImportResult>> {
+  const parsed = executeImportSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return actionFailure("Neplatná data pro import.", zodFieldErrors(parsed.error));
+  }
+
+  try {
+    const result = await executeImport(parsed.data);
+
+    revalidatePath("/contacts");
+
+    return actionSuccess(result);
   } catch (error) {
     if (isDomainError(error)) {
       return actionFailure(error.message);

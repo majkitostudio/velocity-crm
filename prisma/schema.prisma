@@ -61,6 +61,11 @@ enum AiTaskType {
   NEXT_ACTION
 }
 
+enum ImportBatchStatus {
+  COMPLETED
+  FAILED
+}
+
 model Company {
   id        String   @id @default(cuid())
   name      String
@@ -77,6 +82,7 @@ model Company {
   callbacks         Callback[]
   notes             Note[]
   aiLogs            AiLog[]
+  contactImportBatches ContactImportBatch[]
 }
 
 model User {
@@ -100,6 +106,7 @@ model User {
   aiLogs           AiLog[]
   accounts         Account[]
   sessions         Session[]
+  contactImportBatches ContactImportBatch[]
 
   @@index([companyId])
   @@index([companyId, role])
@@ -174,6 +181,21 @@ model Contact {
   @@index([companyId, assignedUserId])
   @@index([companyId, priority])
   @@index([companyId, source])
+}
+
+model ContactImportBatch {
+  id          String            @id @default(cuid())
+  companyId   String
+  actorUserId String
+  fileName    String?
+  status      ImportBatchStatus
+  stats       Json
+  createdAt   DateTime          @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  actor   User    @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, createdAt])
 }
 
 model ProductCategory {

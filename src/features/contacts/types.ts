@@ -7,6 +7,7 @@ import type {
   OrderStatus,
 } from "@/src/generated/prisma/client";
 
+import type { ContactFieldCatalogEntry } from "./lib/contact-fields";
 import type { ListContactsSort } from "./schemas";
 
 export type ContactWorkflowBadge =
@@ -133,6 +134,12 @@ export type ContactListAssigneeOption = {
   id: string;
   name: string | null;
   email: string;
+};
+
+export type ImportPageView = {
+  returnTo: string;
+  assignableOperators: ContactListAssigneeOption[];
+  mappableFields: readonly ContactFieldCatalogEntry[];
 };
 
 export type ContactsPageView = {
