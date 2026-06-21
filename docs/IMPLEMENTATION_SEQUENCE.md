@@ -30,7 +30,7 @@ flowchart TD
   S5 --> S6[Slice 6: Orders Integration]
   S6 --> S7[Slice 7: Callbacks UI]
   S7 --> S8[Slice 8: Contacts List and Import]
-  S8 --> S9[Slice 9: Audit and Hardening]
+  S8 --> S9[Slice 9: Contact Activity and Audit]
   S9 --> S10[Slice 10: AI V1]
 ```
 
@@ -274,27 +274,44 @@ ContactPage → completeCallAction → CallWorkflow → services/repos → trans
 
 ---
 
-## Slice 9: Audit and Hardening
+## Slice 9: Contact Activity & Audit
 
-**Cíl:** Production-ready tenant isolation, audit, testy, CI.
+**Cíl:** Jednotná append-only historie kontaktu + persistovaný audit; stránkovaná timeline; tenant testy a CI.
+
+**ADR gate:** [ADR-009](./adr/009-contact-activity-and-audit.md)
 
 ### Úkoly
 
-| # | Úkol | Soubory (cíl) |
-|---|------|----------------|
-| 9.1 | Prisma model `AuditEvent` + migrace | `prisma/schema.prisma` |
-| 9.2 | `src/server/audit.ts` — plná implementace | audit service |
-| 9.3 | `src/server/tenant.ts` — assert helpery | tenant utilities |
-| 9.4 | Integrační testy tenant isolation | `tests/` nebo `__tests__/` |
-| 9.5 | Testy CallWorkflow outcomes | integrační |
-| 9.6 | CI: lint, prisma validate, build, test | `.github/workflows/` |
-| 9.7 | JWT refresh strategie pro role changes | `src/server/auth.ts` |
+| # | Úkol | Soubory (cíl) | Commit |
+|---|------|----------------|--------|
+| 9.0 | ADR-009, update adr/README | `docs/adr/` | 1 |
+| 9.1 | Prisma `ContactActivity`, `AuditEvent`, enums, migrace | `prisma/schema.prisma`, `src/domain/` | 2 |
+| 9.2 | `recordContactBusinessEvent`, writers, audit persistence | `src/features/contacts/server/`, `src/server/audit.ts` | 3 |
+| 9.3 | Wire all workflows (call, order, callback, note, contact, import) | workflow + service soubory | 4 |
+| 9.4 | Paginated timeline read path + UI filters | `contact-activity.*`, timeline komponenty | 5 |
+| 9.5 | E2E, tenant isolation tests, CI workflow | `tests/`, `.github/workflows/` | 6 |
+
+### Commit plán
+
+| # | Commit message |
+|---|----------------|
+| 1 | `docs(contacts): add ADR-009 contact activity and audit model` |
+| 2 | `feat(activity): add ContactActivity and AuditEvent schema` |
+| 3 | `feat(activity): add business event recorder and audit persistence` |
+| 4 | `feat(activity): record events from all contact workflows` |
+| 5 | `feat(contacts): paginated activity timeline with filters` |
+| 6 | `test(contacts): activity E2E tenant isolation and CI` |
+
+Každý commit: `build` + `lint` green; E2E od commitu 4.
 
 ### Definition of Done
 
-- [ ] Audit eventy pro všechny kritické akce z TARGET_ARCHITECTURE
-- [ ] CI běží na každý push
+- [ ] Timeline čte z `ContactActivity` se stránkováním
+- [ ] Všechny kritické workflow zapisují activity + audit v transakci
+- [ ] ContactActivity se nečte pro business rozhodování (ADR-009)
 - [ ] Cross-tenant testy procházejí
+- [ ] CI běží na každý push
+- [ ] ADR-009 schváleno a implementace v souladu
 
 ---
 
@@ -335,6 +352,8 @@ Tyto úkoly se provádějí při dotyku souvisejícího kódu, ne jako blok:
 | Odstranit nebo zdokumentovat unused Auth.js DB modely (`Session`, `Account`) | Nízká |
 | `User.email` → `@@unique([companyId, email])` pro SaaS | Před Phase 11 |
 | Supabase RLS policies | Před multi-tenant produkcí |
+| JWT refresh strategie pro role changes | Production Hardening slice |
+| `src/server/tenant.ts` assert helpery | Production Hardening slice |
 
 ---
 
@@ -347,6 +366,8 @@ Před merge každého slice ověřit:
 - [ ] Zod schema pro každou mutaci
 - [ ] Role guards aplikovány
 - [ ] Audit eventy pro kritické akce
+- [ ] ContactActivity zapisována přes `recordContactBusinessEvent` (od Slice 9)
+- [ ] ContactActivity se nečte pro business rozhodování (ADR-009)
 - [ ] `revalidatePath` / cache invalidation
 - [ ] Otevřená ADR neporušena
 - [ ] Alespoň jeden test tenant isolation (od Slice 2)
