@@ -251,10 +251,14 @@ src/
         queue.service.ts
         queue.repository.ts
     ai/
+      context/
+        contact-ai-context.builder.ts
+        providers/
+        statistics/
+        types/
       server/
-        ai-log.service.ts
-        ai-log.repository.ts
-        ai-context.service.ts
+        ai-log.ts
+        contact-ai-context.service.ts
 ```
 
 **MVP zjednodušení:** Nejdřív `actions.ts`, `schemas.ts` a `server/*.ts`. Repository vrstvu lze zavádět postupně u nového kódu a při refaktoru rizikových dotazů.

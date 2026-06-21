@@ -131,6 +131,7 @@ export async function findLatestCallForContact(input: {
       id: true,
       outcome: true,
       createdAt: true,
+      note: true,
       operator: {
         select: {
           name: true,

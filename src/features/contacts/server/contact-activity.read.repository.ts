@@ -1,6 +1,10 @@
 import "server-only";
 
-import type { ContactActivityKind, Prisma } from "@/src/generated/prisma/client";
+import {
+  ContactActivityKind,
+  type ActivitySourceEntity,
+  type Prisma,
+} from "@/src/generated/prisma/client";
 import { prisma } from "@/src/server/db";
 
 import type { ActivityTimelineCursor } from "../lib/activity-timeline-schemas";
@@ -20,6 +24,20 @@ export type ContactActivityReadRow = {
   kind: ContactActivityKind;
   occurredAt: Date;
   payload: Prisma.JsonValue;
+  actor: {
+    name: string | null;
+    email: string;
+  } | null;
+};
+
+export type ContactActivityAiReadRow = {
+  id: string;
+  kind: ContactActivityKind;
+  occurredAt: Date;
+  payload: Prisma.JsonValue;
+  correlationId: string | null;
+  sourceEntityType: ActivitySourceEntity | null;
+  sourceEntityId: string | null;
   actor: {
     name: string | null;
     email: string;
@@ -81,6 +99,62 @@ export async function listContactActivitiesForTimeline(
           email: true,
         },
       },
+    },
+  });
+}
+
+export async function listContactActivitiesForAiContext(input: {
+  companyId: string;
+  contactId: string;
+  limit: number;
+}): Promise<ContactActivityAiReadRow[]> {
+  return prisma.contactActivity.findMany({
+    where: {
+      companyId: input.companyId,
+      contactId: input.contactId,
+    },
+    orderBy: [{ occurredAt: "desc" }, { id: "desc" }],
+    take: input.limit,
+    select: {
+      id: true,
+      kind: true,
+      occurredAt: true,
+      payload: true,
+      correlationId: true,
+      sourceEntityType: true,
+      sourceEntityId: true,
+      actor: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+}
+
+export async function countContactActivitiesForContact(input: {
+  companyId: string;
+  contactId: string;
+}): Promise<number> {
+  return prisma.contactActivity.count({
+    where: {
+      companyId: input.companyId,
+      contactId: input.contactId,
+    },
+  });
+}
+
+export async function countContactActivitiesByKindForContact(input: {
+  companyId: string;
+  contactId: string;
+  kind: ContactActivityKind;
+}): Promise<number> {
+  return prisma.contactActivity.count({
+    where: {
+      companyId: input.companyId,
+      contactId: input.contactId,
+      kind: input.kind,
     },
   });
 }

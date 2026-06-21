@@ -116,6 +116,10 @@ export type ContactActivityPayloadByKind = {
   >;
 };
 
+export type ContactActivityDataByKind = {
+  [K in keyof typeof contactActivityPayloadSchemasV1]: ContactActivityPayloadByKind[K]["data"];
+};
+
 export type ContactActivityPayload =
   ContactActivityPayloadByKind[keyof ContactActivityPayloadByKind];
 

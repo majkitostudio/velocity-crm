@@ -69,6 +69,18 @@ export async function countOpenCallbacksForContact(input: {
   });
 }
 
+const callbackSnapshotSelect = {
+  id: true,
+  scheduledAt: true,
+  status: true,
+  note: true,
+  assignedUser: {
+    select: {
+      name: true,
+    },
+  },
+} as const;
+
 export async function listOpenCallbacksForContact(input: {
   companyId: string;
   contactId: string;
@@ -82,17 +94,28 @@ export async function listOpenCallbacksForContact(input: {
     orderBy: {
       scheduledAt: "asc",
     },
-    select: {
-      id: true,
-      scheduledAt: true,
-      status: true,
-      note: true,
-      assignedUser: {
-        select: {
-          name: true,
-        },
+    select: callbackSnapshotSelect,
+  });
+}
+
+export async function listRecentClosedCallbacksForContact(input: {
+  companyId: string;
+  contactId: string;
+  limit: number;
+}) {
+  return prisma.callback.findMany({
+    where: {
+      companyId: input.companyId,
+      contactId: input.contactId,
+      status: {
+        not: CallbackStatus.OPEN,
       },
     },
+    orderBy: {
+      updatedAt: "desc",
+    },
+    take: input.limit,
+    select: callbackSnapshotSelect,
   });
 }
 

@@ -31,7 +31,8 @@ flowchart TD
   S6 --> S7[Slice 7: Callbacks UI]
   S7 --> S8[Slice 8: Contacts List and Import]
   S8 --> S9[Slice 9: Contact Activity and Audit]
-  S9 --> S10[Slice 10: AI V1]
+  S9 --> S10[Slice 10: AI Context Builder]
+  S10 --> S11[Slice 11: LLM Adapter and AI UI]
 ```
 
 ---
@@ -315,7 +316,43 @@ Každý commit: `build` + `lint` green; E2E od commitu 4.
 
 ---
 
-## Slice 10: AI V1
+## Slice 10: AI Context Builder
+
+**Cíl:** Deterministická příprava strukturovaného AI kontextu kontaktu bez LLM integrace.
+
+### Úkoly
+
+| # | Úkol | Soubory (cíl) |
+|---|------|----------------|
+| 10.1 | ADR-010 — AI Context Architecture | `docs/adr/010-ai-context-architecture.md` |
+| 10.2 | Context Providers + Provider Registry | `src/features/ai/context/providers/` |
+| 10.3 | `ContactAiContextBuilder` + typy | `src/features/ai/context/` |
+| 10.4 | `buildContactAiContext` service | `src/features/ai/server/contact-ai-context.service.ts` |
+| 10.5 | Integrační testy (tenant isolation, determinismus) | `tests/integration/` |
+
+### Vrstvy
+
+```
+buildContactAiContext → ContactAiContextBuilder → Context Providers → Repositories → Prisma
+```
+
+### Definition of Done
+
+- [x] `ContactAiContext` je immutable read-only kontrakt
+- [x] History čte výhradně z `ContactActivity`
+- [x] Snapshot čte z business entit
+- [x] Statistics Factory agreguje provider metadata bez dalších DB dotazů
+- [x] Builder neobsahuje LLM ani AI logiku
+- [x] Integrační testy procházejí
+
+### Co Slice 10 neřeší
+
+- LLM Adapter, prompty, AI UI (Slice 11)
+- Unified contact detail loader (Slice 10.5)
+
+---
+
+## Slice 11: LLM Adapter and AI UI
 
 **Cíl:** AI asistent nad reálnými daty kontaktu.
 
@@ -323,21 +360,28 @@ Každý commit: `build` + `lint` green; E2E od commitu 4.
 
 | # | Úkol | Soubory (cíl) |
 |---|------|----------------|
-| 10.1 | `ai-context.service.ts` — sestavení kontextu | `ai/server/` |
-| 10.2 | OpenAI integrace (nebo schválený provider) | `ai/server/` |
-| 10.3 | Task types: summary, history, next action | actions |
-| 10.4 | UI panel na contact detail | client component |
-| 10.5 | `createAiLog` + audit `ai.generated` | existující + audit |
+| 11.1 | LLM Adapter (schválený provider) | `src/features/ai/llm/` |
+| 11.2 | Task types: summary, history, next action | `src/features/ai/actions.ts` |
+| 11.3 | UI panel na contact detail | client component |
+| 11.4 | `createAiLog` + audit `ai.generated` | existující + audit |
 
 ### Předpoklad
 
-- Slice 3–8 musí dodat dostatek reálných dat (calls, notes, orders, callbacks).
+- Slice 10 musí dodat `ContactAiContext` builder.
 
 ### Definition of Done
 
 - [ ] Operátor vidí AI shrnutí na detailu kontaktu
 - [ ] Výstupy uloženy v `AiLog`
 - [ ] PII v promptech ošetřena dle audit standardu
+
+---
+
+## Slice 10.5: Unified Contact Detail Loader (backlog)
+
+**Cíl:** Sjednotit `getContactDetailView` a `buildContactAiContext` do jednoho page loaderu s paralelním načítáním a selective `sections`.
+
+> Původní plán „Slice 10: AI V1“ byl rozdělen na Slice 10 (Context Builder) a Slice 11 (LLM/UI).
 
 ---
 
@@ -387,8 +431,9 @@ Před merge každého slice ověřit:
 | Phase 6 | Slice 7 |
 | Phase 7 | Slice 5 |
 | Phase 8 | Slice 6 |
-| Phase 9 | Slice 10 |
-| Phase 10 | Po Slice 10 (reporting — nový slice) |
+| Phase 9 | Slice 10 (AI Context Builder) |
+| Phase 10 | Slice 11 (LLM / AI UI) |
+| Phase 11 | Po Slice 11 (reporting — nový slice) |
 | Phase 11 | Po MVP (SaaS foundation) |
 
 ---

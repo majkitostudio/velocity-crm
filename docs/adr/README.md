@@ -15,6 +15,7 @@ Tento adresář obsahuje architektonická rozhodnutí pro Velocity CRM.
 | [007](./007-contact-phone-normalization.md) | Normalizace telefonu a e-mailu | **Přijato** |
 | [008](./008-csv-contact-import-pipeline.md) | CSV import pipeline a katalog polí | **Přijato** |
 | [009](./009-contact-activity-and-audit.md) | Contact Activity projekce a AuditEvent | **Přijato** |
+| [010](./010-ai-context-architecture.md) | AI Context Builder a Context Providers | **Přijato** |
 
 Schválená workflow pravidla: [WORKFLOW_RULES.md](../WORKFLOW_RULES.md)
 
