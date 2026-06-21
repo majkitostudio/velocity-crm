@@ -66,6 +66,27 @@ enum ImportBatchStatus {
   FAILED
 }
 
+enum ContactActivityKind {
+  CONTACT_CREATED
+  CONTACT_STATUS_CHANGED
+  CONTACT_ASSIGNED
+  CONTACT_UPDATED
+  NOTE_CREATED
+  CALLBACK_CREATED
+  CALLBACK_COMPLETED
+  CALL_FINISHED
+  ORDER_CREATED
+}
+
+enum ActivitySourceEntity {
+  CONTACT
+  CALL
+  NOTE
+  ORDER
+  CALLBACK
+  IMPORT_BATCH
+}
+
 model Company {
   id        String   @id @default(cuid())
   name      String
@@ -83,6 +104,8 @@ model Company {
   notes             Note[]
   aiLogs            AiLog[]
   contactImportBatches ContactImportBatch[]
+  contactActivities ContactActivity[]
+  auditEvents       AuditEvent[]
 }
 
 model User {
@@ -107,6 +130,8 @@ model User {
   accounts         Account[]
   sessions         Session[]
   contactImportBatches ContactImportBatch[]
+  contactActivities    ContactActivity[]    @relation("ContactActivityActor")
+  auditEvents          AuditEvent[]
 
   @@index([companyId])
   @@index([companyId, role])
@@ -174,6 +199,8 @@ model Contact {
   callActivities CallActivity[]
   notes          Note[]
   aiLogs         AiLog[]
+  activities     ContactActivity[]
+  auditEvents    AuditEvent[]
 
   @@unique([companyId, phone])
   @@unique([companyId, email])
@@ -349,4 +376,47 @@ model AiLog {
   @@index([companyId, userId])
   @@index([companyId, taskType])
   @@index([companyId, createdAt])
+}
+
+model ContactActivity {
+  id               String                @id @default(cuid())
+  companyId        String
+  contactId        String
+  actorUserId      String?
+  kind             ContactActivityKind
+  occurredAt       DateTime
+  sourceEntityType ActivitySourceEntity?
+  sourceEntityId   String?
+  correlationId    String?
+  payload          Json
+  createdAt        DateTime              @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  actor   User?   @relation("ContactActivityActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, contactId, occurredAt(sort: Desc), id(sort: Desc)])
+  @@index([companyId, contactId, kind, occurredAt(sort: Desc)])
+  @@unique([companyId, kind, sourceEntityType, sourceEntityId])
+}
+
+model AuditEvent {
+  id          String   @id @default(cuid())
+  companyId   String
+  actorUserId String?
+  action      String
+  entityType  String
+  entityId    String
+  contactId   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  company Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  actor   User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  contact Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, createdAt(sort: Desc)])
+  @@index([companyId, contactId, createdAt(sort: Desc)])
+  @@index([companyId, entityType, entityId])
+  @@index([companyId, actorUserId, createdAt(sort: Desc)])
 }
