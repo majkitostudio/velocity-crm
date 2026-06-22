@@ -408,7 +408,7 @@ ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → Llm
 | 12.0 | ADR-013 — AI Contact Summary Service + AI Service Pipeline | `docs/adr/013-ai-contact-summary-service.md` ✅ |
 | 12.1 | **Platform Layer** — Registry (bohatá metadata), Config, Feature Flags, Metrics, Cache abstraction, **AI Service Pipeline** | `registry/`, `config/`, `flags/`, `metrics/`, `cache/`, `services/shared/` ✅ |
 | 12.2 | **AiContactSummaryService** — první `AiTaskService` implementace | `services/contact-summary/` ✅ |
-| 12.3 | **Prompt** — produkční `summary@v1`, napojení na `defaultPromptVersion` | `prompts/templates/summary/` |
+| 12.3 | **Prompt** — produkční `summary@v1`, napojení na `defaultPromptVersion` | `prompts/summary/`, `prompts/serializers/` ✅ |
 | 12.4 | **Gateway** — pipeline → Fake adapter + `completeStructured` | `services/shared/ai-service-pipeline.ts` |
 | 12.5 | **UI** — placeholder panel + Server Action | client component, `contact-summary.actions.ts` |
 | 12.6 | **Cache** — `AiLogSummaryCacheStore` (fáze 1) | `services/contact-summary/` cache |

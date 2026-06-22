@@ -12,6 +12,7 @@ import {
   mapContactSummaryToViewModel,
   type SummaryViewModel,
 } from "./contact-summary.types";
+import { formatSummaryPromptLabel } from "../../prompts/summary/summary-prompt-version";
 
 export type AiContactSummaryServiceDeps = {
   clock: PipelineClock;
@@ -55,7 +56,7 @@ export class AiContactSummaryService
   toViewModel(result: AiServiceExecuteResult<ContactSummary>): SummaryViewModel {
     return mapContactSummaryToViewModel(result, {
       generatedAt: this.deps.clock.now(),
-      promptLabel: `summary@v${this.descriptor.defaultPromptVersion}`,
+      promptLabel: formatSummaryPromptLabel(this.descriptor.defaultPromptVersion),
     });
   }
 }
