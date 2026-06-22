@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 import "dotenv/config";
 
@@ -9,16 +11,50 @@ import { NotFoundError } from "../../src/domain/errors";
 const SEED_COMPANY_ID = "seed-company-velocity";
 const SEED_CUSTOMER_CONTACT_ID = "seed-contact-customer";
 
+const WRAPPER_GOLDEN_OPTIONS = {
+  includeMetadata: false,
+  limits: {
+    activity: 10,
+    orders: 5,
+    notes: 5,
+    recentClosedCallbacks: 2,
+  },
+} as const;
+
+const WRAPPER_GOLDEN_PATH = join(
+  import.meta.dirname,
+  "fixtures",
+  "contact-ai-context-wrapper-golden.json",
+);
+
+async function assertWrapperMatchesCommittedGoldenSnapshot() {
+  const actual = await buildContactAiContextForTenant({
+    companyId: SEED_COMPANY_ID,
+    contactId: SEED_CUSTOMER_CONTACT_ID,
+    options: WRAPPER_GOLDEN_OPTIONS,
+  });
+
+  const serialized = JSON.stringify(actual);
+
+  if (process.env.UPDATE_GOLDEN === "1") {
+    writeFileSync(WRAPPER_GOLDEN_PATH, `${JSON.stringify(JSON.parse(serialized), null, 2)}\n`);
+    console.log(`Updated wrapper golden snapshot: ${WRAPPER_GOLDEN_PATH}`);
+    return;
+  }
+
+  if (!existsSync(WRAPPER_GOLDEN_PATH)) {
+    throw new Error(
+      `Missing wrapper golden snapshot at ${WRAPPER_GOLDEN_PATH}. ` +
+        "Run with UPDATE_GOLDEN=1 against a seeded database to generate it.",
+    );
+  }
+
+  const golden = readFileSync(WRAPPER_GOLDEN_PATH, "utf8");
+  assert.equal(serialized, JSON.stringify(JSON.parse(golden)));
+}
+
 async function assertBuildsDeterministicContext() {
-  const options = {
-    includeMetadata: false,
-    limits: {
-      activity: 10,
-      orders: 5,
-      notes: 5,
-      recentClosedCallbacks: 2,
-    },
-  } as const;
+  const options = WRAPPER_GOLDEN_OPTIONS;
 
   const first = await buildContactAiContextForTenant({
     companyId: SEED_COMPANY_ID,
@@ -101,6 +137,7 @@ async function main() {
   }
 
   await assertBuildsDeterministicContext();
+  await assertWrapperMatchesCommittedGoldenSnapshot();
   await assertHistoryComesFromContactActivityOnly();
   await assertTenantIsolation();
   await assertStatisticsFromProviderAggregates();

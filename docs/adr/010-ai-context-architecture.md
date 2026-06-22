@@ -136,7 +136,19 @@ Postup přidání nového provideru:
 
 Orchestrace builderu (registry loop, freeze, options) zůstává beze změny.
 
-## Co Slice 10 neřeší
+## Evoluce — Slice 10.5 (ADR-011)
+
+Slice 10.5 zavedl **Contact Data Platform** (`ContactContext`) v `src/features/contacts/context/`. Context Providers a orchestrace se přesunuly z `features/ai` do neutrální platformy.
+
+`ContactAiContext` zůstává **AI read kontrakt** Slice 10 — vzniká projekcí `toContactAiContext()` z `ContactContext`. `buildContactAiContextForTenant()` je tenký wrapper pro zpětnou kompatibilitu.
+
+```
+Repositories → Context Providers → ContactContextBuilder → ContactContext
+                                                              ├→ mapContactDetailView → UI
+                                                              └→ toContactAiContext → ContactAiContext → LLM Adapter
+```
+
+Contact Detail nesmí importovat `features/ai` (viz ADR-011).
 
 - LLM integrace, prompty, streaming, embeddings, RAG
 - AI UI panel, chat

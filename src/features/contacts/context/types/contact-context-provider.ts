@@ -1,4 +1,4 @@
-import type { ResolvedBuildContactAiContextOptions } from "./build-options";
+import type { ResolvedBuildContactContextOptions } from "./build-options";
 
 export type ContactContextProviderInput = {
   companyId: string;
@@ -24,11 +24,10 @@ export type ContactContextProviderResultMap = {
 
 export type ContactContextProvider<K extends ContactContextProviderKey> = {
   readonly key: K;
-  /** Per-provider schema version for future evolution (ADR-010). */
   readonly version: number;
   provide(
     input: ContactContextProviderInput,
-    options: ResolvedBuildContactAiContextOptions,
+    options: ResolvedBuildContactContextOptions,
   ): Promise<ContactContextProviderResultMap[K]>;
 };
 

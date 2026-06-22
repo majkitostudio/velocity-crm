@@ -3,7 +3,6 @@ import {
   listNotesForContact,
 } from "@/src/features/contacts/server/notes.read.repository";
 
-import { formatAiContextDate } from "../lib/format-ai-context-value";
 import type { ContactContextProvider } from "../types/contact-context-provider";
 
 export const NOTES_CONTEXT_PROVIDER_VERSION = 1;
@@ -17,7 +16,7 @@ export const notesContextProvider: ContactContextProvider<"notes"> = {
       listNotesForContact({
         companyId: input.companyId,
         contactId: input.contactId,
-        limit: options.limits.notes,
+        limit: options.limits.notes ?? undefined,
       }),
       countNotesForContact({
         companyId: input.companyId,
@@ -31,7 +30,7 @@ export const notesContextProvider: ContactContextProvider<"notes"> = {
           id: note.id,
           body: options.includeSensitiveData ? note.body : "[redacted]",
           authorName: note.author.name,
-          createdAt: formatAiContextDate(note.createdAt),
+          createdAt: note.createdAt,
         })),
       },
       aggregates: {

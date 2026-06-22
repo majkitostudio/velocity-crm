@@ -16,6 +16,7 @@ Tento adresář obsahuje architektonická rozhodnutí pro Velocity CRM.
 | [008](./008-csv-contact-import-pipeline.md) | CSV import pipeline a katalog polí | **Přijato** |
 | [009](./009-contact-activity-and-audit.md) | Contact Activity projekce a AuditEvent | **Přijato** |
 | [010](./010-ai-context-architecture.md) | AI Context Builder a Context Providers | **Přijato** |
+| [011](./011-unified-contact-context-platform.md) | Unified Contact Context Platform (Slice 10.5) | **Přijato** |
 
 Schválená workflow pravidla: [WORKFLOW_RULES.md](../WORKFLOW_RULES.md)
 

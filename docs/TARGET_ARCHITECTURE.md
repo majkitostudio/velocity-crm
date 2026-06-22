@@ -207,10 +207,17 @@ src/
       guards.ts
   features/
     contacts/
+      context/
+        contact-context.builder.ts
+        providers/
+        statistics/
+        types/
+        mappers/
       actions.ts
       schemas.ts
       server/
         contacts.service.ts
+        contact-context.service.ts
         contacts.repository.ts
     calls/
       actions.ts
@@ -253,13 +260,13 @@ src/
     ai/
       context/
         contact-ai-context.builder.ts
-        providers/
-        statistics/
         types/
       server/
         ai-log.ts
         contact-ai-context.service.ts
 ```
+
+**Contact Context Platform (Slice 10.5):** Neutrální read vrstva v `contacts/context/`. Context Providers orchestrují tenant-scoped načtení do `ContactContext`. AI modul konzumuje platformu přes `toContactAiContext()` — Contact Detail UI **nesmí** importovat `features/ai`.
 
 **MVP zjednodušení:** Nejdřív `actions.ts`, `schemas.ts` a `server/*.ts`. Repository vrstvu lze zavádět postupně u nového kódu a při refaktoru rizikových dotazů.
 

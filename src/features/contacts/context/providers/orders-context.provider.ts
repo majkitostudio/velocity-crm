@@ -3,10 +3,7 @@ import {
   listRecentOrdersForContact,
 } from "@/src/features/orders/server/orders.repository";
 
-import {
-  formatAiContextDate,
-  formatAiContextDecimal,
-} from "../lib/format-ai-context-value";
+import { formatContextDecimal } from "../lib/format-context-value";
 import type { ContactContextProvider } from "../types/contact-context-provider";
 
 export const ORDERS_CONTEXT_PROVIDER_VERSION = 1;
@@ -45,12 +42,12 @@ export const ordersContextProvider: ContactContextProvider<"orders"> = {
           status: order.status,
           note: options.includeSensitiveData ? order.note : null,
           operatorName: order.operator.name,
-          createdAt: formatAiContextDate(order.createdAt),
+          createdAt: order.createdAt,
           items: order.items.map((item) => ({
             productId: item.productId,
             productName: item.product.name,
             quantity: item.quantity,
-            unitPrice: formatAiContextDecimal(item.unitPrice),
+            unitPrice: formatContextDecimal(item.unitPrice),
           })),
           total: calculateOrderTotal(order.items),
         })),

@@ -6,16 +6,15 @@ import {
   findLatestCallForContact,
 } from "@/src/features/contacts/server/contacts.repository";
 
-import { formatAiContextDate } from "../lib/format-ai-context-value";
 import type { ContactContextProvider } from "../types/contact-context-provider";
-import type { ContactAiProfile } from "../types/contact-ai-context";
+import type { ContactProfile } from "../types/contact-context";
 
 export const CONTACT_CONTEXT_PROVIDER_VERSION = 1;
 
 function mapContactProfile(
   contact: NonNullable<Awaited<ReturnType<typeof findContactDetailByIdForCompany>>>,
   includeSensitiveData: boolean,
-): ContactAiProfile {
+): ContactProfile {
   return {
     id: contact.id,
     name: contact.name,
@@ -37,8 +36,8 @@ function mapContactProfile(
           email: contact.assignedUser.email,
         }
       : null,
-    createdAt: formatAiContextDate(contact.createdAt),
-    updatedAt: formatAiContextDate(contact.updatedAt),
+    createdAt: contact.createdAt,
+    updatedAt: contact.updatedAt,
   };
 }
 
@@ -76,7 +75,7 @@ export const contactContextProvider: ContactContextProvider<"contact"> = {
               id: lastCall.id,
               outcome: lastCall.outcome,
               operatorName: lastCall.operator.name,
-              createdAt: formatAiContextDate(lastCall.createdAt),
+              createdAt: lastCall.createdAt,
               note: options.includeSensitiveData ? lastCall.note : null,
             }
           : null,

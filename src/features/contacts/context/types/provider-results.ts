@@ -1,12 +1,12 @@
-import type { ContactAiActivityEntry } from "./activity-entry";
+import type { ContactActivityEntry } from "./activity-entry";
 import type {
-  ContactAiCallbacksSnapshot,
-  ContactAiNotesSnapshot,
-  ContactAiOrdersSnapshot,
-  ContactAiProductsSnapshot,
-  ContactAiProfile,
-  ContactAiWorkflowSnapshot,
-} from "./contact-ai-context";
+  ContactCallbacksSnapshot,
+  ContactNotesSnapshot,
+  ContactOrdersSnapshot,
+  ContactProductsSnapshot,
+  ContactProfile,
+  ContactWorkflowSnapshot,
+} from "./contact-context";
 
 export type ActivityContextProviderAggregates = {
   totalActivityCount: number;
@@ -14,7 +14,7 @@ export type ActivityContextProviderAggregates = {
 };
 
 export type ActivityContextProviderResult = {
-  activities: readonly ContactAiActivityEntry[];
+  activities: readonly ContactActivityEntry[];
   aggregates: ActivityContextProviderAggregates;
 };
 
@@ -23,8 +23,8 @@ export type ContactContextProviderAggregates = {
 };
 
 export type ContactContextProviderResult = {
-  contact: ContactAiProfile;
-  workflow: ContactAiWorkflowSnapshot;
+  contact: ContactProfile;
+  workflow: ContactWorkflowSnapshot;
   aggregates: ContactContextProviderAggregates;
 };
 
@@ -34,7 +34,7 @@ export type OrdersContextProviderAggregates = {
 };
 
 export type OrdersContextProviderResult = {
-  orders: ContactAiOrdersSnapshot;
+  orders: ContactOrdersSnapshot;
   aggregates: OrdersContextProviderAggregates;
 };
 
@@ -43,12 +43,12 @@ export type CallbacksContextProviderAggregates = {
 };
 
 export type CallbacksContextProviderResult = {
-  callbacks: ContactAiCallbacksSnapshot;
+  callbacks: ContactCallbacksSnapshot;
   aggregates: CallbacksContextProviderAggregates;
 };
 
 export type ProductsContextProviderResult = {
-  products: ContactAiProductsSnapshot;
+  products: ContactProductsSnapshot;
 };
 
 export type NotesContextProviderAggregates = {
@@ -56,7 +56,7 @@ export type NotesContextProviderAggregates = {
 };
 
 export type NotesContextProviderResult = {
-  notes: ContactAiNotesSnapshot;
+  notes: ContactNotesSnapshot;
   aggregates: NotesContextProviderAggregates;
 };
 

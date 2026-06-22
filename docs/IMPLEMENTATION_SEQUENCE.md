@@ -32,7 +32,8 @@ flowchart TD
   S7 --> S8[Slice 8: Contacts List and Import]
   S8 --> S9[Slice 9: Contact Activity and Audit]
   S9 --> S10[Slice 10: AI Context Builder]
-  S10 --> S11[Slice 11: LLM Adapter and AI UI]
+  S10 --> S105[Slice 10.5: Unified Contact Context]
+  S105 --> S11[Slice 11: LLM Adapter and AI UI]
 ```
 
 ---
@@ -377,11 +378,42 @@ buildContactAiContext → ContactAiContextBuilder → Context Providers → Repo
 
 ---
 
-## Slice 10.5: Unified Contact Detail Loader (backlog)
+## Slice 10.5: Unified Contact Context Platform
 
-**Cíl:** Sjednotit `getContactDetailView` a `buildContactAiContext` do jednoho page loaderu s paralelním načítáním a selective `sections`.
+**Cíl:** Sjednotit `getContactDetailView` a `buildContactAiContext` do jedné datové platformy (`ContactContext`) se sub-section granularitou.
 
-> Původní plán „Slice 10: AI V1“ byl rozdělen na Slice 10 (Context Builder) a Slice 11 (LLM/UI).
+**ADR gate:** [ADR-011](./adr/011-unified-contact-context-platform.md)
+
+### Úkoly
+
+| # | Úkol | Soubory (cíl) |
+|---|------|----------------|
+| 10.5.0 | ADR-011 | `docs/adr/` |
+| 10.5.1 | `ContactContext` typy, sub-sections, presets | `src/features/contacts/context/types/` |
+| 10.5.2 | Context Providers (přesun z ai/) | `src/features/contacts/context/providers/` |
+| 10.5.3 | `ContactContextBuilder` | `src/features/contacts/context/contact-context.builder.ts` |
+| 10.5.4 | `toContactAiContext` + AI wrapper | `ai/context/mappers/`, `ai/context/contact-ai-context.builder.ts` |
+| 10.5.5 | Contact Detail + Callbacks panel z platformy | `contact-detail.service.ts`, `callbacks.service.ts` |
+| 10.5.6 | Request cache + integrační testy | `contact-context.service.ts`, `tests/integration/` |
+
+### Vrstvy
+
+```
+getContactDetailView → getContactContextForTenant → ContactContextBuilder → Providers → Repositories
+buildContactAiContextForTenant → (wrapper) → ContactContextBuilder → toContactAiContext()
+```
+
+### Definition of Done
+
+- [x] `ContactContext` je SSOT pro read data kontaktu
+- [x] Contact Detail neimportuje `features/ai`
+- [x] `buildContactAiContextForTenant` je tenký wrapper — Slice 10 AI kontrakt beze změny
+- [x] Detail preset nenačítá products/orders/history/statistics
+- [x] Duplicitní `listOpenCallbacksForContact` v callbacks panel odstraněna
+- [x] Request-scoped cache (`React cache`) pro sdílený load
+- [x] Integrační testy (partial load, tenant isolation, AI determinismus)
+
+> Původní plán „Slice 10: AI V1“ byl rozdělen na Slice 10 (Context Builder), Slice 10.5 (Unified Platform) a Slice 11 (LLM/UI).
 
 ---
 

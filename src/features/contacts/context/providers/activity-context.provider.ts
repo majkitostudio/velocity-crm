@@ -5,7 +5,7 @@ import {
   listContactActivitiesForAiContext,
 } from "@/src/features/contacts/server/contact-activity.read.repository";
 
-import { mapContactActivityRowsToAiEntries } from "../lib/map-activity-rows";
+import { mapContactActivityRowsToEntries } from "../lib/map-activity-rows";
 import type { ContactContextProvider } from "../types/contact-context-provider";
 
 export const ACTIVITY_CONTEXT_PROVIDER_VERSION = 1;
@@ -33,7 +33,7 @@ export const activityContextProvider: ContactContextProvider<"activity"> = {
     ]);
 
     return {
-      activities: mapContactActivityRowsToAiEntries(rows),
+      activities: mapContactActivityRowsToEntries(rows),
       aggregates: {
         totalActivityCount,
         callFinishedCount,

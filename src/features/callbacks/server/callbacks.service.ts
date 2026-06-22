@@ -25,6 +25,9 @@ import {
   buildCallbackCreatedPayload,
 } from "@/src/features/contacts/lib/activity-payload-builders";
 import { recordContactBusinessEvent } from "@/src/features/contacts/server/record-contact-business-event";
+import { CONTACT_DETAIL_CONTEXT_OPTIONS } from "@/src/features/contacts/context/types/build-options";
+import { getContactContextForTenant } from "@/src/features/contacts/server/contact-context.service";
+import { assertContactAccess } from "@/src/features/contacts/server/contacts.service";
 
 import { OPERATOR_CALLBACK_MIN_LEAD_MINUTES } from "../constants";
 import type {
@@ -45,7 +48,6 @@ import {
   findContactByIdForCompany,
   findUserByIdForCompany,
   listCallbacksForOperator,
-  listOpenCallbacksForContact,
   markCallbackDoneForCompany,
   updateCallbackForCompany,
 } from "./callbacks.repository";
@@ -580,22 +582,21 @@ export async function getContactCallbacksPanelView(input: {
 }): Promise<ContactCallbacksPanelView> {
   const currentUser = await requireCurrentUser();
 
-  await assertContactExists({
-    companyId: currentUser.companyId,
+  await assertContactAccess({
+    currentUser,
     contactId: input.contactId,
   });
 
-  const [openCallbacks, assignableOperators, openCount] = await Promise.all([
-    listOpenCallbacksForContact({
+  const [context, assignableOperators] = await Promise.all([
+    getContactContextForTenant({
       companyId: currentUser.companyId,
       contactId: input.contactId,
+      options: CONTACT_DETAIL_CONTEXT_OPTIONS,
     }),
     findAssignableOperatorsForCompany(currentUser.companyId),
-    countOpenCallbacksForContact({
-      companyId: currentUser.companyId,
-      contactId: input.contactId,
-    }),
   ]);
+
+  const openCallbacks = context.snapshot.callbacks.open;
 
   const highlightedCallbackId =
     input.highlightedCallbackId &&
@@ -606,7 +607,7 @@ export async function getContactCallbacksPanelView(input: {
   return {
     contactId: input.contactId,
     highlightedCallbackId,
-    hasExistingOpenCallback: openCount > 0,
+    hasExistingOpenCallback: openCallbacks.length > 0,
     canAssignToOthers: canManageCompanyData(currentUser.role),
     assignableOperators,
     openCallbacks: openCallbacks.map((callback) => ({
@@ -614,7 +615,7 @@ export async function getContactCallbacksPanelView(input: {
       scheduledAt: callback.scheduledAt,
       status: callback.status,
       note: callback.note,
-      assigneeName: callback.assignedUser.name,
+      assigneeName: callback.assigneeName,
     })),
   };
 }

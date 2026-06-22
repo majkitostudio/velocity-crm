@@ -1,10 +1,8 @@
 import type { ContactActivityKind } from "@/src/domain/activity";
-import {
-  contactActivityPayloadSchemasV1,
-} from "@/src/features/contacts/lib/activity-payloads";
+import { contactActivityPayloadSchemasV1 } from "@/src/features/contacts/lib/activity-payloads";
 import type { ContactActivityAiReadRow } from "@/src/features/contacts/server/contact-activity.read.repository";
 
-import type { ContactAiActivityEntry } from "../types/activity-entry";
+import type { ContactActivityEntry } from "../types/activity-entry";
 
 function resolveActorName(
   actor: ContactActivityAiReadRow["actor"],
@@ -16,10 +14,10 @@ function resolveActorName(
   return actor.name ?? actor.email ?? null;
 }
 
-function mapActivityRow(row: ContactActivityAiReadRow): ContactAiActivityEntry {
+function mapActivityRow(row: ContactActivityAiReadRow): ContactActivityEntry {
   const base = {
     id: row.id,
-    occurredAt: row.occurredAt.toISOString(),
+    occurredAt: row.occurredAt,
     actorName: resolveActorName(row.actor),
     correlationId: row.correlationId,
     sourceEntity:
@@ -129,8 +127,8 @@ function mapActivityRow(row: ContactActivityAiReadRow): ContactAiActivityEntry {
   }
 }
 
-export function mapContactActivityRowsToAiEntries(
+export function mapContactActivityRowsToEntries(
   rows: ContactActivityAiReadRow[],
-): ContactAiActivityEntry[] {
+): ContactActivityEntry[] {
   return rows.map((row) => mapActivityRow(row));
 }

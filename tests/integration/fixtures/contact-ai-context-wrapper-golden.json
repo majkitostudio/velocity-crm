@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "contactId": "seed-contact-customer",
+  "companyId": "seed-company-velocity",
+  "contact": {
+    "id": "seed-contact-customer",
+    "name": "Martin Černý",
+    "phone": "+420601100004",
+    "email": "martin.cerny@example.local",
+    "address": {
+      "street": null,
+      "city": null,
+      "zipCode": null,
+      "country": null
+    },
+    "status": "CUSTOMER",
+    "source": "MANUAL",
+    "priority": "NORMAL",
+    "assignedUser": {
+      "id": "cmqm4mk110000wk7entrqyjs5",
+      "name": "Test Operator",
+      "email": "operator@velocity.local"
+    },
+    "createdAt": "2026-05-22T20:23:49.856Z",
+    "updatedAt": "2026-06-21T20:23:49.858Z"
+  },
+  "snapshot": {
+    "workflow": {
+      "failCount": 0,
+      "failThreshold": 3,
+      "lastCall": {
+        "id": "seed-call-schedule-call",
+        "outcome": "SCHEDULE_CALL",
+        "operatorName": "Test Operator",
+        "createdAt": "2026-06-16T20:23:49.884Z",
+        "note": "Follow-up on delivery."
+      }
+    },
+    "callbacks": {
+      "open": [],
+      "recentClosed": []
+    },
+    "orders": {
+      "recent": [
+        {
+          "id": "seed-order-single-product",
+          "status": "CREATED",
+          "note": "Seed order with one product.",
+          "operatorName": "Test Operator",
+          "createdAt": "2026-06-17T20:23:49.910Z",
+          "items": [
+            {
+              "productId": "seed-product-omega-3",
+              "productName": "Omega 3",
+              "quantity": 1,
+              "unitPrice": "499"
+            }
+          ],
+          "total": "499.00"
+        }
+      ]
+    },
+    "notes": {
+      "recent": []
+    },
+    "products": {
+      "catalog": [
+        {
+          "id": "seed-product-day-cream",
+          "name": "Denní krém",
+          "price": "599",
+          "categoryName": "Kosmetika"
+        },
+        {
+          "id": "seed-product-magnesium",
+          "name": "Magnesium",
+          "price": "329",
+          "categoryName": "Doplňky stravy"
+        },
+        {
+          "id": "seed-product-night-serum",
+          "name": "Noční sérum",
+          "price": "899",
+          "categoryName": "Kosmetika"
+        },
+        {
+          "id": "seed-product-omega-3",
+          "name": "Omega 3",
+          "price": "499",
+          "categoryName": "Doplňky stravy"
+        },
+        {
+          "id": "seed-product-vitamin-d3",
+          "name": "Vitamin D3",
+          "price": "249",
+          "categoryName": "Doplňky stravy"
+        },
+        {
+          "id": "seed-product-free-sample",
+          "name": "Vzorek zdarma",
+          "price": "0",
+          "categoryName": "Doplňky stravy"
+        }
+      ],
+      "purchased": [
+        {
+          "productId": "seed-product-omega-3",
+          "productName": "Omega 3",
+          "totalQuantity": 1,
+          "lastPurchasedAt": "2026-06-17T20:23:49.910Z"
+        }
+      ],
+      "lastPurchased": {
+        "productId": "seed-product-omega-3",
+        "productName": "Omega 3",
+        "quantity": 1,
+        "unitPrice": "499",
+        "purchasedAt": "2026-06-17T20:23:49.910Z",
+        "orderId": "seed-order-single-product"
+      }
+    }
+  },
+  "history": {
+    "activities": []
+  },
+  "statistics": {
+    "totalCalls": 0,
+    "totalOrders": 1,
+    "totalOpenCallbacks": 0,
+    "totalNotes": 0,
+    "failCount": 0,
+    "successfulOrderCount": 1
+  }
+}

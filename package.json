@@ -17,7 +17,7 @@
     "db:reset": "prisma migrate reset --force",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:integration": "tsx --env-file=.env tests/integration/contact-activity-tenant-isolation.test.ts && tsx --env-file=.env --require ./tests/integration/stub-server-only.cjs tests/integration/contact-ai-context.test.ts"
+    "test:integration": "tsx --env-file=.env tests/integration/contact-activity-tenant-isolation.test.ts && tsx --env-file=.env tests/integration/contact-ai-context-mapper-golden.test.ts && tsx --env-file=.env --require ./tests/integration/stub-server-only.cjs tests/integration/contact-context.test.ts && tsx --env-file=.env --require ./tests/integration/stub-server-only.cjs tests/integration/contact-ai-context.test.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

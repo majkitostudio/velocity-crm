@@ -3,7 +3,6 @@ import {
   listRecentClosedCallbacksForContact,
 } from "@/src/features/callbacks/server/callbacks.repository";
 
-import { formatAiContextDate } from "../lib/format-ai-context-value";
 import type { ContactContextProvider } from "../types/contact-context-provider";
 
 export const CALLBACKS_CONTEXT_PROVIDER_VERSION = 1;
@@ -27,7 +26,7 @@ export const callbacksContextProvider: ContactContextProvider<"callbacks"> = {
 
     const mapCallback = (callback: (typeof open)[number]) => ({
       id: callback.id,
-      scheduledAt: formatAiContextDate(callback.scheduledAt),
+      scheduledAt: callback.scheduledAt,
       status: callback.status,
       note: options.includeSensitiveData ? callback.note : null,
       assigneeName: callback.assignedUser.name,

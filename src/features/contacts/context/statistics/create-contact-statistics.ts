@@ -1,9 +1,9 @@
 import type { ContactContextProviderOutputs } from "../types/contact-context-provider";
-import type { ContactAiStatistics } from "../types/contact-ai-context";
+import type { ContactStatistics } from "../types/contact-context";
 
-export function createContactAiStatistics(
+export function createContactStatistics(
   outputs: ContactContextProviderOutputs,
-): ContactAiStatistics {
+): ContactStatistics {
   return {
     totalCalls: outputs.activity?.aggregates.callFinishedCount ?? 0,
     totalOrders: outputs.orders?.aggregates.totalOrderCount ?? 0,
