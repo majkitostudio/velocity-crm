@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "playwright-report/**",
     "test-results/**",
+    // CommonJS stubs loaded via node --require in integration tests
+    "tests/**/*.cjs",
   ]),
 ]);
 
