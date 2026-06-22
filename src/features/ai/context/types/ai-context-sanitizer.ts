@@ -1,8 +1,9 @@
+import type { SanitizerProfile } from "./sanitizer-profile";
 import type { ContactAiContext } from "./contact-ai-context";
 
 export type AiContextSanitizeOptions = {
   includeSensitiveData?: boolean;
-  taskProfile?: string;
+  profile?: SanitizerProfile;
 };
 
 /**

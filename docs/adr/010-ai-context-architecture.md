@@ -148,7 +148,7 @@ Repositories → Context Providers → ContactContextBuilder → ContactContext
                                                               └→ toContactAiContext → ContactAiContext → LLM Adapter
 ```
 
-Contact Detail nesmí importovat `features/ai` (viz ADR-011). LLM transport vrstva je v [ADR-012](./012-llm-adapter-architecture.md).
+Contact Detail nesmí importovat `features/ai` (viz ADR-011). LLM transport vrstva je v [ADR-012](./012-llm-adapter-architecture.md). První AI business služba (Summary) v [ADR-013](./013-ai-contact-summary-service.md).
 
 ### Co Slice 10 neřeší
 

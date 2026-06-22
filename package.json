@@ -17,7 +17,7 @@
     "db:reset": "prisma migrate reset --force",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:integration": "tsx --env-file=.env tests/integration/contact-activity-tenant-isolation.test.ts && tsx --env-file=.env tests/integration/contact-ai-context-mapper-golden.test.ts && tsx --env-file=.env --require ./tests/integration/stub-server-only.cjs tests/integration/contact-context.test.ts && tsx --env-file=.env --require ./tests/integration/stub-server-only.cjs tests/integration/contact-ai-context.test.ts && tsx tests/integration/llm-gateway.test.ts && tsx tests/integration/prompt-summary-golden.test.ts"
+    "test:integration": "tsx --env-file=.env tests/integration/contact-activity-tenant-isolation.test.ts && tsx --env-file=.env tests/integration/contact-ai-context-mapper-golden.test.ts && tsx --env-file=.env --require ./tests/integration/stub-server-only.cjs tests/integration/contact-context.test.ts && tsx --env-file=.env --require ./tests/integration/stub-server-only.cjs tests/integration/contact-ai-context.test.ts && tsx tests/integration/llm-gateway.test.ts && tsx tests/integration/prompt-summary-golden.test.ts && tsx tests/integration/ai-platform-config.test.ts && tsx tests/integration/ai-platform-feature-flags.test.ts && tsx tests/integration/ai-platform-registry.test.ts && tsx tests/integration/ai-platform-capability-matrix.test.ts && tsx tests/integration/ai-platform-pipeline.test.ts && tsx tests/integration/ai-platform-no-contacts-dependency.test.ts && tsx tests/integration/ai-platform-smoke.test.ts && tsx tests/integration/contact-summary-service.test.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

@@ -258,9 +258,15 @@ src/
         queue.service.ts
         queue.repository.ts
     ai/
+      cache/                  # AiCacheStore abstraction (Slice 12.1)
+      config/                 # centrální AI Configuration (Slice 12)
+      registry/               # AI Service Registry + Capability Matrix
+      flags/                  # AI Feature Flags
+      metrics/                # Prompt Metrics recorder
       context/
         contact-ai-context.builder.ts
         mappers/
+        sanitizers/           # AiContextSanitizer (Slice 12)
         types/
       llm/
         types/
@@ -275,15 +281,20 @@ src/
         types/
         templates/
       services/
+        shared/                 # AI Service Pipeline + contract (Slice 12)
+        contact-summary/        # první AiTaskService (Slice 12)
       server/
         ai-log.ts
         contact-ai-context.service.ts
         llm-gateway.service.ts
+        contact-summary.actions.ts
 ```
 
 **Contact Context Platform (Slice 10.5):** Neutrální read vrstva v `contacts/context/`. Context Providers orchestrují tenant-scoped načtení do `ContactContext`. AI modul konzumuje platformu přes `toContactAiContext()` — Contact Detail UI **nesmí** importovat `features/ai`.
 
-**LLM Adapter (Slice 11, ADR-012):** Transport vrstva v `ai/llm/` — `LlmGateway`, vendor adaptéry, model registry/policy, middleware. Prompt šablony v `ai/prompts/`. Business AI služby v `ai/services/` (Slice 12+).
+**LLM Adapter (Slice 11, ADR-012):** Transport vrstva v `ai/llm/` — `LlmGateway`, vendor adaptéry, model registry/policy, middleware. Prompt šablony v `ai/prompts/`.
+
+**AI Services Platform (Slice 12, ADR-013):** Business AI vrstva v `ai/services/`. **`services/shared/`** obsahuje **AI Service Pipeline** — jednotný 14-krokový životní cyklus všech AI služeb. Cross-cutting: `ai/config/`, `ai/registry/` (Service Registry s bohatými metadaty + Capability Matrix), `ai/flags/`, `ai/metrics/`. Každá služba implementuje `AiTaskService` contract. První služba: `contact-summary/`. Cache fáze 1 přes AiLog; fáze 2 `AiSummaryCache`.
 
 **MVP zjednodušení:** Nejdřív `actions.ts`, `schemas.ts` a `server/*.ts`. Repository vrstvu lze zavádět postupně u nového kódu a při refaktoru rizikových dotazů.
 

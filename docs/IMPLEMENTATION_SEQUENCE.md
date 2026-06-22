@@ -397,27 +397,98 @@ ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → Llm
 
 ## Slice 12: AI Services and UI
 
-**Cíl:** První AI funkce nad infrastrukturou — Summary, AiLog integrace, contact detail panel.
+**Cíl:** První AI funkce nad infrastrukturou — AI Contact Summary, AiLog integrace, contact detail panel. Vzorová implementace pro budoucí AI služby.
+
+**ADR gate:** [ADR-013](./adr/013-ai-contact-summary-service.md)
 
 ### Úkoly
 
 | # | Úkol | Soubory (cíl) |
 |---|------|----------------|
-| 12.1 | Produkční prompt šablony (summary, …) | `src/features/ai/prompts/templates/` |
-| 12.2 | `AiSummaryService` + actions | `src/features/ai/services/` |
-| 12.3 | UI panel na contact detail | client component |
-| 12.4 | `AiLog` rozšíření + `createAiLog` integrace | `ai-log.service.ts`, Prisma migrace |
-| 12.5 | První reálný vendor adapter (schválený provider) | `src/features/ai/llm/adapters/` |
+| 12.0 | ADR-013 — AI Contact Summary Service + AI Service Pipeline | `docs/adr/013-ai-contact-summary-service.md` ✅ |
+| 12.1 | **Platform Layer** — Registry (bohatá metadata), Config, Feature Flags, Metrics, Cache abstraction, **AI Service Pipeline** | `registry/`, `config/`, `flags/`, `metrics/`, `cache/`, `services/shared/` ✅ |
+| 12.2 | **AiContactSummaryService** — první `AiTaskService` implementace | `services/contact-summary/` ✅ |
+| 12.3 | **Prompt** — produkční `summary@v1`, napojení na `defaultPromptVersion` | `prompts/templates/summary/` |
+| 12.4 | **Gateway** — pipeline → Fake adapter + `completeStructured` | `services/shared/ai-service-pipeline.ts` |
+| 12.5 | **UI** — placeholder panel + Server Action | client component, `contact-summary.actions.ts` |
+| 12.6 | **Cache** — `AiLogSummaryCacheStore` (fáze 1) | `services/contact-summary/` cache |
+| 12.7 | **Telemetry** — Prompt Metrics z pipeline | `metrics/` |
+| 12.8 | **Testy** — integrační + golden prompt | `tests/integration/` |
+| 12.9 | AiLog migrace + `AiContextSanitizer` | Prisma, `context/sanitizers/` |
+| 12.10 | První produkční vendor adapter | `llm/adapters/` |
+
+### Platform vrstva (Slice 12)
+
+```
+AI Service Pipeline   → runAiServicePipeline() — jednotný životní cyklus
+AI Service Registry   → descriptor s displayName, modelRequirements, supports*
+AI Feature Flags      → ai.contact_summary, ai.contact_summary.refresh
+AI Configuration      → cache TTL, timeout, sanitization defaults
+Capability Matrix     → modelRequirements × ModelCapabilities + fallback
+Prompt Metrics        → success rate, latency per prompt version
+```
+
+### Cache (dvoufázově)
+
+| Fáze | Slice | Mechanismus |
+|------|-------|-------------|
+| 1 | 12 | AiLog jako cache source (`AiLogSummaryCacheStore`) |
+| 2 | 12.5+ | `AiSummaryCache` tabulka (`PrismaSummaryCacheStore`) — viz ADR-013 |
 
 ### Předpoklad
 
 - Slice 11 musí dodat `LlmGateway` a prompt kontrakty.
 
-### Definition of Done
+### Definition of Done — Platform Slice (12.1)
 
-- [ ] Operátor vidí AI shrnutí na detailu kontaktu
-- [ ] Výstupy uloženy v `AiLog` s prompt versioning
-- [ ] PII v promptech ošetřena dle audit standardu
+**Implementační disciplína:**
+- Během 12.1 se **nemění** veřejné kontrakty Slice 10, 10.5, 11 — při nedostatku navrhnout ADR, ne tichý refactor
+- Žádné `// TODO` — neimplementované cesty házejí `NotImplementedError` / `UnsupportedOperationError`
+- Pipeline je deterministická — žádný `Date.now()`, `Math.random()`, UUID, `process.env` uvnitř orchestrace
+- Pipeline nepoužívá singletony — vše přes `PipelinePorts`
+- Capability Matrix je provider-agnostic — vendor logika pouze v `model-capabilities.ts`
+- Registry je immutable (`Object.freeze`) — žádné runtime `register()`
+- `services/shared/` nezná Summary — pouze generické typy
+
+**Pravidlo nových abstrakcí:**
+> Každá nová veřejná AI abstrakce musí mít pojmenovaného prvního i druhého budoucího konzumenta. Pokud ne, nepatří do platformy.
+
+**Platform independence:**
+- [x] Žádná business logika (Summary, DTO, sanitizer impl)
+- [x] Žádný import z UI (`app/`, `components/`)
+- [x] Žádný import z `features/contacts/` v platform adresářích (test `ai-platform-no-contacts-dependency`)
+- [x] `runAiServicePipeline` generická s `PipelinePorts` DI
+- [x] Immutable AI Service Registry (deskriptory pouze)
+- [x] `AiCacheStore` interface (`cache/`)
+- [x] 7 integračních testů platformy včetně smoke testu
+- [x] `npm run build`, `npm run lint`, platform testy — pass
+
+### Definition of Done — Slice 12.2 (AiContactSummaryService)
+
+- [x] `ContactSummary` Zod schema + `SummaryViewModel` s `source: LIVE | CACHE`
+- [x] `SanitizerProfile` enum (`SUMMARY`, `RECOMMENDATION`, `CALL_PREPARATION`, `EMAIL_DRAFT`, `SMS_DRAFT`) — implementován pouze `SUMMARY`
+- [x] Sdílený `computeContactContextHash()` v `context/context-hash/` (ne v `contact-summary/`)
+- [x] `AiContactSummaryService` implementuje `AiTaskService<ContactSummary, SummaryViewModel>`
+- [x] Jediná factory `getContactSummaryService()` — žádné přímé `new AiContactSummaryService()` mimo factory
+- [x] `createContactSummaryPipelinePorts()` skládá všechny porty (noop audit, in-memory cache)
+- [x] `generateContactSummary()` executor volá `runAiServicePipeline`
+- [x] Integrační test `contact-summary-service.test.ts` (bez DB)
+- [x] `npm run build`, `npm run lint` — pass
+
+### Definition of Done — Slice 12 (celý slice)
+
+- [ ] Operátor vidí AI shrnutí na detailu kontaktu (feature flag `ai.contact_summary`)
+- [ ] Výstupy uloženy v `AiLog` s prompt versioning a metadata
+- [ ] PII v promptech ošetřena (`AiContextSanitizer` SUMMARY profile)
+- [x] AI Service Pipeline (`runAiServicePipeline`) prochází integračním testem
+- [x] AI Service Registry registruje `contact-summary` s plným descriptor metadata
+- [x] Capability Matrix validuje model před LLM voláním
+- [x] `AiCacheStore` interface připraven (fáze 1: AiLog impl v 12.6)
+
+### Co Slice 12 neřeší
+
+- Chat, Copilot, Streaming UI, RAG, `AiSummaryCache` tabulka (fáze 2)
+- Per-company DB AI config (připraven merge v `resolveAiConfig`)
 
 ---
 

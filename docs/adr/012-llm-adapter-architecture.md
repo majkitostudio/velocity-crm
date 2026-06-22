@@ -404,7 +404,7 @@ ai/llm           → contacts/repositories ❌
 
 | Funkce | Slice |
 |--------|-------|
-| AI Summary, Recommendations, Copilot UI | Slice 12 |
+| AI Summary, Recommendations, Copilot UI | Slice 12+ (viz [ADR-013](./013-ai-contact-summary-service.md)) |
 | Email/SMS Assistant (`supplements` v PromptBuildInput) | Slice budoucí |
 | Retry, cache, rate limit middleware | Slice budoucí |
 | Per-company model policy + cost limits | SaaS slice |
@@ -419,7 +419,7 @@ ai/llm           → contacts/repositories ❌
 - Background jobs
 - Retry, cache, rate limiting **implementace** (pouze middleware interface)
 - Cost persistence a billing enforcement
-- `AiLog` schema migrace (připraveno v kontraktech, implementace Slice 12)
+- `AiLog` schema migrace (připraveno v kontraktech, implementace [ADR-013](./013-ai-contact-summary-service.md))
 
 ## Důsledky
 
