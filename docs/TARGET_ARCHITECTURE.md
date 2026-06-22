@@ -260,13 +260,30 @@ src/
     ai/
       context/
         contact-ai-context.builder.ts
+        mappers/
         types/
+      llm/
+        types/
+        errors/
+        adapters/
+        gateway/
+        models/
+        policy/
+        cost/
+        request/
+      prompts/
+        types/
+        templates/
+      services/
       server/
         ai-log.ts
         contact-ai-context.service.ts
+        llm-gateway.service.ts
 ```
 
 **Contact Context Platform (Slice 10.5):** Neutrální read vrstva v `contacts/context/`. Context Providers orchestrují tenant-scoped načtení do `ContactContext`. AI modul konzumuje platformu přes `toContactAiContext()` — Contact Detail UI **nesmí** importovat `features/ai`.
+
+**LLM Adapter (Slice 11, ADR-012):** Transport vrstva v `ai/llm/` — `LlmGateway`, vendor adaptéry, model registry/policy, middleware. Prompt šablony v `ai/prompts/`. Business AI služby v `ai/services/` (Slice 12+).
 
 **MVP zjednodušení:** Nejdřív `actions.ts`, `schemas.ts` a `server/*.ts`. Repository vrstvu lze zavádět postupně u nového kódu a při refaktoru rizikových dotazů.
 

@@ -148,9 +148,11 @@ Repositories → Context Providers → ContactContextBuilder → ContactContext
                                                               └→ toContactAiContext → ContactAiContext → LLM Adapter
 ```
 
-Contact Detail nesmí importovat `features/ai` (viz ADR-011).
+Contact Detail nesmí importovat `features/ai` (viz ADR-011). LLM transport vrstva je v [ADR-012](./012-llm-adapter-architecture.md).
 
-- LLM integrace, prompty, streaming, embeddings, RAG
+### Co Slice 10 neřeší
+
+- LLM integrace (Slice 11 — ADR-012)
 - AI UI panel, chat
 - Cache, background refresh, telemetry (interface připraven)
 - Redakce PII (`includeSensitiveData` — interface připraven, logika v budoucím slicu)

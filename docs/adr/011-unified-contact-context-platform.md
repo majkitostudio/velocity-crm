@@ -73,7 +73,7 @@ CONTACT_DETAIL_CONTEXT_OPTIONS = {
 ## Důsledky
 
 - Providery žijí v `src/features/contacts/context/providers/`
-- Slice 11 (LLM Adapter) staví na stabilním `ContactAiContext` odvozeném z platformy
+- Slice 11 (LLM Adapter) staví na stabilním `ContactAiContext` odvozeném z platformy (viz [ADR-012](./012-llm-adapter-architecture.md))
 - Nové domény = nový provider + sub-section (viz ADR-010 Future Context Sources)
 
 ## Co Slice 10.5 neřeší

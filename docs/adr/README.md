@@ -17,6 +17,7 @@ Tento adresář obsahuje architektonická rozhodnutí pro Velocity CRM.
 | [009](./009-contact-activity-and-audit.md) | Contact Activity projekce a AuditEvent | **Přijato** |
 | [010](./010-ai-context-architecture.md) | AI Context Builder a Context Providers | **Přijato** |
 | [011](./011-unified-contact-context-platform.md) | Unified Contact Context Platform (Slice 10.5) | **Přijato** |
+| [012](./012-llm-adapter-architecture.md) | LLM Adapter Architecture (Slice 11) | **Přijato** |
 
 Schválená workflow pravidla: [WORKFLOW_RULES.md](../WORKFLOW_RULES.md)
 

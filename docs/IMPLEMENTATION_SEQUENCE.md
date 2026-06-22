@@ -33,7 +33,8 @@ flowchart TD
   S8 --> S9[Slice 9: Contact Activity and Audit]
   S9 --> S10[Slice 10: AI Context Builder]
   S10 --> S105[Slice 10.5: Unified Contact Context]
-  S105 --> S11[Slice 11: LLM Adapter and AI UI]
+  S105 --> S11[Slice 11: LLM Adapter]
+  S11 --> S12[Slice 12: AI Services and UI]
 ```
 
 ---
@@ -353,27 +354,69 @@ buildContactAiContext → ContactAiContextBuilder → Context Providers → Repo
 
 ---
 
-## Slice 11: LLM Adapter and AI UI
+## Slice 11: LLM Adapter Infrastructure
 
-**Cíl:** AI asistent nad reálnými daty kontaktu.
+**Cíl:** Provider-agnostic transport vrstva mezi `ContactAiContext` a LLM API — bez AI funkcí a UI.
+
+**ADR gate:** [ADR-012](./adr/012-llm-adapter-architecture.md)
 
 ### Úkoly
 
 | # | Úkol | Soubory (cíl) |
 |---|------|----------------|
-| 11.1 | LLM Adapter (schválený provider) | `src/features/ai/llm/` |
-| 11.2 | Task types: summary, history, next action | `src/features/ai/actions.ts` |
-| 11.3 | UI panel na contact detail | client component |
-| 11.4 | `createAiLog` + audit `ai.generated` | existující + audit |
+| 11.1 | ADR-012 — LLM Adapter Architecture | `docs/adr/012-llm-adapter-architecture.md` |
+| 11.2 | LLM typy, errors, vendor adapter interface | `src/features/ai/llm/types/`, `llm/errors/` |
+| 11.3 | LlmGateway + middleware interface + model registry/policy | `src/features/ai/llm/gateway/`, `llm/models/`, `llm/policy/` |
+| 11.4 | Fake vendor adapter + stub adaptéry | `src/features/ai/llm/adapters/` |
+| 11.5 | Prompt template kontrakty + `PromptBuildInput` | `src/features/ai/prompts/` |
+| 11.6 | Cost management kontrakty (no-op recorder) | `src/features/ai/llm/cost/` |
+| 11.7 | Integrační testy (gateway + fake) | `tests/integration/` |
+
+### Vrstvy
+
+```
+ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → LlmVendorAdapter
+```
+
+### Definition of Done
+
+- [x] ADR-012 schváleno a implementace v souladu
+- [x] Business vrstva neimportuje vendor SDK
+- [x] Model Policy odděleno od Model Registry
+- [x] Gateway middleware interface připraven
+- [x] `PromptBuildInput` nezakládá pouze na `ContactAiContext`
+- [x] `FakeLlmVendorAdapter` + integrační testy procházejí
+- [x] `ContactAiContext` / `ContactContext` beze změny
+
+### Co Slice 11 neřeší
+
+- OpenAI/Anthropic/Ollama API, AI Summary, UI (Slice 12)
+- Streaming/tool calling implementace, retry/cache implementace
+
+---
+
+## Slice 12: AI Services and UI
+
+**Cíl:** První AI funkce nad infrastrukturou — Summary, AiLog integrace, contact detail panel.
+
+### Úkoly
+
+| # | Úkol | Soubory (cíl) |
+|---|------|----------------|
+| 12.1 | Produkční prompt šablony (summary, …) | `src/features/ai/prompts/templates/` |
+| 12.2 | `AiSummaryService` + actions | `src/features/ai/services/` |
+| 12.3 | UI panel na contact detail | client component |
+| 12.4 | `AiLog` rozšíření + `createAiLog` integrace | `ai-log.service.ts`, Prisma migrace |
+| 12.5 | První reálný vendor adapter (schválený provider) | `src/features/ai/llm/adapters/` |
 
 ### Předpoklad
 
-- Slice 10 musí dodat `ContactAiContext` builder.
+- Slice 11 musí dodat `LlmGateway` a prompt kontrakty.
 
 ### Definition of Done
 
 - [ ] Operátor vidí AI shrnutí na detailu kontaktu
-- [ ] Výstupy uloženy v `AiLog`
+- [ ] Výstupy uloženy v `AiLog` s prompt versioning
 - [ ] PII v promptech ošetřena dle audit standardu
 
 ---
@@ -413,7 +456,7 @@ buildContactAiContextForTenant → (wrapper) → ContactContextBuilder → toCon
 - [x] Request-scoped cache (`React cache`) pro sdílený load
 - [x] Integrační testy (partial load, tenant isolation, AI determinismus)
 
-> Původní plán „Slice 10: AI V1“ byl rozdělen na Slice 10 (Context Builder), Slice 10.5 (Unified Platform) a Slice 11 (LLM/UI).
+> Původní plán „Slice 10: AI V1“ byl rozdělen na Slice 10 (Context Builder), Slice 10.5 (Unified Platform), Slice 11 (LLM Adapter) a Slice 12 (AI Services/UI).
 
 ---
 
@@ -463,9 +506,10 @@ Před merge každého slice ověřit:
 | Phase 6 | Slice 7 |
 | Phase 7 | Slice 5 |
 | Phase 8 | Slice 6 |
-| Phase 9 | Slice 10 (AI Context Builder) |
-| Phase 10 | Slice 11 (LLM / AI UI) |
-| Phase 11 | Po Slice 11 (reporting — nový slice) |
+| Phase 9 | Slice 10 + 10.5 (AI Context + Platform) |
+| Phase 10 | Slice 11 (LLM Adapter) |
+| Phase 11 | Slice 12 (AI Services / UI) |
+| Phase 12 | Reporting — nový slice |
 | Phase 11 | Po MVP (SaaS foundation) |
 
 ---

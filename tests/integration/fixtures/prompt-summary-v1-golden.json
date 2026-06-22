@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "contactId": "contact-golden-prompt",
+  "companyId": "company-golden-prompt",
+  "contact": {
+    "id": "contact-golden-prompt",
+    "name": "Golden Contact",
+    "phone": "+420777123456",
+    "email": "golden@example.com",
+    "address": {
+      "street": "Main 1",
+      "city": "Prague",
+      "zipCode": "11000",
+      "country": "CZ"
+    },
+    "status": "LEAD",
+    "source": "MANUAL",
+    "priority": "NORMAL",
+    "assignedUser": {
+      "id": "user-golden-1",
+      "name": "Operator Golden",
+      "email": "operator@example.com"
+    },
+    "createdAt": "2024-01-15T10:00:00.000Z",
+    "updatedAt": "2024-02-01T12:30:00.000Z"
+  },
+  "snapshot": {
+    "workflow": {
+      "failCount": 0,
+      "failThreshold": 3,
+      "lastCall": null
+    },
+    "callbacks": {
+      "open": [],
+      "recentClosed": []
+    },
+    "notes": {
+      "recent": [
+        {
+          "id": "note-1",
+          "body": "Interested in premium plan",
+          "authorName": "Operator Golden",
+          "createdAt": "2024-02-05T14:00:00.000Z"
+        }
+      ]
+    }
+  },
+  "statistics": {
+    "totalCalls": 0,
+    "totalOrders": 0,
+    "totalOpenCallbacks": 0,
+    "totalNotes": 1,
+    "failCount": 0,
+    "successfulOrderCount": 0
+  }
+}
