@@ -29,6 +29,12 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      AI_ENABLED: "true",
+      AI_FEATURE_CONTACT_SUMMARY: "true",
+      LLM_SUMMARY_VENDOR: "fake",
+      LLM_SUMMARY_MODEL: "fake-1",
+    },
   },
   projects: [
     {

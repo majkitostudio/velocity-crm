@@ -11,6 +11,8 @@ const PLATFORM_DIRS = [
   "src/features/ai/cache",
 ];
 
+const CONTACTS_DIRS = ["src/features/contacts"];
+
 const FORBIDDEN_IMPORT_PATTERNS = [
   /features\/contacts/,
   /\/app\//,
@@ -18,6 +20,11 @@ const FORBIDDEN_IMPORT_PATTERNS = [
   /@\/app\//,
   /@\/src\/features\/contacts/,
   /@\/components\//,
+];
+
+const FORBIDDEN_CONTACTS_AI_IMPORT_PATTERNS = [
+  /features\/ai/,
+  /@\/src\/features\/ai/,
 ];
 
 function collectTypeScriptFiles(directory: string): string[] {
@@ -33,20 +40,27 @@ function collectTypeScriptFiles(directory: string): string[] {
     }
     if (entry.endsWith(".ts") && !entry.endsWith(".test.ts")) {
       files.push(fullPath);
+      continue;
+    }
+    if (entry.endsWith(".tsx") && !entry.endsWith(".test.tsx")) {
+      files.push(fullPath);
     }
   }
 
   return files;
 }
 
-function assertNoForbiddenImports(filePath: string): void {
+function assertNoForbiddenImports(
+  filePath: string,
+  patterns: RegExp[],
+): void {
   const content = readFileSync(filePath, "utf8");
   const importLines = content
     .split("\n")
     .filter((line) => line.trim().startsWith("import "));
 
   for (const line of importLines) {
-    for (const pattern of FORBIDDEN_IMPORT_PATTERNS) {
+    for (const pattern of patterns) {
       assert.ok(
         !pattern.test(line),
         `Forbidden import in ${filePath}: ${line.trim()}`,
@@ -64,7 +78,17 @@ async function main() {
     assert.ok(files.length > 0, `Expected platform files in ${relativeDir}`);
 
     for (const file of files) {
-      assertNoForbiddenImports(file);
+      assertNoForbiddenImports(file, FORBIDDEN_IMPORT_PATTERNS);
+    }
+  }
+
+  for (const relativeDir of CONTACTS_DIRS) {
+    const absoluteDir = join(root, relativeDir);
+    const files = collectTypeScriptFiles(absoluteDir);
+    assert.ok(files.length > 0, `Expected contacts files in ${relativeDir}`);
+
+    for (const file of files) {
+      assertNoForbiddenImports(file, FORBIDDEN_CONTACTS_AI_IMPORT_PATTERNS);
     }
   }
 

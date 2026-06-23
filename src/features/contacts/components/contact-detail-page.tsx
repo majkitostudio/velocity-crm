@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { CallWorkflowPanel } from "@/src/features/calls/components/call-workflow-panel";
 import { ContactCallbacksPanel } from "@/src/features/callbacks/components/contact-callbacks-panel";
 import type { ContactCallbacksPanelView } from "@/src/features/callbacks/types";
@@ -15,6 +17,7 @@ type ContactDetailPageProps = {
   callbacksPanel: ContactCallbacksPanelView;
   returnTo: string;
   showCreatedMessage?: boolean;
+  sidebarSlot?: ReactNode;
 };
 
 export function ContactDetailPage({
@@ -23,6 +26,7 @@ export function ContactDetailPage({
   callbacksPanel,
   returnTo,
   showCreatedMessage = false,
+  sidebarSlot = null,
 }: ContactDetailPageProps) {
   return (
     <div className="space-y-6" data-testid="contact-detail-page">
@@ -44,6 +48,7 @@ export function ContactDetailPage({
         </div>
 
         <aside className="space-y-4 xl:sticky xl:top-40 xl:self-start">
+          {sidebarSlot}
           <CallWorkflowPanel
             contactId={view.contact.id}
             sourceCallbackId={view.callWorkflow.sourceCallbackId}

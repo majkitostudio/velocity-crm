@@ -410,7 +410,7 @@ ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → Llm
 | 12.2 | **AiContactSummaryService** — první `AiTaskService` implementace | `services/contact-summary/` ✅ |
 | 12.3 | **Prompt** — produkční `summary@v1`, napojení na `defaultPromptVersion` | `prompts/summary/`, `prompts/serializers/` ✅ |
 | 12.4 | **Gateway** — pipeline → Fake adapter + `completeStructured` | `llm/adapters/fake/`, pipeline wiring ✅ |
-| 12.5 | **UI** — placeholder panel + Server Action | client component, `contact-summary.actions.ts` |
+| 12.5 | **UI** — AI Summary panel + Server Action | `components/`, `actions/generate-contact-summary.action.ts` ✅ |
 | 12.6 | **Cache** — `AiLogSummaryCacheStore` (fáze 1) | `services/contact-summary/` cache |
 | 12.7 | **Telemetry** — Prompt Metrics z pipeline | `metrics/` |
 | 12.8 | **Testy** — integrační + golden prompt | `tests/integration/` |
@@ -489,9 +489,23 @@ Prompt Metrics        → success rate, latency per prompt version
 - [x] Integrační test `ai-business-no-provider-dependency.test.ts`
 - [x] `npm run build`, `npm run lint` — pass
 
+### Definition of Done — Slice 12.5 (Contact Summary UI)
+
+- [x] `generateContactSummaryAction` v `actions/generate-contact-summary.action.ts`
+- [x] AI panel v pravém sidebaru (AI Workspace slot) nad Call Workflow
+- [x] `contacts/` neimportuje `features/ai` — panel přes app route composition
+- [x] Komponenta používá pouze `SummaryViewModel` (ne DTO)
+- [x] Generate tlačítko, loading, error, empty state
+- [x] Source badge `LIVE` / `CACHE` z `viewModel.source`
+- [x] Feature flag `ai.contact_summary` skrývá panel na route i v action
+- [x] UI import guard `ai-ui-no-llm-dependency.test.ts`
+- [x] Integrační testy: error mapper, action input builder, panel phase helper
+- [x] Playwright `contact-summary.spec.ts` + fake LLM env v `playwright.config.ts`
+- [x] `npm run build`, `npm run lint` — pass
+
 ### Definition of Done — Slice 12 (celý slice)
 
-- [ ] Operátor vidí AI shrnutí na detailu kontaktu (feature flag `ai.contact_summary`)
+- [x] Operátor vidí AI shrnutí na detailu kontaktu (feature flag `ai.contact_summary`)
 - [ ] Výstupy uloženy v `AiLog` s prompt versioning a metadata
 - [ ] PII v promptech ošetřena (`AiContextSanitizer` SUMMARY profile)
 - [x] AI Service Pipeline (`runAiServicePipeline`) prochází integračním testem
