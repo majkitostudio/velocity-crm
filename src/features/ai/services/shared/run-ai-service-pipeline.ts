@@ -1,6 +1,7 @@
 import type { LlmTaskProfile } from "@/src/features/ai/llm/types/llm-model";
 import { buildLlmCompletionRequest } from "@/src/features/ai/llm/request/llm-request-builder";
 import { isDomainError } from "@/src/domain/errors";
+import { isLlmError } from "@/src/features/ai/llm/errors/llm-errors";
 import type { PromptTemplateId } from "@/src/features/ai/prompts/types/prompt-template";
 
 import { AiFeatureDisabledError } from "./ai-platform-errors";
@@ -154,6 +155,7 @@ export async function runAiServicePipeline<TDto, TViewModel>(
     const llmRequest = buildLlmCompletionRequest({
       prompt,
       model,
+      responseFormat: service.getLlmResponseFormat?.(),
       metadata: {
         taskProfile: descriptor.taskProfile,
         companyId: input.companyId,
@@ -232,7 +234,11 @@ export async function runAiServicePipeline<TDto, TViewModel>(
         ? "feature_disabled"
         : errorCode === "AI_CAPABILITY_ERROR"
           ? "capability_error"
-          : "provider_error";
+          : errorCode === "LLM_SCHEMA_VALIDATION" || errorCode === "LLM_INVALID_RESPONSE"
+            ? "schema_failure"
+            : isLlmError(error)
+              ? "provider_error"
+              : "provider_error";
 
     await recordMetric(outcome, ports.clock.nowMs() - pipelineStartedAtMs);
     throw error;

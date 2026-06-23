@@ -4,9 +4,13 @@ import type { ContactAiContext } from "../../src/features/ai/context/types/conta
 import { computeContactContextHash } from "../../src/features/ai/context/context-hash/compute-contact-context-hash";
 import { defaultAiConfig } from "../../src/features/ai/config/default-ai-config";
 import { createEnvAiFeatureFlags } from "../../src/features/ai/flags/env-ai-feature-flags";
+import { defaultLlmGateway } from "../../src/features/ai/llm/gateway/llm-gateway";
 import { noopPromptMetricsRecorder } from "../../src/features/ai/metrics/noop-prompt-metrics-recorder";
+import { buildPrompt } from "../../src/features/ai/prompts/registry";
+import { buildFakeContactSummaryResponse } from "../../src/features/ai/prompts/summary/fake-contact-summary-response";
 import { resolveCompatibleModel } from "../../src/features/ai/registry/ai-capability-matrix";
 import { resolveModelCapabilities } from "../../src/features/ai/registry/model-capabilities";
+import { resolveModelForTask } from "../../src/features/ai/llm/policy/resolve-model-for-task";
 import type { PipelinePorts } from "../../src/features/ai/services/shared/ai-service-pipeline.types";
 import { runAiServicePipeline } from "../../src/features/ai/services/shared/run-ai-service-pipeline";
 import { defaultAiContextSanitizer } from "../../src/features/ai/context/sanitizers/default-ai-context-sanitizer";
@@ -17,13 +21,6 @@ import {
 import { createInMemoryContactSummaryCache } from "../../src/features/ai/services/contact-summary/ports/in-memory-contact-summary-cache";
 import { createNoopContactSummaryAuditLogger } from "../../src/features/ai/services/contact-summary/ports/noop-contact-summary-audit-logger";
 import type { ContactSummary } from "../../src/features/ai/services/contact-summary/contact-summary.schema";
-
-const FAKE_SUMMARY: ContactSummary = {
-  summary: "Deterministic integration test summary for the contact.",
-  recommendations: ["Schedule a follow-up call within two business days."],
-  warnings: ["Customer has three consecutive failed call attempts."],
-  confidence: 0.82,
-};
 
 const FAKE_CONTEXT: ContactAiContext = {
   schemaVersion: 1,
@@ -65,8 +62,10 @@ const FAKE_CONTEXT: ContactAiContext = {
   },
 };
 
+const EXPECTED_SUMMARY = buildFakeContactSummaryResponse(FAKE_CONTEXT.contactId);
+
 function createPorts(cache = createInMemoryContactSummaryCache()): PipelinePorts<ContactSummary> {
-  let ms = 1000;
+  const ms = 1000;
 
   return {
     clock: {
@@ -88,6 +87,13 @@ function createPorts(cache = createInMemoryContactSummaryCache()): PipelinePorts
         ...defaultAiConfig.features,
         contactSummary: true,
       },
+      tasks: {
+        ...defaultAiConfig.tasks,
+        SUMMARY: {
+          ...defaultAiConfig.tasks.SUMMARY,
+          modelPolicyHints: { requireStructuredOutput: true, preferLowCost: true },
+        },
+      },
     },
     featureFlags: createEnvAiFeatureFlags(),
     contextLoader: {
@@ -103,21 +109,17 @@ function createPorts(cache = createInMemoryContactSummaryCache()): PipelinePorts
     cacheStore: cache,
     sanitizer: defaultAiContextSanitizer,
     promptBuilder: {
-      build() {
-        return {
-          messages: [{ role: "user", content: "summary prompt" }],
-          promptId: "summary",
-          promptVersion: 1,
-          summary: "summary@v1",
-        };
+      build(input) {
+        return buildPrompt(input);
       },
     },
     modelResolver: {
-      resolve() {
-        return {
-          model: { vendor: "fake", modelId: "fake-1" },
-          reason: "fake",
-        };
+      resolve({ descriptor, companyId, config }) {
+        return resolveModelForTask({
+          taskProfile: descriptor.taskProfile,
+          companyId,
+          hints: config.tasks[descriptor.taskProfile]?.modelPolicyHints,
+        });
       },
     },
     capabilityChecker: {
@@ -125,19 +127,7 @@ function createPorts(cache = createInMemoryContactSummaryCache()): PipelinePorts
         return resolveCompatibleModel(descriptor, policy, resolveModelCapabilities);
       },
     },
-    gateway: {
-      async completeStructured() {
-        ms += 25;
-        return {
-          data: FAKE_SUMMARY,
-          raw: {
-            content: JSON.stringify(FAKE_SUMMARY),
-            model: { vendor: "fake", modelId: "fake-1" },
-            finishReason: "stop",
-          },
-        };
-      },
-    },
+    gateway: defaultLlmGateway,
     auditLogger: createNoopContactSummaryAuditLogger(),
     metricsRecorder: noopPromptMetricsRecorder,
   };
@@ -148,6 +138,7 @@ async function assertServiceContract() {
   assert.equal(service.descriptor.id, "contact-summary");
   assert.equal(service.getSanitizeOptions().profile, "SUMMARY");
   assert.equal(service.computeContextHash(FAKE_CONTEXT), computeContactContextHash(FAKE_CONTEXT));
+  assert.equal(service.getLlmResponseFormat?.()?.type, "json");
 }
 
 async function assertLiveGeneration() {
@@ -174,8 +165,8 @@ async function assertLiveGeneration() {
 
   assert.equal(viewModel.status, "ready");
   assert.equal(viewModel.source, "LIVE");
-  assert.equal(viewModel.summary, FAKE_SUMMARY.summary);
-  assert.equal(viewModel.confidence, FAKE_SUMMARY.confidence);
+  assert.equal(viewModel.summary, EXPECTED_SUMMARY.summary);
+  assert.equal(viewModel.confidence, EXPECTED_SUMMARY.confidence);
   assert.equal(viewModel.metadata.promptLabel, "summary@v1");
   assert.equal(viewModel.metadata.correlationId, "correlation-summary-test");
 }
@@ -204,7 +195,7 @@ async function assertCacheHitUsesSourceCache() {
 
   const cachedViewModel = await runAiServicePipeline(service, input, ports);
   assert.equal(cachedViewModel.source, "CACHE");
-  assert.equal(cachedViewModel.summary, FAKE_SUMMARY.summary);
+  assert.equal(cachedViewModel.summary, EXPECTED_SUMMARY.summary);
 }
 
 async function assertContextHashIgnoresPii() {

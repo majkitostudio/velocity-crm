@@ -409,7 +409,7 @@ ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → Llm
 | 12.1 | **Platform Layer** — Registry (bohatá metadata), Config, Feature Flags, Metrics, Cache abstraction, **AI Service Pipeline** | `registry/`, `config/`, `flags/`, `metrics/`, `cache/`, `services/shared/` ✅ |
 | 12.2 | **AiContactSummaryService** — první `AiTaskService` implementace | `services/contact-summary/` ✅ |
 | 12.3 | **Prompt** — produkční `summary@v1`, napojení na `defaultPromptVersion` | `prompts/summary/`, `prompts/serializers/` ✅ |
-| 12.4 | **Gateway** — pipeline → Fake adapter + `completeStructured` | `services/shared/ai-service-pipeline.ts` |
+| 12.4 | **Gateway** — pipeline → Fake adapter + `completeStructured` | `llm/adapters/fake/`, pipeline wiring ✅ |
 | 12.5 | **UI** — placeholder panel + Server Action | client component, `contact-summary.actions.ts` |
 | 12.6 | **Cache** — `AiLogSummaryCacheStore` (fáze 1) | `services/contact-summary/` cache |
 | 12.7 | **Telemetry** — Prompt Metrics z pipeline | `metrics/` |
@@ -473,6 +473,20 @@ Prompt Metrics        → success rate, latency per prompt version
 - [x] `createContactSummaryPipelinePorts()` skládá všechny porty (noop audit, in-memory cache)
 - [x] `generateContactSummary()` executor volá `runAiServicePipeline`
 - [x] Integrační test `contact-summary-service.test.ts` (bez DB)
+- [x] `npm run build`, `npm run lint` — pass
+
+### Definition of Done — Slice 12.4 (Gateway Wiring)
+
+- [x] `generateContactSummary()` používá `getLlmGateway()` přes production port factory
+- [x] Pipeline předává `responseFormat` přes `buildLlmCompletionRequest()` z `getLlmResponseFormat()`
+- [x] `resolveModelForTask()` + Capability Matrix před LLM voláním
+- [x] Fake Vendor vrací deterministický validní `ContactSummary` JSON
+- [x] DTO vzniká pouze přes `gateway.completeStructured()` + Zod schema
+- [x] Chyby mapovány na `LlmInvalidResponseError` / `LlmSchemaValidationError` / `AiCapabilityError`
+- [x] Integrační testy: E2E, cache hit, force, capability fail, invalid JSON/schema
+- [x] **Provider isolation** — business vrstva neimportuje žádného konkrétního LLM providera (OpenAI, Anthropic, Azure, Ollama, Fake adapter)
+- [x] **Provider isolation** — jediným vstupním bodem pro LLM komunikaci v business vrstvě je `getLlmGateway()` (pouze v `create-contact-summary-pipeline-ports.ts`)
+- [x] Integrační test `ai-business-no-provider-dependency.test.ts`
 - [x] `npm run build`, `npm run lint` — pass
 
 ### Definition of Done — Slice 12 (celý slice)

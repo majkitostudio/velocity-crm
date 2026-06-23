@@ -7,6 +7,7 @@ export type BuildLlmCompletionRequestInput = {
   model: LlmModelRef;
   temperature?: number;
   maxOutputTokens?: number;
+  responseFormat?: LlmCompletionRequest["responseFormat"];
   metadata?: Omit<LlmCompletionRequestMetadata, "promptId" | "promptVersion">;
 };
 
@@ -18,6 +19,7 @@ export function buildLlmCompletionRequest(
     messages: input.prompt.messages,
     temperature: input.temperature,
     maxOutputTokens: input.maxOutputTokens,
+    responseFormat: input.responseFormat,
     metadata: {
       ...input.metadata,
       promptId: input.prompt.promptId,

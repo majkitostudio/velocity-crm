@@ -6,6 +6,7 @@ import { getAiServiceDescriptor } from "../../registry/ai-service-registry";
 
 import {
   contactSummarySchema,
+  contactSummaryJsonSchema,
   type ContactSummary,
 } from "./contact-summary.schema";
 import {
@@ -47,6 +48,13 @@ export class AiContactSummaryService
 
   getOutputSchema() {
     return contactSummarySchema;
+  }
+
+  getLlmResponseFormat() {
+    return {
+      type: "json" as const,
+      schema: contactSummaryJsonSchema,
+    };
   }
 
   computeContextHash(context: Parameters<typeof computeContactContextHash>[0]) {

@@ -7,6 +7,8 @@ import { LlmProviderNotConfiguredError } from "../../src/features/ai/llm/errors/
 import { resolveModelForTask } from "../../src/features/ai/llm/policy/resolve-model-for-task";
 import { buildLlmCompletionRequest } from "../../src/features/ai/llm/request/llm-request-builder";
 import { buildPrompt } from "../../src/features/ai/prompts/registry";
+import { contactSummarySchema } from "../../src/features/ai/prompts/summary/summary-output-schema";
+import { buildFakeContactSummaryResponse } from "../../src/features/ai/prompts/summary/fake-contact-summary-response";
 import { toContactAiContext } from "../../src/features/ai/context/mappers/to-contact-ai-context";
 import type { ContactContext } from "../../src/features/contacts/context/types/contact-context";
 
@@ -89,13 +91,30 @@ async function assertStructuredOutput() {
     {
       model: { vendor: "fake", modelId: "fake-1" },
       messages: [{ role: "user", content: "test" }],
-      metadata: { taskProfile: "SUMMARY" },
+      metadata: { taskProfile: "GENERAL" },
     },
     schema,
   );
 
   assert.deepEqual(result.data, { ok: true });
   assert.equal(result.raw.finishReason, "stop");
+}
+
+async function assertSummaryStructuredOutput() {
+  const gateway = createLlmGateway();
+  const contactId = "contact-llm-structured";
+
+  const result = await gateway.completeStructured(
+    {
+      model: { vendor: "fake", modelId: "fake-1" },
+      messages: [{ role: "user", content: "summary" }],
+      responseFormat: { type: "json" },
+      metadata: { taskProfile: "SUMMARY", contactId },
+    },
+    contactSummarySchema,
+  );
+
+  assert.deepEqual(result.data, buildFakeContactSummaryResponse(contactId));
 }
 
 async function assertStubVendorThrows() {
@@ -114,6 +133,7 @@ async function assertStubVendorThrows() {
 async function main() {
   await assertFakeGatewayComplete();
   await assertStructuredOutput();
+  await assertSummaryStructuredOutput();
   await assertStubVendorThrows();
   console.log("llm-gateway: ok");
 }

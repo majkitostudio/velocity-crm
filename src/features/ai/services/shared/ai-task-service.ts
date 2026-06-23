@@ -3,6 +3,7 @@ import type { z } from "zod";
 import type { BuildContactAiContextOptions } from "@/src/features/ai/context/types/build-options";
 import type { ContactAiContext } from "@/src/features/ai/context/types/contact-ai-context";
 import type { AiContextSanitizeOptions } from "@/src/features/ai/context/types/ai-context-sanitizer";
+import type { LlmCompletionRequest } from "@/src/features/ai/llm/types/llm-request";
 
 import type { AiServiceDescriptor } from "../../registry/ai-service-descriptor";
 
@@ -32,6 +33,7 @@ export interface AiTaskService<TDto, TViewModel> {
   getContextOptions(): BuildContactAiContextOptions;
   getSanitizeOptions(): AiContextSanitizeOptions;
   getOutputSchema(): z.ZodSchema<TDto>;
+  getLlmResponseFormat?(): LlmCompletionRequest["responseFormat"];
   computeContextHash(context: ContactAiContext): string;
   toViewModel(result: AiServiceExecuteResult<TDto>): TViewModel;
 }
