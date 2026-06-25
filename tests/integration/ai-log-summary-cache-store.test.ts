@@ -369,12 +369,79 @@ async function assertCacheStoreFindByContextHash() {
   await deleteAiLogs(createdLogIds);
 }
 
+async function assertForceRefreshUsesNewestCacheEntry() {
+  process.env.AI_ENABLED = "true";
+  process.env.AI_FEATURE_CONTACT_SUMMARY = "true";
+
+  const operatorUserId = await resolveOperatorUserId();
+  const createdLogIds: string[] = [];
+  const gatewayCallCounter = { count: 0 };
+  const context = buildBaseContext();
+  const persistence = createAiLogSummaryPersistence({ prisma });
+  const clockState = { ms: 400 };
+
+  const input = {
+    companyId: SEED_COMPANY_ID,
+    userId: operatorUserId,
+    userRole: "OPERATOR" as const,
+    contactId: SEED_CONTACT_ID,
+    locale: "cs" as const,
+  };
+
+  const service = createContactSummaryService({
+    clock: {
+      now: () => `2024-06-25T12:00:00.${String(clockState.ms).padStart(3, "0")}Z`,
+      nowMs: () => clockState.ms,
+    },
+  });
+
+  const ports = createPorts({
+    context,
+    persistence,
+    gatewayCallCounter,
+    correlationId: "ailog-cache-test-force-refresh",
+    clockMs: clockState.ms,
+  });
+  ports.clock = {
+    now: () => `2024-06-25T12:00:00.${String(clockState.ms).padStart(3, "0")}Z`,
+    nowMs: () => clockState.ms,
+  };
+
+  const firstLive = await runAiServicePipeline(service, input, ports);
+  assert.equal(firstLive.source, "LIVE");
+  if (firstLive.metadata.aiLogId) {
+    createdLogIds.push(firstLive.metadata.aiLogId);
+  }
+
+  const cached = await runAiServicePipeline(service, input, ports);
+  assert.equal(cached.source, "CACHE");
+  assert.equal(cached.metadata.aiLogId, firstLive.metadata.aiLogId);
+
+  clockState.ms = 500;
+  const refreshed = await runAiServicePipeline(service, { ...input, force: true }, ports);
+  assert.equal(refreshed.source, "LIVE");
+  assert.equal(gatewayCallCounter.count, 2);
+  assert.notEqual(refreshed.metadata.aiLogId, firstLive.metadata.aiLogId);
+  if (refreshed.metadata.aiLogId) {
+    createdLogIds.push(refreshed.metadata.aiLogId);
+  }
+
+  clockState.ms = 600;
+  const cachedAfterRefresh = await runAiServicePipeline(service, input, ports);
+  assert.equal(cachedAfterRefresh.source, "CACHE");
+  assert.equal(cachedAfterRefresh.metadata.aiLogId, refreshed.metadata.aiLogId);
+  assert.notEqual(cachedAfterRefresh.metadata.aiLogId, firstLive.metadata.aiLogId);
+
+  await deleteAiLogs(createdLogIds);
+}
+
 async function main() {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL is required for integration tests.");
   }
 
   await assertCacheMissThenHit();
+  await assertForceRefreshUsesNewestCacheEntry();
   await assertContextHashChangeCreatesNewRecord();
   await assertCacheStoreFindByContextHash();
   console.log("ai-log-summary-cache-store: ok");

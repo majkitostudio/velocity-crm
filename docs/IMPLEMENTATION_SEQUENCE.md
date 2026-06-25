@@ -412,10 +412,11 @@ ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → Llm
 | 12.4 | **Gateway** — pipeline → Fake adapter + `completeStructured` | `llm/adapters/fake/`, pipeline wiring ✅ |
 | 12.5 | **UI** — AI Summary panel + Server Action | `components/`, `actions/generate-contact-summary.action.ts` ✅ |
 | 12.6 | **Cache** — `AiLogSummaryCacheStore` (fáze 1) | `cache/ai-log-summary-cache-store.ts` ✅ |
-| 12.7 | **Telemetry** — Prompt Metrics z pipeline | `metrics/` |
-| 12.8 | **Testy** — integrační + golden prompt | `tests/integration/` |
-| 12.9 | AiLog migrace (rozšíření) + `AiContextSanitizer` | Prisma, `context/sanitizers/` |
-| 12.10 | První produkční vendor adapter | `llm/adapters/` |
+| 12.7 | **Refresh** — force bypass cache + UI tlačítko | `actions/`, `components/`, Playwright ✅ |
+| 12.8 | **Telemetry** — Prompt Metrics z pipeline | `metrics/` |
+| 12.9 | **Testy** — integrační + golden prompt | `tests/integration/` |
+| 12.10 | AiLog migrace (rozšíření) + `AiContextSanitizer` | Prisma, `context/sanitizers/` |
+| 12.11 | První produkční vendor adapter | `llm/adapters/` |
 
 ### Platform vrstva (Slice 12)
 
@@ -514,6 +515,19 @@ Prompt Metrics        → success rate, latency per prompt version
 - [x] `source` vrací `LIVE` nebo `CACHE`
 - [x] Prisma migrace: `AiLog.status`, `metadata`, `latencyMs`, `errorCode`
 - [x] Integrační test `ai-log-summary-cache-store.test.ts` (cache miss, hit, contextHash change, gateway skip)
+- [x] `npm run build`, `npm run lint`, integrační testy — pass
+
+### Definition of Done — Slice 12.7 (Refresh & Force Cache Bypass)
+
+- [x] `generateContactSummaryAction(contactId, force?)` předává `force` do `generateContactSummary`
+- [x] Refresh tlačítko „Obnovit shrnutí“ v `ContactAiSummaryPanel` (pouze při existujícím summary)
+- [x] Feature flag `ai.contact_summary.refresh` řídí render tlačítka i action guard při `force: true`
+- [x] `force: true` obchází cache lookup — pipeline beze změny (`shouldUseCache`)
+- [x] Po refresh `source: LIVE`; následné čtení bez force → `CACHE` z nového AiLog záznamu
+- [x] Stejný loading stav (`useTransition`, disabled tlačítka); refresh ponechává viditelné shrnutí se spinnerem na tlačítku
+- [x] Žádná druhá action / pipeline / executor
+- [x] Integrační test `contact-summary-refresh.test.ts` + rozšíření panel state testů
+- [x] Playwright: Generate → LIVE, reload+Generate → CACHE, Refresh → LIVE, reload+Generate → CACHE
 - [x] `npm run build`, `npm run lint`, integrační testy — pass
 
 ### Definition of Done — Slice 12 (celý slice)

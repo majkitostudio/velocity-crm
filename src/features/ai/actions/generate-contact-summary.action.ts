@@ -15,6 +15,7 @@ import type { SummaryViewModel } from "../types/summary-view-model";
 
 export async function generateContactSummaryAction(
   contactId: string,
+  force?: boolean,
 ): Promise<ActionResult<SummaryViewModel>> {
   const trimmedContactId = contactId.trim();
 
@@ -42,8 +43,19 @@ export async function generateContactSummaryAction(
       );
     }
 
+    if (force === true && !flags.isEnabled("ai.contact_summary.refresh", flagContext)) {
+      return actionFailure(
+        flags.getReason("ai.contact_summary.refresh", flagContext) ??
+          "Obnovení shrnutí není dostupné.",
+      );
+    }
+
     const viewModel = await generateContactSummary(
-      buildContactSummaryExecuteInput(user, trimmedContactId),
+      buildContactSummaryExecuteInput(
+        user,
+        trimmedContactId,
+        force === true ? { force: true } : undefined,
+      ),
     );
 
     return actionSuccess(viewModel);

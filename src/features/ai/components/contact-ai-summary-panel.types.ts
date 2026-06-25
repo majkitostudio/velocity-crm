@@ -11,7 +11,7 @@ export type ResolveContactAiSummaryPanelPhaseInput = {
 export function resolveContactAiSummaryPanelPhase(
   input: ResolveContactAiSummaryPanelPhaseInput,
 ): ContactAiSummaryPanelPhase {
-  if (input.isPending) {
+  if (input.isPending && !input.viewModel) {
     return "loading";
   }
 
@@ -24,6 +24,20 @@ export function resolveContactAiSummaryPanelPhase(
   }
 
   return "empty";
+}
+
+export function isContactAiSummaryRefreshing(input: {
+  viewModel: SummaryViewModel | null;
+  isPending: boolean;
+}): boolean {
+  return input.isPending && Boolean(input.viewModel);
+}
+
+export function shouldShowContactAiSummaryRefreshButton(input: {
+  viewModel: SummaryViewModel | null;
+  refreshEnabled: boolean;
+}): boolean {
+  return Boolean(input.viewModel) && input.refreshEnabled;
 }
 
 export function formatContactAiSummarySourceLabel(

@@ -32,6 +32,7 @@ export default defineConfig({
     env: {
       AI_ENABLED: "true",
       AI_FEATURE_CONTACT_SUMMARY: "true",
+      AI_FEATURE_CONTACT_SUMMARY_REFRESH: "true",
       LLM_SUMMARY_VENDOR: "fake",
       LLM_SUMMARY_MODEL: "fake-1",
     },

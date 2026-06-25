@@ -7,7 +7,7 @@ import { getContactActivityTimelineFromSearchParams } from "@/src/features/conta
 import { getContactCallbacksPanelView } from "@/src/features/callbacks/server/callbacks.service";
 import { parseReturnToPath } from "@/src/features/contacts/lib/list-navigation";
 import { ContactAiSummaryPanel } from "@/src/features/ai/components/contact-ai-summary-panel";
-import { isContactSummaryUiEnabled } from "@/src/features/ai/server/contact-summary-ui";
+import { isContactSummaryRefreshEnabled, isContactSummaryUiEnabled } from "@/src/features/ai/server/contact-summary-ui";
 import { NotFoundError } from "@/src/domain/errors";
 
 type ContactPageProps = {
@@ -58,9 +58,10 @@ export default async function ContactDetailRoute({
   let activityTimeline;
   let callbacksPanel;
   let showAiSummary = false;
+  let showAiSummaryRefresh = false;
 
   try {
-    [view, activityTimeline, callbacksPanel, showAiSummary] = await Promise.all([
+    [view, activityTimeline, callbacksPanel, showAiSummary, showAiSummaryRefresh] = await Promise.all([
       getContactDetailView(contactId, {
         sourceCallbackId,
       }),
@@ -73,6 +74,7 @@ export default async function ContactDetailRoute({
         highlightedCallbackId: sourceCallbackId,
       }),
       isContactSummaryUiEnabled(),
+      isContactSummaryRefreshEnabled(),
     ]);
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -90,7 +92,9 @@ export default async function ContactDetailRoute({
       returnTo={contactsReturnTo}
       showCreatedMessage={showCreatedMessage}
       sidebarSlot={
-        showAiSummary ? <ContactAiSummaryPanel contactId={contactId} /> : null
+        showAiSummary ? (
+          <ContactAiSummaryPanel contactId={contactId} refreshEnabled={showAiSummaryRefresh} />
+        ) : null
       }
     />
   );

@@ -6,10 +6,15 @@ import { generateContactSummaryAction } from "../actions/generate-contact-summar
 import type { SummaryViewModel } from "../types/summary-view-model";
 
 import { ContactAiSummarySourceBadge } from "./contact-ai-summary-source-badge";
-import { resolveContactAiSummaryPanelPhase } from "./contact-ai-summary-panel.types";
+import {
+  isContactAiSummaryRefreshing,
+  resolveContactAiSummaryPanelPhase,
+  shouldShowContactAiSummaryRefreshButton,
+} from "./contact-ai-summary-panel.types";
 
 type ContactAiSummaryPanelProps = {
   contactId: string;
+  refreshEnabled: boolean;
 };
 
 function formatGeneratedAt(value: string): string {
@@ -28,7 +33,10 @@ function formatConfidence(value: number): string {
   return `${Math.round(value * 100)} %`;
 }
 
-export function ContactAiSummaryPanel({ contactId }: ContactAiSummaryPanelProps) {
+export function ContactAiSummaryPanel({
+  contactId,
+  refreshEnabled,
+}: ContactAiSummaryPanelProps) {
   const [viewModel, setViewModel] = useState<SummaryViewModel | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -40,7 +48,14 @@ export function ContactAiSummaryPanel({ contactId }: ContactAiSummaryPanelProps)
     errorMessage,
   });
 
-  const handleGenerate = () => {
+  const isRefreshing = isContactAiSummaryRefreshing({ viewModel, isPending });
+
+  const showRefreshButton = shouldShowContactAiSummaryRefreshButton({
+    viewModel,
+    refreshEnabled,
+  });
+
+  const handleSubmit = (force = false) => {
     if (inFlightRef.current || isPending) {
       return;
     }
@@ -50,7 +65,10 @@ export function ContactAiSummaryPanel({ contactId }: ContactAiSummaryPanelProps)
 
     startTransition(async () => {
       try {
-        const result = await generateContactSummaryAction(contactId);
+        const result =
+          force === true
+            ? await generateContactSummaryAction(contactId, true)
+            : await generateContactSummaryAction(contactId);
 
         if (!result.ok) {
           setErrorMessage(result.error);
@@ -89,7 +107,7 @@ export function ContactAiSummaryPanel({ contactId }: ContactAiSummaryPanelProps)
             className="inline-flex items-center justify-center rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
             data-testid="contact-ai-summary-generate-button"
             disabled={isPending}
-            onClick={handleGenerate}
+            onClick={() => handleSubmit(false)}
           >
             Vygenerovat shrnutí
           </button>
@@ -126,7 +144,7 @@ export function ContactAiSummaryPanel({ contactId }: ContactAiSummaryPanelProps)
             className="inline-flex items-center justify-center rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
             data-testid="contact-ai-summary-generate-button"
             disabled={isPending}
-            onClick={handleGenerate}
+            onClick={() => handleSubmit(false)}
           >
             Vygenerovat shrnutí
           </button>
@@ -173,15 +191,28 @@ export function ContactAiSummaryPanel({ contactId }: ContactAiSummaryPanelProps)
             <span>{viewModel.metadata.promptLabel}</span>
           </div>
 
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
-            data-testid="contact-ai-summary-generate-button"
-            disabled={isPending}
-            onClick={handleGenerate}
-          >
-            Vygenerovat znovu
-          </button>
+          {showRefreshButton ? (
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+              data-testid="contact-ai-summary-refresh-button"
+              disabled={isPending}
+              onClick={() => handleSubmit(true)}
+            >
+              {isRefreshing ? (
+                <>
+                  <span
+                    className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700"
+                    aria-hidden="true"
+                    data-testid="contact-ai-summary-refresh-spinner"
+                  />
+                  <span>Obnovuji shrnutí…</span>
+                </>
+              ) : (
+                "Obnovit shrnutí"
+              )}
+            </button>
+          ) : null}
         </div>
       ) : null}
     </section>

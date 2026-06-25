@@ -5,7 +5,9 @@ import { waitForContactDetail } from "../helpers/auth";
 const seedContactPath = "/contacts/seed-contact-lead-high";
 
 test.describe("Contact AI Summary", () => {
-  test("operator can generate summary and see cache badge on second run", async ({ page }) => {
+  test("operator can generate, read cache, refresh live, and cache again after reload", async ({
+    page,
+  }) => {
     await page.goto(seedContactPath);
     await waitForContactDetail(page);
 
@@ -24,7 +26,33 @@ test.describe("Contact AI Summary", () => {
     await expect(page.getByTestId("contact-ai-summary-text")).not.toBeEmpty();
     await expect(page.getByTestId("contact-ai-summary-source-badge")).toHaveText("LIVE");
 
-    await generateButton.click();
+    await page.reload();
+    await waitForContactDetail(page);
+    await expect(page.getByTestId("contact-ai-summary-empty")).toBeVisible();
+
+    await page.getByTestId("contact-ai-summary-generate-button").click();
+    await expect(page.getByTestId("contact-ai-summary-success")).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(page.getByTestId("contact-ai-summary-source-badge")).toHaveText("CACHE");
+
+    const refreshButton = page.getByTestId("contact-ai-summary-refresh-button");
+    await expect(refreshButton).toBeVisible();
+    await expect(refreshButton).toBeEnabled();
+    await refreshButton.click();
+
+    await expect(page.getByTestId("contact-ai-summary-success")).toBeVisible();
+    await expect(page.getByTestId("contact-ai-summary-refresh-spinner")).toBeVisible();
+    await expect(page.getByTestId("contact-ai-summary-success")).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(page.getByTestId("contact-ai-summary-source-badge")).toHaveText("LIVE");
+
+    await page.reload();
+    await waitForContactDetail(page);
+    await expect(page.getByTestId("contact-ai-summary-empty")).toBeVisible();
+
+    await page.getByTestId("contact-ai-summary-generate-button").click();
     await expect(page.getByTestId("contact-ai-summary-success")).toBeVisible({
       timeout: 30_000,
     });
