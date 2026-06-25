@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { createAiLogSummaryPersistence } from "../../src/features/ai/cache/ai-log-summary-cache-store";
+import { createAiLogRecommendationPersistence } from "../../src/features/ai/cache/ai-log-recommendation-cache-persistence";
 import { resolveCacheTtlForTask, resolveAiConfig } from "../../src/features/ai/config/resolve-ai-config";
 import { defaultAiConfig } from "../../src/features/ai/config/default-ai-config";
 import { readEnvAiConfigOverrides } from "../../src/features/ai/config/env-ai-config";
@@ -15,6 +16,7 @@ import {
 } from "../../src/features/ai/llm/adapters/fake/fake-response-registry";
 import { createAiPipelinePorts } from "../../src/features/ai/services/shared/create-ai-pipeline-ports";
 import { createContactSummaryPipelinePorts } from "../../src/features/ai/services/contact-summary/create-contact-summary-pipeline-ports";
+import { createRecommendationPipelinePorts } from "../../src/features/ai/services/recommendation/create-recommendation-pipeline-ports";
 import { buildAiServiceExecuteInput } from "../../src/features/ai/lib/build-ai-service-execute-input";
 import { buildContactSummaryExecuteInput } from "../../src/features/ai/lib/build-contact-summary-execute-input";
 import {
@@ -34,6 +36,7 @@ const TEST_USER = {
 
 function assertGenericCacheStoreFactory() {
   assert.equal(typeof createAiLogSummaryPersistence, "function");
+  assert.equal(typeof createAiLogRecommendationPersistence, "function");
 }
 
 function assertGenericPipelinePorts() {
@@ -60,6 +63,10 @@ function assertGenericPipelinePorts() {
   const summaryPorts = createContactSummaryPipelinePorts();
   assert.equal(typeof summaryPorts.cacheStore.find, "function");
   assert.equal(typeof summaryPorts.gateway.complete, "function");
+
+  const recommendationPorts = createRecommendationPipelinePorts();
+  assert.equal(typeof recommendationPorts.cacheStore.find, "function");
+  assert.equal(typeof recommendationPorts.auditLogger.recordSuccess, "function");
 }
 
 function assertFeatureFlagRegistry() {

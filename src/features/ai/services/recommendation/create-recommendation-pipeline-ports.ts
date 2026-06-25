@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createAiLogRecommendationPersistence } from "@/src/features/ai/cache/ai-log-recommendation-cache-store";
+import { createAiLogRecommendationPersistence } from "@/src/features/ai/cache/ai-log-recommendation-cache-persistence";
 import { prisma } from "@/src/server/db";
 
 import type { ContactRecommendation } from "./recommendation.schema";
