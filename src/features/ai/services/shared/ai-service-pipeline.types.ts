@@ -152,6 +152,56 @@ export function buildCacheKey(input: BuildCacheLookupInput): string {
   return parts.join(":");
 }
 
+export type ParsedCacheKey = {
+  companyId: string;
+  contactId: string;
+  serviceId: string;
+  contextHash: string;
+  promptVersion: number;
+  modelVendor: string;
+  modelId: string;
+  locale: string;
+  outputSchemaVersion: number;
+};
+
+export function parseCacheKey(cacheKey: string): ParsedCacheKey {
+  const parts = cacheKey.split(":");
+  if (parts.length !== 9) {
+    throw new Error(`Invalid cache key format: expected 9 segments, got ${parts.length}`);
+  }
+
+  const [
+    companyId,
+    contactId,
+    serviceId,
+    contextHash,
+    promptVersionRaw,
+    modelVendor,
+    modelId,
+    locale,
+    outputSchemaVersionRaw,
+  ] = parts;
+
+  const promptVersion = Number(promptVersionRaw);
+  const outputSchemaVersion = Number(outputSchemaVersionRaw);
+
+  if (!Number.isFinite(promptVersion) || !Number.isFinite(outputSchemaVersion)) {
+    throw new Error("Invalid cache key format: promptVersion or outputSchemaVersion is not numeric");
+  }
+
+  return {
+    companyId,
+    contactId,
+    serviceId,
+    contextHash,
+    promptVersion,
+    modelVendor,
+    modelId,
+    locale,
+    outputSchemaVersion,
+  };
+}
+
 export function shouldUseCache(descriptor: AiServiceDescriptor, force?: boolean): boolean {
   return descriptor.supportsCaching && force !== true;
 }

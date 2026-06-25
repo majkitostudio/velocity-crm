@@ -411,10 +411,10 @@ ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → Llm
 | 12.3 | **Prompt** — produkční `summary@v1`, napojení na `defaultPromptVersion` | `prompts/summary/`, `prompts/serializers/` ✅ |
 | 12.4 | **Gateway** — pipeline → Fake adapter + `completeStructured` | `llm/adapters/fake/`, pipeline wiring ✅ |
 | 12.5 | **UI** — AI Summary panel + Server Action | `components/`, `actions/generate-contact-summary.action.ts` ✅ |
-| 12.6 | **Cache** — `AiLogSummaryCacheStore` (fáze 1) | `services/contact-summary/` cache |
+| 12.6 | **Cache** — `AiLogSummaryCacheStore` (fáze 1) | `cache/ai-log-summary-cache-store.ts` ✅ |
 | 12.7 | **Telemetry** — Prompt Metrics z pipeline | `metrics/` |
 | 12.8 | **Testy** — integrační + golden prompt | `tests/integration/` |
-| 12.9 | AiLog migrace + `AiContextSanitizer` | Prisma, `context/sanitizers/` |
+| 12.9 | AiLog migrace (rozšíření) + `AiContextSanitizer` | Prisma, `context/sanitizers/` |
 | 12.10 | První produkční vendor adapter | `llm/adapters/` |
 
 ### Platform vrstva (Slice 12)
@@ -470,7 +470,7 @@ Prompt Metrics        → success rate, latency per prompt version
 - [x] Sdílený `computeContactContextHash()` v `context/context-hash/` (ne v `contact-summary/`)
 - [x] `AiContactSummaryService` implementuje `AiTaskService<ContactSummary, SummaryViewModel>`
 - [x] Jediná factory `getContactSummaryService()` — žádné přímé `new AiContactSummaryService()` mimo factory
-- [x] `createContactSummaryPipelinePorts()` skládá všechny porty (noop audit, in-memory cache)
+- [x] `createContactSummaryPipelinePorts()` skládá všechny porty (produkce: `AiLogSummaryCacheStore` od 12.6; unit testy: in-memory)
 - [x] `generateContactSummary()` executor volá `runAiServicePipeline`
 - [x] Integrační test `contact-summary-service.test.ts` (bez DB)
 - [x] `npm run build`, `npm run lint` — pass
@@ -503,15 +503,28 @@ Prompt Metrics        → success rate, latency per prompt version
 - [x] Playwright `contact-summary.spec.ts` + fake LLM env v `playwright.config.ts`
 - [x] `npm run build`, `npm run lint` — pass
 
+### Definition of Done — Slice 12.6 (AiLog Cache Phase 1)
+
+- [x] In-memory cache odstraněna z produkčního wiringu (`createContactSummaryPipelinePorts`)
+- [x] `AiLogSummaryCacheStore` implementuje `AiCacheStore<ContactSummary>` přes `createAiLogSummaryPersistence`
+- [x] Pipeline (`runAiServicePipeline`) beze změny business logiky
+- [x] `ContactSummaryService` beze změny
+- [x] Gateway se při cache hitu nevolá (integrační test)
+- [x] Cache lookup používá `contextHash` (součást `cacheKey` + metadata v `AiLog`)
+- [x] `source` vrací `LIVE` nebo `CACHE`
+- [x] Prisma migrace: `AiLog.status`, `metadata`, `latencyMs`, `errorCode`
+- [x] Integrační test `ai-log-summary-cache-store.test.ts` (cache miss, hit, contextHash change, gateway skip)
+- [x] `npm run build`, `npm run lint`, integrační testy — pass
+
 ### Definition of Done — Slice 12 (celý slice)
 
 - [x] Operátor vidí AI shrnutí na detailu kontaktu (feature flag `ai.contact_summary`)
-- [ ] Výstupy uloženy v `AiLog` s prompt versioning a metadata
+- [x] Výstupy uloženy v `AiLog` s prompt versioning a metadata (fáze 1 cache)
 - [ ] PII v promptech ošetřena (`AiContextSanitizer` SUMMARY profile)
 - [x] AI Service Pipeline (`runAiServicePipeline`) prochází integračním testem
 - [x] AI Service Registry registruje `contact-summary` s plným descriptor metadata
 - [x] Capability Matrix validuje model před LLM voláním
-- [x] `AiCacheStore` interface připraven (fáze 1: AiLog impl v 12.6)
+- [x] `AiCacheStore` interface připraven; fáze 1: `AiLogSummaryCacheStore` (Slice 12.6)
 
 ### Co Slice 12 neřeší
 

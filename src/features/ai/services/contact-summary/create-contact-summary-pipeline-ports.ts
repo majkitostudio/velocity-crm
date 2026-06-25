@@ -16,8 +16,8 @@ import type { PipelinePorts } from "@/src/features/ai/services/shared/ai-service
 import { assertMinimumRole } from "@/src/features/ai/services/shared/ai-service-pipeline";
 
 import type { ContactSummary } from "./contact-summary.schema";
-import { getInMemoryContactSummaryCache } from "./ports/in-memory-contact-summary-cache";
-import { createNoopContactSummaryAuditLogger } from "./ports/noop-contact-summary-audit-logger";
+import { createAiLogSummaryPersistence } from "@/src/features/ai/cache/ai-log-summary-cache-store";
+import { prisma } from "@/src/server/db";
 
 const systemClock = {
   now() {
@@ -29,6 +29,8 @@ const systemClock = {
 };
 
 export function createContactSummaryPipelinePorts(): PipelinePorts<ContactSummary> {
+  const { cacheStore, auditLogger } = createAiLogSummaryPersistence({ prisma });
+
   return {
     clock: systemClock,
     correlationId: {
@@ -60,7 +62,7 @@ export function createContactSummaryPipelinePorts(): PipelinePorts<ContactSummar
         });
       },
     },
-    cacheStore: getInMemoryContactSummaryCache(),
+    cacheStore,
     sanitizer: defaultAiContextSanitizer,
     promptBuilder: {
       build(input) {
@@ -83,7 +85,7 @@ export function createContactSummaryPipelinePorts(): PipelinePorts<ContactSummar
       },
     },
     gateway: getLlmGateway(),
-    auditLogger: createNoopContactSummaryAuditLogger(),
+    auditLogger,
     metricsRecorder: noopPromptMetricsRecorder,
   };
 }

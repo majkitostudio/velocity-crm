@@ -1,0 +1,8 @@
+-- CreateEnum
+CREATE TYPE "AiLogStatus" AS ENUM ('SUCCESS', 'FAILED');
+
+-- AlterTable
+ALTER TABLE "AiLog" ADD COLUMN "status" "AiLogStatus" NOT NULL DEFAULT 'SUCCESS';
+ALTER TABLE "AiLog" ADD COLUMN "metadata" JSONB;
+ALTER TABLE "AiLog" ADD COLUMN "latencyMs" INTEGER;
+ALTER TABLE "AiLog" ADD COLUMN "errorCode" TEXT;

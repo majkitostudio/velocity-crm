@@ -61,6 +61,11 @@ enum AiTaskType {
   NEXT_ACTION
 }
 
+enum AiLogStatus {
+  SUCCESS
+  FAILED
+}
+
 enum ImportBatchStatus {
   COMPLETED
   FAILED
@@ -358,7 +363,7 @@ model Note {
 }
 
 model AiLog {
-  id            String     @id @default(cuid())
+  id            String      @id @default(cuid())
   companyId     String
   contactId     String
   userId        String
@@ -366,7 +371,11 @@ model AiLog {
   model         String
   promptSummary String
   output        String
-  createdAt     DateTime   @default(now())
+  status        AiLogStatus @default(SUCCESS)
+  metadata      Json?
+  latencyMs     Int?
+  errorCode     String?
+  createdAt     DateTime    @default(now())
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
   contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)

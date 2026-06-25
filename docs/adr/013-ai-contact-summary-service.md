@@ -976,7 +976,7 @@ ViewModel neobsahuje sanitizovaný context — pouze Summary DTO.
 | **12.3** | Prompt | produkční `summary@v1`, napojení na `defaultPromptVersion` z registry |
 | **12.4** | Gateway | napojení pipeline na Fake adapter + `completeStructured` |
 | **12.5** | UI | placeholder panel + Server Action |
-| **12.6** | Cache | `AiLogSummaryCacheStore` (fáze 1) |
+| **12.6** | Cache | `AiLogSummaryCacheStore` (fáze 1) + `AiLog` rozšíření (`status`, `metadata`) |
 | **12.7** | Telemetry | Prompt Metrics volání z pipeline |
 | **12.8** | Testy | integrační + golden prompt testy |
 
