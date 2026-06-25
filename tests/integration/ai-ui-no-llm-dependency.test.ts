@@ -33,6 +33,8 @@ const FORBIDDEN_UI_IMPORT_PATTERNS = [
 ];
 
 const FORBIDDEN_GENERATE_EXECUTOR_IMPORT = /from ["'].*\/generate-contact-summary["']/;
+const FORBIDDEN_RECOMMENDATION_EXECUTOR_IMPORT = /from ["'].*\/generate-recommendation["']/;
+const FORBIDDEN_RECOMMENDATION_SERVICE_IMPORT = /features\/ai\/services\/recommendation\//;
 const ACTION_DIR_SEGMENT = `${join("src", "features", "ai", "actions")}`.replaceAll("\\", "/");
 
 function collectTypeScriptFiles(directory: string): string[] {
@@ -77,6 +79,24 @@ function assertNoForbiddenUiImports(filePath: string, root: string): void {
     ) {
       assert.fail(
         `Only actions may import generateContactSummary executor; found in ${relativePath}: ${line.trim()}`,
+      );
+    }
+
+    if (
+      FORBIDDEN_RECOMMENDATION_EXECUTOR_IMPORT.test(line) &&
+      !relativePath.startsWith(ACTION_DIR_SEGMENT)
+    ) {
+      assert.fail(
+        `Only actions may import generateRecommendation executor; found in ${relativePath}: ${line.trim()}`,
+      );
+    }
+
+    if (
+      FORBIDDEN_RECOMMENDATION_SERVICE_IMPORT.test(line) &&
+      !relativePath.startsWith(ACTION_DIR_SEGMENT)
+    ) {
+      assert.fail(
+        `UI must not import recommendation service; found in ${relativePath}: ${line.trim()}`,
       );
     }
   }

@@ -33,6 +33,8 @@ export default defineConfig({
       AI_ENABLED: "true",
       AI_FEATURE_CONTACT_SUMMARY: "true",
       AI_FEATURE_CONTACT_SUMMARY_REFRESH: "true",
+      AI_FEATURE_RECOMMENDATION: process.env.AI_FEATURE_RECOMMENDATION ?? "true",
+      AI_FEATURE_RECOMMENDATION_REFRESH: process.env.AI_FEATURE_RECOMMENDATION_REFRESH ?? "true",
       LLM_SUMMARY_VENDOR: "fake",
       LLM_SUMMARY_MODEL: "fake-1",
     },
@@ -41,7 +43,15 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: /auth\/auth-roles\.spec\.ts/,
+      testIgnore: [
+        /auth\/auth-roles\.spec\.ts/,
+        /contact-recommendation-flag-disabled\.spec\.ts/,
+      ],
+    },
+    {
+      name: "chromium-no-recommendation",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: /contact-recommendation-flag-disabled\.spec\.ts/,
     },
     {
       name: "auth",

@@ -6,8 +6,12 @@ import { getContactDetailView } from "@/src/features/contacts/server/contact-det
 import { getContactActivityTimelineFromSearchParams } from "@/src/features/contacts/server/contact-activity.service";
 import { getContactCallbacksPanelView } from "@/src/features/callbacks/server/callbacks.service";
 import { parseReturnToPath } from "@/src/features/contacts/lib/list-navigation";
-import { ContactAiSummaryPanel } from "@/src/features/ai/components/contact-ai-summary-panel";
+import { ContactAiWorkspace } from "@/src/features/ai/components/contact-ai-workspace";
 import { isContactSummaryRefreshEnabled, isContactSummaryUiEnabled } from "@/src/features/ai/server/contact-summary-ui";
+import {
+  isContactRecommendationRefreshEnabled,
+  isContactRecommendationUiEnabled,
+} from "@/src/features/ai/server/contact-recommendation-ui";
 import { NotFoundError } from "@/src/domain/errors";
 
 type ContactPageProps = {
@@ -59,9 +63,11 @@ export default async function ContactDetailRoute({
   let callbacksPanel;
   let showAiSummary = false;
   let showAiSummaryRefresh = false;
+  let showRecommendation = false;
+  let showRecommendationRefresh = false;
 
   try {
-    [view, activityTimeline, callbacksPanel, showAiSummary, showAiSummaryRefresh] = await Promise.all([
+    [view, activityTimeline, callbacksPanel, showAiSummary, showAiSummaryRefresh, showRecommendation, showRecommendationRefresh] = await Promise.all([
       getContactDetailView(contactId, {
         sourceCallbackId,
       }),
@@ -75,6 +81,8 @@ export default async function ContactDetailRoute({
       }),
       isContactSummaryUiEnabled(),
       isContactSummaryRefreshEnabled(),
+      isContactRecommendationUiEnabled(),
+      isContactRecommendationRefreshEnabled(),
     ]);
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -92,8 +100,14 @@ export default async function ContactDetailRoute({
       returnTo={contactsReturnTo}
       showCreatedMessage={showCreatedMessage}
       sidebarSlot={
-        showAiSummary ? (
-          <ContactAiSummaryPanel contactId={contactId} refreshEnabled={showAiSummaryRefresh} />
+        showAiSummary || showRecommendation ? (
+          <ContactAiWorkspace
+            contactId={contactId}
+            summaryEnabled={showAiSummary}
+            summaryRefreshEnabled={showAiSummaryRefresh}
+            recommendationEnabled={showRecommendation}
+            recommendationRefreshEnabled={showRecommendationRefresh}
+          />
         ) : null
       }
     />

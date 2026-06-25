@@ -2,6 +2,8 @@ import type { AiServiceExecuteResult } from "../shared/ai-task-service";
 
 import type { ContactRecommendation, RecommendedAction } from "./recommendation.schema";
 
+export type { RecommendedAction };
+
 export const AI_RESULT_SOURCES = ["LIVE", "CACHE"] as const;
 
 export type AiResultSource = (typeof AI_RESULT_SOURCES)[number];
