@@ -85,10 +85,10 @@ function assertFakeResponseRegistry() {
   ) as { summary?: string };
   assert.ok(summaryJson.summary?.includes("c-1"));
 
-  const recommendationJson = JSON.parse(resolveFakeJsonResponse("RECOMMENDATION")) as {
-    recommendations: unknown[];
-  };
-  assert.ok(Array.isArray(recommendationJson.recommendations));
+  const recommendationJson = JSON.parse(
+    resolveFakeJsonResponse("RECOMMENDATION", { contactId: "c-rec-1" }),
+  ) as { primaryAction: { actionType: string } };
+  assert.equal(recommendationJson.primaryAction.actionType, "CALL");
 
   assert.equal(FAKE_TEXT_RESPONSES.CALL_PREP.length > 0, true);
 }

@@ -19,7 +19,8 @@ export const defaultAiConfig: AiConfiguration = {
     },
     RECOMMENDATION: {
       ...DEFAULT_TASK_CONFIG,
-      modelPolicyHints: { requireStructuredOutput: true, preferLowCost: false },
+      modelPolicyHints: { requireStructuredOutput: true, preferLowCost: true },
+      contextView: { maxHistoryItems: 30, includeNoteBodies: false },
     },
     CALL_PREP: { ...DEFAULT_TASK_CONFIG },
     COPILOT: { ...DEFAULT_TASK_CONFIG },
@@ -44,6 +45,8 @@ export const defaultAiConfig: AiConfiguration = {
     contactSummaryRefresh: true,
     contactSummaryAutoGenerate: false,
     recommendation: false,
+    recommendationRefresh: true,
+    recommendationAutoGenerate: false,
     copilot: false,
   },
 };

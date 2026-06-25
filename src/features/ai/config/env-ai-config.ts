@@ -33,6 +33,10 @@ export function readEnvAiConfigOverrides(): Partial<AiConfiguration> {
     "AI_FEATURE_CONTACT_SUMMARY_AUTO_GENERATE",
   );
   const recommendation = readBooleanEnv("AI_FEATURE_RECOMMENDATION");
+  const recommendationRefresh = readBooleanEnv("AI_FEATURE_RECOMMENDATION_REFRESH");
+  const recommendationAutoGenerate = readBooleanEnv(
+    "AI_FEATURE_RECOMMENDATION_AUTO_GENERATE",
+  );
   const copilot = readBooleanEnv("AI_FEATURE_COPILOT");
 
   const overrides: Partial<AiConfiguration> = {};
@@ -65,6 +69,8 @@ export function readEnvAiConfigOverrides(): Partial<AiConfiguration> {
     contactSummaryRefresh !== undefined ||
     contactSummaryAutoGenerate !== undefined ||
     recommendation !== undefined ||
+    recommendationRefresh !== undefined ||
+    recommendationAutoGenerate !== undefined ||
     copilot !== undefined
   ) {
     overrides.features = {
@@ -72,6 +78,8 @@ export function readEnvAiConfigOverrides(): Partial<AiConfiguration> {
       contactSummaryRefresh: contactSummaryRefresh ?? true,
       contactSummaryAutoGenerate: contactSummaryAutoGenerate ?? false,
       recommendation: recommendation ?? false,
+      recommendationRefresh: recommendationRefresh ?? true,
+      recommendationAutoGenerate: recommendationAutoGenerate ?? false,
       copilot: copilot ?? false,
     };
   }

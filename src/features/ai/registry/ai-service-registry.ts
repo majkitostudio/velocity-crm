@@ -30,7 +30,7 @@ const RAW_DESCRIPTORS: Record<AiServiceId, AiServiceDescriptor> = {
     description: "Doporučení dalších kroků pro operátora",
     taskProfile: "RECOMMENDATION",
     taskCategory: "RECOMMENDATION",
-    taskType: "CUSTOMER_SUMMARY",
+    taskType: "NEXT_ACTION",
     defaultPromptVersion: 1,
     featureFlag: "ai.recommendation",
     minRole: "OPERATOR",

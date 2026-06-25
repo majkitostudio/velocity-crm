@@ -17,6 +17,11 @@ function toInitials(name: string): string {
     .join(" ");
 }
 
+function sanitizeRecommendationProfile(context: ContactAiContext): ContactAiContext {
+  // Same PII rules as SUMMARY; callback scheduledAt is preserved for timing decisions.
+  return sanitizeSummaryProfile(context);
+}
+
 function sanitizeSummaryProfile(context: ContactAiContext): ContactAiContext {
   return {
     ...context,
@@ -87,6 +92,7 @@ export const defaultAiContextSanitizer: AiContextSanitizer = {
       case "SUMMARY":
         return sanitizeSummaryProfile(context);
       case "RECOMMENDATION":
+        return sanitizeRecommendationProfile(context);
       case "CALL_PREPARATION":
       case "EMAIL_DRAFT":
       case "SMS_DRAFT":

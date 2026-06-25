@@ -40,12 +40,6 @@ export const generalPromptTemplateV1 = createStubTemplate(
   "Assist the operator using the contact context below.",
 );
 
-export const recommendationPromptTemplateV1 = createStubTemplate(
-  "recommendation",
-  1,
-  "Suggest next actions for this contact.",
-);
-
 export const callPrepPromptTemplateV1 = createStubTemplate(
   "call-prep",
   1,

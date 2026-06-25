@@ -24,6 +24,8 @@ const ENV_FLAG_MAP: Partial<Record<AiFeatureFlagKey, string>> = {
   "ai.contact_summary.refresh": "AI_FEATURE_CONTACT_SUMMARY_REFRESH",
   "ai.contact_summary.auto_generate": "AI_FEATURE_CONTACT_SUMMARY_AUTO_GENERATE",
   "ai.recommendation": "AI_FEATURE_RECOMMENDATION",
+  "ai.recommendation.refresh": "AI_FEATURE_RECOMMENDATION_REFRESH",
+  "ai.recommendation.auto_generate": "AI_FEATURE_RECOMMENDATION_AUTO_GENERATE",
   "ai.copilot": "AI_FEATURE_COPILOT",
 };
 
@@ -53,7 +55,12 @@ function resolveServiceFlagDefault(
     if (flag === "enabled") {
       return config.features.recommendation;
     }
-    return false;
+    if (flag === "refresh") {
+      return config.features.recommendationRefresh;
+    }
+    if (flag === "autoGenerate") {
+      return config.features.recommendationAutoGenerate;
+    }
   }
 
   if (keys.enabled === "ai.copilot") {

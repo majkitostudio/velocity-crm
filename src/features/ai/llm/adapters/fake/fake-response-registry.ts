@@ -1,4 +1,5 @@
 import { buildFakeContactSummaryResponse } from "@/src/features/ai/prompts/summary/fake-contact-summary-response";
+import { buildFakeRecommendationResponse } from "@/src/features/ai/prompts/recommendation/fake-recommendation-response";
 
 import type { LlmTaskProfile } from "../../types/llm-model";
 
@@ -13,15 +14,8 @@ const FAKE_JSON_RESPONSE_BUILDERS: Partial<
 > = {
   SUMMARY: ({ contactId }) =>
     buildFakeContactSummaryResponse(contactId ?? "unknown-contact"),
-  RECOMMENDATION: () => ({
-    recommendations: [
-      {
-        type: "follow_up_call",
-        priority: "medium",
-        rationale: "Deterministic fake recommendation.",
-      },
-    ],
-  }),
+  RECOMMENDATION: ({ contactId }) =>
+    buildFakeRecommendationResponse(contactId ?? "unknown-contact"),
   CALL_PREP: () => ({
     talkingPoints: ["Deterministic fake call preparation."],
   }),

@@ -1,9 +1,9 @@
 import { summaryPromptTemplateV1 } from "./templates/summary/v1";
+import { recommendationPromptTemplateV1 } from "./templates/recommendation/v1";
 import {
   callPrepPromptTemplateV1,
   copilotPromptTemplateV1,
   generalPromptTemplateV1,
-  recommendationPromptTemplateV1,
 } from "./templates/general/v1";
 import type { PromptTemplate, PromptTemplateId } from "./types/prompt-template";
 

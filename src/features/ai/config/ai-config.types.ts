@@ -38,6 +38,8 @@ export type AiConfiguration = {
     contactSummaryRefresh: boolean;
     contactSummaryAutoGenerate: boolean;
     recommendation: boolean;
+    recommendationRefresh: boolean;
+    recommendationAutoGenerate: boolean;
     copilot: boolean;
   };
 };

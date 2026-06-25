@@ -9,6 +9,8 @@ import { buildLlmCompletionRequest } from "../../src/features/ai/llm/request/llm
 import { buildPrompt } from "../../src/features/ai/prompts/registry";
 import { contactSummarySchema } from "../../src/features/ai/prompts/summary/summary-output-schema";
 import { buildFakeContactSummaryResponse } from "../../src/features/ai/prompts/summary/fake-contact-summary-response";
+import { contactRecommendationSchema } from "../../src/features/ai/prompts/recommendation/recommendation-output-schema";
+import { buildFakeRecommendationResponse } from "../../src/features/ai/prompts/recommendation/fake-recommendation-response";
 import { toContactAiContext } from "../../src/features/ai/context/mappers/to-contact-ai-context";
 import type { ContactContext } from "../../src/features/contacts/context/types/contact-context";
 
@@ -117,6 +119,23 @@ async function assertSummaryStructuredOutput() {
   assert.deepEqual(result.data, buildFakeContactSummaryResponse(contactId));
 }
 
+async function assertRecommendationStructuredOutput() {
+  const gateway = createLlmGateway();
+  const contactId = "contact-llm-recommendation";
+
+  const result = await gateway.completeStructured(
+    {
+      model: { vendor: "fake", modelId: "fake-1" },
+      messages: [{ role: "user", content: "recommendation" }],
+      responseFormat: { type: "json" },
+      metadata: { taskProfile: "RECOMMENDATION", contactId },
+    },
+    contactRecommendationSchema,
+  );
+
+  assert.deepEqual(result.data, buildFakeRecommendationResponse(contactId));
+}
+
 async function assertStubVendorThrows() {
   const gateway = createLlmGateway();
 
@@ -134,6 +153,7 @@ async function main() {
   await assertFakeGatewayComplete();
   await assertStructuredOutput();
   await assertSummaryStructuredOutput();
+  await assertRecommendationStructuredOutput();
   await assertStubVendorThrows();
   console.log("llm-gateway: ok");
 }
