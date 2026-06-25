@@ -1,11 +1,14 @@
 import type { LlmTaskProfile } from "@/src/features/ai/llm/types/llm-model";
 import type { LlmVendor } from "@/src/features/ai/llm/types/llm-vendor";
+import type { PromptTemplateId } from "@/src/features/ai/prompts/types/prompt-template";
+import type { AiTaskCategory } from "@/src/features/ai/registry/ai-task-category";
 
 export type AiLogMetadata = {
   promptVersion: number;
-  promptId: "summary";
+  promptId: PromptTemplateId;
   outputSchemaVersion: number;
   contextSchemaVersion: number;
+  taskCategory: AiTaskCategory;
   taskProfile: LlmTaskProfile;
   vendor: LlmVendor;
   modelId: string;
@@ -26,6 +29,7 @@ export function isAiLogMetadata(value: unknown): value is AiLogMetadata {
   return (
     typeof record.cacheKey === "string" &&
     typeof record.contextHash === "string" &&
-    typeof record.generatedAt === "string"
+    typeof record.generatedAt === "string" &&
+    typeof record.taskCategory === "string"
   );
 }

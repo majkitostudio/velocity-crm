@@ -1,34 +1,22 @@
 import type { LlmVendorAdapter, LlmVendorRawResponse } from "../llm-vendor-adapter";
 import type { LlmCompletionRequest } from "../../types/llm-request";
-import type { LlmTaskProfile } from "../../types/llm-model";
-import { buildFakeContactSummaryResponse } from "@/src/features/ai/prompts/summary/fake-contact-summary-response";
 
-const FAKE_TEXT_RESPONSES: Record<LlmTaskProfile, string> = {
-  SUMMARY: "Deterministic fake summary for contact.",
-  RECOMMENDATION: "Deterministic fake recommendation.",
-  CALL_PREP: "Deterministic fake call preparation notes.",
-  COPILOT: "Deterministic fake copilot response.",
-  GENERAL: "Deterministic fake general response.",
-};
-
-function resolveFakeJsonContent(request: LlmCompletionRequest): string {
-  if (request.metadata?.taskProfile === "SUMMARY") {
-    const contactId = request.metadata.contactId ?? "unknown-contact";
-    return JSON.stringify(buildFakeContactSummaryResponse(contactId));
-  }
-
-  return JSON.stringify({ ok: true });
-}
+import {
+  resolveFakeJsonResponse,
+  resolveFakeTextResponse,
+} from "./fake-response-registry";
 
 function resolveFakeContent(request: LlmCompletionRequest): string {
+  const taskProfile = request.metadata?.taskProfile;
+  const contactId = request.metadata?.contactId;
+
   if (request.responseFormat?.type === "json") {
-    return resolveFakeJsonContent(request);
+    return resolveFakeJsonResponse(taskProfile, { contactId });
   }
 
-  const taskProfile = request.metadata?.taskProfile;
-
-  if (taskProfile && taskProfile in FAKE_TEXT_RESPONSES) {
-    return FAKE_TEXT_RESPONSES[taskProfile];
+  const textResponse = resolveFakeTextResponse(taskProfile);
+  if (textResponse) {
+    return textResponse;
   }
 
   const lastUser = [...request.messages].reverse().find((m) => m.role === "user");

@@ -32,3 +32,21 @@ export function getAiTaskConfig(
 ): AiTaskConfig {
   return resolveAiConfig(ctx).tasks[taskProfile];
 }
+
+export type ResolvedCacheTtl = {
+  ttlMs: number;
+  hardExpireMs: number;
+};
+
+export function resolveCacheTtlForTask(
+  taskProfile: LlmTaskProfile,
+  ctx?: AiConfigContext,
+): ResolvedCacheTtl {
+  const config = resolveAiConfig(ctx);
+  const taskConfig = config.tasks[taskProfile];
+
+  return {
+    ttlMs: taskConfig.cacheTtlMs ?? config.cache.defaultCacheTtlMs,
+    hardExpireMs: taskConfig.cacheHardExpireMs ?? config.cache.defaultCacheHardExpireMs,
+  };
+}

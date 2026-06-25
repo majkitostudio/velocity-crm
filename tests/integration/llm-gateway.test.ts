@@ -85,7 +85,7 @@ async function assertFakeGatewayComplete() {
 
 async function assertStructuredOutput() {
   const gateway = createLlmGateway();
-  const schema = z.object({ ok: z.literal(true) });
+  const schema = z.object({ draft: z.string() });
 
   const result = await gateway.completeStructured(
     {
@@ -96,7 +96,7 @@ async function assertStructuredOutput() {
     schema,
   );
 
-  assert.deepEqual(result.data, { ok: true });
+  assert.ok(result.data.draft.length > 0);
   assert.equal(result.raw.finishReason, "stop");
 }
 

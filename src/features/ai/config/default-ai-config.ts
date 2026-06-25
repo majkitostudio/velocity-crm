@@ -26,8 +26,8 @@ export const defaultAiConfig: AiConfiguration = {
     GENERAL: { ...DEFAULT_TASK_CONFIG },
   },
   cache: {
-    summaryTtlMs: 24 * 60 * 60 * 1000,
-    summaryHardExpireMs: 7 * 24 * 60 * 60 * 1000,
+    defaultCacheTtlMs: 24 * 60 * 60 * 1000,
+    defaultCacheHardExpireMs: 7 * 24 * 60 * 60 * 1000,
     useAiLogAsCache: true,
   },
   gateway: {

@@ -547,6 +547,58 @@ Prompt Metrics        → success rate, latency per prompt version
 
 ---
 
+## Slice 13: AI Recommendation Service
+
+**Cíl:** Druhá AI služba nad platformou Slice 10–12 — ověření generalizace architektury. Operátor dostane strukturované doporučení dalšího postupu s kontaktem.
+
+**ADR gate:** [ADR-014](./adr/014-ai-recommendation-service.md) — **čeká na schválení**
+
+### Předpoklad
+
+- Slice 12.7 (Refresh) dokončen.
+- Platformní generalizace (Slice 13.0) **před** service implementací.
+
+### Úkoly
+
+| # | Úkol | Soubory (cíl) |
+|---|------|----------------|
+| 13.0 | ✅ **Platform generalization** — `AiLogCachePersistence<T>`, `createAiPipelinePorts()`, `buildAiServiceExecuteInput`, `ai-service-feature-flag-registry`, `defaultCacheTtlMs`, `AiTaskCategory`, `fake-response-registry`, `contact-ai-workspace.types` | `cache/`, `services/shared/`, `flags/`, `components/` |
+| 13.1 | **AiRecommendationService** — DTO, sanitizer RECOMMENDATION, prompt `recommendation@v1` | `services/recommendation/`, `prompts/recommendation/` |
+| 13.2 | **Integration** — fake adapter, cache/force testy | `tests/integration/` |
+| 13.3 | **UI** — `ContactAiWorkspace`, Recommendation panel, Server Action, Playwright | `components/`, `actions/` |
+| 13.4 | **Telemetry** — metrics enrichment (pokud 12.8 není hotové) | `metrics/` |
+
+### Slice 13.0 — Definition of Done ✅
+
+- [x] `createAiLogCachePersistence<T>()` + tenký Summary wrapper
+- [x] `createAiPipelinePorts()` + tenký `createContactSummaryPipelinePorts()`
+- [x] Feature flag registry `ai.<service>.{enabled,refresh,auto_generate}`
+- [x] `defaultCacheTtlMs` + per-task override; env alias `AI_CACHE_SUMMARY_TTL_MS`
+- [x] `AiTaskCategory` na deskriptorech a v `AiLogMetadata`
+- [x] `fake-response-registry` pro všechny task profily
+- [x] `buildAiServiceExecuteInput` + Summary wrapper
+- [x] `contact-ai-workspace.types` (kompozice bez UI)
+- [x] Integrační test `ai-platform-generalization.test.ts`
+
+### Definition of Done — Slice 13 (celý slice)
+
+- [ ] Druhý `AiTaskService` bez změny `runAiServicePipeline`
+- [ ] Žádný Summary-specific hack v Recommendation kódu
+- [ ] Cache přes zobecněný `AiLogCachePersistence`
+- [ ] Feature flags `ai.recommendation` + `ai.recommendation.refresh`
+- [ ] UI v AI Workspace; `contacts/` AI-agnostický
+- [ ] Integrační + E2E testy
+- [ ] ADR-014 schváleno
+
+### Co Slice 13 neřeší
+
+- Copilot / streaming UI
+- Email Draft / SMS Draft
+- Auto-generate on open
+- `AiRecommendationCache` tabulka (fáze 2)
+
+---
+
 ## Slice 10.5: Unified Contact Context Platform
 
 **Cíl:** Sjednotit `getContactDetailView` a `buildContactAiContext` do jedné datové platformy (`ContactContext`) se sub-section granularitou.

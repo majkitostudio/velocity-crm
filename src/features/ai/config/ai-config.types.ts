@@ -8,6 +8,8 @@ export type AiTaskConfig = {
     requireStructuredOutput?: boolean;
   };
   contextView?: PromptBuildInput["contextView"];
+  cacheTtlMs?: number;
+  cacheHardExpireMs?: number;
 };
 
 export type AiConfiguration = {
@@ -15,8 +17,8 @@ export type AiConfiguration = {
   defaultLocale: "cs" | "en";
   tasks: Record<LlmTaskProfile, AiTaskConfig>;
   cache: {
-    summaryTtlMs: number;
-    summaryHardExpireMs: number;
+    defaultCacheTtlMs: number;
+    defaultCacheHardExpireMs: number;
     useAiLogAsCache: boolean;
   };
   gateway: {

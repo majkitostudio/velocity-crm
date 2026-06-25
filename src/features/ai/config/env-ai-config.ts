@@ -19,8 +19,11 @@ function readNumberEnv(name: string): number | undefined {
 
 export function readEnvAiConfigOverrides(): Partial<AiConfiguration> {
   const enabled = readBooleanEnv("AI_ENABLED");
-  const summaryTtlMs = readNumberEnv("AI_CACHE_SUMMARY_TTL_MS");
-  const summaryHardExpireMs = readNumberEnv("AI_CACHE_SUMMARY_HARD_EXPIRE_MS");
+  const defaultCacheTtlMs =
+    readNumberEnv("AI_CACHE_DEFAULT_TTL_MS") ?? readNumberEnv("AI_CACHE_SUMMARY_TTL_MS");
+  const defaultCacheHardExpireMs =
+    readNumberEnv("AI_CACHE_DEFAULT_HARD_EXPIRE_MS") ??
+    readNumberEnv("AI_CACHE_SUMMARY_HARD_EXPIRE_MS");
   const defaultTimeoutMs = readNumberEnv("AI_GATEWAY_TIMEOUT_MS");
   const maxAutoRetries = readNumberEnv("AI_GATEWAY_MAX_AUTO_RETRIES");
 
@@ -39,13 +42,13 @@ export function readEnvAiConfigOverrides(): Partial<AiConfiguration> {
   }
 
   if (
-    summaryTtlMs !== undefined ||
-    summaryHardExpireMs !== undefined ||
+    defaultCacheTtlMs !== undefined ||
+    defaultCacheHardExpireMs !== undefined ||
     readBooleanEnv("AI_CACHE_USE_AILOG") !== undefined
   ) {
     overrides.cache = {
-      summaryTtlMs: summaryTtlMs ?? 0,
-      summaryHardExpireMs: summaryHardExpireMs ?? 0,
+      defaultCacheTtlMs: defaultCacheTtlMs ?? 0,
+      defaultCacheHardExpireMs: defaultCacheHardExpireMs ?? 0,
       useAiLogAsCache: readBooleanEnv("AI_CACHE_USE_AILOG") ?? true,
     };
   }

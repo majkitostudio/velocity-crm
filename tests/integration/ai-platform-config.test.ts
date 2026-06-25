@@ -7,7 +7,7 @@ async function assertDefaultConfig() {
   const config = resolveAiConfig();
   assert.equal(config.enabled, defaultAiConfig.enabled);
   assert.equal(config.defaultLocale, "cs");
-  assert.equal(config.cache.summaryTtlMs, defaultAiConfig.cache.summaryTtlMs);
+  assert.equal(config.cache.defaultCacheTtlMs, defaultAiConfig.cache.defaultCacheTtlMs);
   assert.equal(config.tasks.SUMMARY.modelPolicyHints?.requireStructuredOutput, true);
 }
 
