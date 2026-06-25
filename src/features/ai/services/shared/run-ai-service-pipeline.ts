@@ -1,8 +1,10 @@
-import type { LlmTaskProfile } from "@/src/features/ai/llm/types/llm-model";
 import { buildLlmCompletionRequest } from "@/src/features/ai/llm/request/llm-request-builder";
+import { gatewayTelemetryStore } from "@/src/features/ai/llm/gateway/gateway-telemetry-store";
 import { isDomainError } from "@/src/domain/errors";
 import { isLlmError } from "@/src/features/ai/llm/errors/llm-errors";
-import type { PromptTemplateId } from "@/src/features/ai/prompts/types/prompt-template";
+import type { AiTelemetryOutcome } from "@/src/features/ai/metrics/ai-task-telemetry-event";
+import type { AiTaskTelemetryEvent } from "@/src/features/ai/metrics/ai-task-telemetry-event";
+import { mapTaskProfileToPromptId } from "@/src/features/ai/metrics/map-task-profile-to-prompt-id";
 
 import { AiFeatureDisabledError } from "./ai-platform-errors";
 import type { AiServiceExecuteInput, AiServiceExecuteResult, AiTaskService } from "./ai-task-service";
@@ -14,23 +16,32 @@ import {
 
 const OUTPUT_SCHEMA_VERSION = 1;
 
-function mapTaskProfileToPromptId(profile: LlmTaskProfile): PromptTemplateId {
-  switch (profile) {
-    case "SUMMARY":
-      return "summary";
-    case "RECOMMENDATION":
-      return "recommendation";
-    case "CALL_PREP":
-      return "call-prep";
-    case "COPILOT":
-      return "copilot";
-    case "GENERAL":
-      return "general";
-    default: {
-      const _exhaustive: never = profile;
-      return _exhaustive;
-    }
+function mapErrorToTelemetryOutcome(error: unknown, errorCode: string): AiTelemetryOutcome {
+  if (error instanceof AiFeatureDisabledError) {
+    return "feature_disabled";
   }
+
+  if (errorCode === "AI_CAPABILITY_ERROR") {
+    return "capability_error";
+  }
+
+  if (errorCode === "LLM_SCHEMA_VALIDATION") {
+    return "schema_failure";
+  }
+
+  if (errorCode === "LLM_INVALID_RESPONSE") {
+    return "json_failure";
+  }
+
+  if (errorCode === "LLM_TIMEOUT") {
+    return "timeout";
+  }
+
+  if (isLlmError(error)) {
+    return "provider_error";
+  }
+
+  return "provider_error";
 }
 
 export async function runAiServicePipeline<TDto, TViewModel>(
@@ -47,25 +58,43 @@ export async function runAiServicePipeline<TDto, TViewModel>(
     userRole: input.userRole,
   };
 
-  const recordMetric = async (
-    outcome: import("@/src/features/ai/metrics/prompt-metrics-recorder").PromptMetricOutcome,
-    latencyMs: number,
-    extra?: Partial<import("@/src/features/ai/metrics/prompt-metrics-recorder").PromptMetricEvent>,
+  const emitTelemetry = async (
+    partial: Pick<AiTaskTelemetryEvent, "source" | "outcome" | "latencyMs"> &
+      Partial<
+        Pick<
+          AiTaskTelemetryEvent,
+          | "provider"
+          | "model"
+          | "promptVersion"
+          | "promptId"
+          | "promptTokens"
+          | "completionTokens"
+          | "totalTokens"
+          | "estimatedCostUsd"
+        >
+      >,
   ): Promise<void> => {
-    await ports.metricsRecorder.record({
+    const event: AiTaskTelemetryEvent = {
       correlationId,
       companyId: input.companyId,
       userId: input.userId,
       serviceId: descriptor.id,
-      promptId: mapTaskProfileToPromptId(descriptor.taskProfile),
-      promptVersion: descriptor.defaultPromptVersion,
-      taskProfile: descriptor.taskProfile,
-      model: extra?.model ?? { vendor: "fake", modelId: "fake-1" },
-      outcome,
-      latencyMs,
+      taskCategory: descriptor.taskCategory,
+      promptId: partial.promptId ?? mapTaskProfileToPromptId(descriptor.taskProfile),
+      promptVersion: partial.promptVersion ?? descriptor.defaultPromptVersion,
+      source: partial.source,
+      outcome: partial.outcome,
+      latencyMs: partial.latencyMs,
       occurredAt: ports.clock.now(),
-      ...extra,
-    });
+      provider: partial.provider,
+      model: partial.model,
+      promptTokens: partial.promptTokens,
+      completionTokens: partial.completionTokens,
+      totalTokens: partial.totalTokens,
+      estimatedCostUsd: partial.estimatedCostUsd,
+    };
+
+    await ports.telemetryRecorder.record(event);
   };
 
   try {
@@ -125,7 +154,18 @@ export async function runAiServicePipeline<TDto, TViewModel>(
       });
 
       if (cached) {
-        await recordMetric("cache_hit", 0, { model });
+        const metadata = cached.telemetryMetadata;
+
+        await emitTelemetry({
+          source: "CACHE",
+          outcome: "success",
+          latencyMs: ports.clock.nowMs() - pipelineStartedAtMs,
+          provider: metadata?.provider,
+          model: metadata?.modelId,
+          promptVersion: metadata?.promptVersion,
+          promptId: metadata?.promptId,
+        });
+
         const result: AiServiceExecuteResult<TDto> = {
           dto: cached.payload,
           fromCache: true,
@@ -164,12 +204,12 @@ export async function runAiServicePipeline<TDto, TViewModel>(
       },
     });
 
-    const llmStartedAtMs = ports.clock.nowMs();
     const structured = await ports.gateway.completeStructured(
       llmRequest,
       service.getOutputSchema(),
     );
-    const latencyMs = ports.clock.nowMs() - llmStartedAtMs;
+
+    const gatewayTelemetry = gatewayTelemetryStore.take(correlationId);
 
     const occurredAt = ports.clock.now();
     const audit = await ports.auditLogger.recordSuccess({
@@ -180,7 +220,7 @@ export async function runAiServicePipeline<TDto, TViewModel>(
       correlationId,
       model,
       outputJson: JSON.stringify(structured.data),
-      latencyMs,
+      latencyMs: gatewayTelemetry?.gatewayLatencyMs ?? 0,
       occurredAt,
     });
 
@@ -196,14 +236,17 @@ export async function runAiServicePipeline<TDto, TViewModel>(
       });
     }
 
-    await recordMetric("success", ports.clock.nowMs() - pipelineStartedAtMs, {
-      model,
-      usage: structured.raw.usage
-        ? {
-            inputTokens: structured.raw.usage.inputTokens,
-            outputTokens: structured.raw.usage.outputTokens,
-          }
-        : undefined,
+    await emitTelemetry({
+      source: "LIVE",
+      outcome: "success",
+      latencyMs: ports.clock.nowMs() - pipelineStartedAtMs,
+      provider: gatewayTelemetry?.provider ?? structured.raw.model.vendor,
+      model: gatewayTelemetry?.modelId ?? structured.raw.model.modelId,
+      promptTokens: gatewayTelemetry?.promptTokens ?? structured.raw.usage?.inputTokens,
+      completionTokens:
+        gatewayTelemetry?.completionTokens ?? structured.raw.usage?.outputTokens,
+      totalTokens: gatewayTelemetry?.totalTokens ?? structured.raw.usage?.totalTokens,
+      estimatedCostUsd: gatewayTelemetry?.estimatedCostUsd,
     });
 
     const result: AiServiceExecuteResult<TDto> = {
@@ -215,6 +258,8 @@ export async function runAiServicePipeline<TDto, TViewModel>(
 
     return service.toViewModel(result);
   } catch (error) {
+    gatewayTelemetryStore.clear(correlationId);
+
     const errorCode = isDomainError(error) ? error.code : "UNKNOWN";
     const occurredAt = ports.clock.now();
 
@@ -229,18 +274,14 @@ export async function runAiServicePipeline<TDto, TViewModel>(
       occurredAt,
     });
 
-    const outcome =
-      error instanceof AiFeatureDisabledError
-        ? "feature_disabled"
-        : errorCode === "AI_CAPABILITY_ERROR"
-          ? "capability_error"
-          : errorCode === "LLM_SCHEMA_VALIDATION" || errorCode === "LLM_INVALID_RESPONSE"
-            ? "schema_failure"
-            : isLlmError(error)
-              ? "provider_error"
-              : "provider_error";
+    const outcome = mapErrorToTelemetryOutcome(error, errorCode);
 
-    await recordMetric(outcome, ports.clock.nowMs() - pipelineStartedAtMs);
+    await emitTelemetry({
+      source: "LIVE",
+      outcome,
+      latencyMs: ports.clock.nowMs() - pipelineStartedAtMs,
+    });
+
     throw error;
   }
 }

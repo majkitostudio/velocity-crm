@@ -300,7 +300,18 @@ src/
 
 **LLM Adapter (Slice 11, ADR-012):** Transport vrstva v `ai/llm/` — `LlmGateway`, vendor adaptéry, model registry/policy, middleware. Prompt šablony v `ai/prompts/`.
 
-**AI Services Platform (Slice 12, ADR-013):** Business AI vrstva v `ai/services/`. **`services/shared/`** obsahuje **AI Service Pipeline** — jednotný 14-krokový životní cyklus všech AI služeb a **`createAiPipelinePorts()`** (Slice 13.0). Cross-cutting: `ai/config/` (`defaultCacheTtlMs`, per-task TTL), `ai/registry/` (`AiTaskCategory`, Service Registry + Capability Matrix), `ai/flags/` (`ai-service-feature-flag-registry`), `ai/cache/` (`createAiLogCachePersistence<T>`), `ai/metrics/`. Každá služba implementuje `AiTaskService` contract. První služba: `contact-summary/` (Slice 12). Druhá služba: `recommendation/` (Slice 13, ADR-014). Cache fáze 1 přes zobecněný `AiLogCachePersistence`; fáze 2 dedikované cache tabulky. Contact Detail: **AI Workspace** — typy panelů v `contact-ai-workspace.types.ts` (13.0), compositor UI ve Slice 13.3; `contacts/` zůstává AI-agnostický.
+**AI Services Platform (Slice 12, ADR-013):** Business AI vrstva v `ai/services/`. **`services/shared/`** obsahuje **AI Service Pipeline** — jednotný 14-krokový životní cyklus všech AI služeb a **`createAiPipelinePorts()`** (Slice 13.0). Cross-cutting: `ai/config/` (`defaultCacheTtlMs`, per-task TTL), `ai/registry/` (`AiTaskCategory`, Service Registry + Capability Matrix), `ai/flags/` (`ai-service-feature-flag-registry`), `ai/cache/` (`createAiLogCachePersistence<T>`), `ai/metrics/` (Slice 13.4 — viz níže). Každá služba implementuje `AiTaskService` contract. První služba: `contact-summary/` (Slice 12). Druhá služba: `recommendation/` (Slice 13, ADR-014). Cache fáze 1 přes zobecněný `AiLogCachePersistence`; fáze 2 dedikované cache tabulky. Contact Detail: **AI Workspace** — typy panelů v `contact-ai-workspace.types.ts` (13.0), compositor UI ve Slice 13.3; `contacts/` zůstává AI-agnostický.
+
+**AI Platform Telemetry (Slice 13.4):** Jednotná observability vrstva v `ai/metrics/`. Každý průchod `runAiServicePipeline` emituje právě jednu `AiTaskTelemetryEvent` přes `AiTelemetryRecorder` → `AiTelemetrySink`. Business služby telemetry neimplementují.
+
+| Vrstva | Odpovědnost |
+|--------|-------------|
+| **Pipeline Metrics** | Orchestrace události: `serviceId`, `taskCategory`, `source` (`LIVE` \| `CACHE`), `outcome`, pipeline `latencyMs`, cache metadata při hitu |
+| **Gateway Metrics** | `gateway-telemetry-middleware` — provider, model, token usage, raw gateway latency (`gatewayTelemetryStore` keyed by `correlationId`) |
+| **Cost Accounting** | `cost-accounting-middleware` + `createGatewayTelemetryCostRecorder` — `estimatedCostUsd` z existujícího `estimateUsageCostUsd()` |
+| **Sink** | `AiTelemetrySink` interface; produkce: `log-ai-telemetry-sink` (`AI_TELEMETRY_SINK=log\|collect\|none`). Budoucí: DB, OpenTelemetry, Prometheus |
+
+`getLlmGateway()` sestavuje middleware stack (telemetry → cost). `createAiPipelinePorts()` wireuje `createAiTelemetryRecorder(resolveAiTelemetrySink())`.
 
 **MVP zjednodušení:** Nejdřív `actions.ts`, `schemas.ts` a `server/*.ts`. Repository vrstvu lze zavádět postupně u nového kódu a při refaktoru rizikových dotazů.
 

@@ -413,7 +413,7 @@ ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → Llm
 | 12.5 | **UI** — AI Summary panel + Server Action | `components/`, `actions/generate-contact-summary.action.ts` ✅ |
 | 12.6 | **Cache** — `AiLogSummaryCacheStore` (fáze 1) | `cache/ai-log-summary-cache-store.ts` ✅ |
 | 12.7 | **Refresh** — force bypass cache + UI tlačítko | `actions/`, `components/`, Playwright ✅ |
-| 12.8 | **Telemetry** — Prompt Metrics z pipeline | `metrics/` |
+| 12.8 | **Telemetry** — `AiTaskTelemetryEvent` + pipeline recorder | `metrics/` ✅ (Slice 13.4) |
 | 12.9 | **Testy** — integrační + golden prompt | `tests/integration/` |
 | 12.10 | AiLog migrace (rozšíření) + `AiContextSanitizer` | Prisma, `context/sanitizers/` |
 | 12.11 | První produkční vendor adapter | `llm/adapters/` |
@@ -566,7 +566,7 @@ Prompt Metrics        → success rate, latency per prompt version
 | 13.1 | **AiRecommendationService** — DTO, sanitizer RECOMMENDATION, prompt `recommendation@v1` | `services/recommendation/`, `prompts/recommendation/` |
 | 13.2 | **Integration** — fake adapter, cache/force testy | `tests/integration/` |
 | 13.3 | **UI** — `ContactAiWorkspace`, Recommendation panel, Server Action, Playwright | `components/`, `actions/` |
-| 13.4 | **Telemetry** — metrics enrichment (pokud 12.8 není hotové) | `metrics/` |
+| 13.4 | **Telemetry** — `AiTelemetryRecorder`, gateway middleware stack, cost wiring | `metrics/`, `llm/gateway/` ✅ |
 
 ### Slice 13.0 — Definition of Done ✅
 

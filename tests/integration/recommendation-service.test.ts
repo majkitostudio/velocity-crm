@@ -129,7 +129,7 @@ function createPorts(cache = createInMemoryRecommendationCache()): PipelinePorts
     },
     gateway: defaultLlmGateway,
     auditLogger: createNoopRecommendationAuditLogger(),
-    metricsRecorder: noopPromptMetricsRecorder,
+    telemetryRecorder: noopPromptMetricsRecorder,
   };
 }
 

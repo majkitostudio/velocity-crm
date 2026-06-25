@@ -138,7 +138,7 @@ function createE2ePorts(
     },
     gateway: options.gateway ?? createLlmGateway(),
     auditLogger: createNoopRecommendationAuditLogger(),
-    metricsRecorder: noopPromptMetricsRecorder,
+    telemetryRecorder: noopPromptMetricsRecorder,
   };
 }
 

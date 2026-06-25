@@ -235,13 +235,15 @@ src/features/ai/services/recommendation/
 - `taskType: NEXT_ACTION`, `promptSummary: "recommendation@v1"`
 - Metadata: plný `cacheKey`, `contextHash`, `correlationId`, `serviceId`
 
-### Metrics
+### Metrics / Telemetry (Slice 13.4)
 
-Pipeline již volá `metricsRecorder.record()`. Po Slice 12.8 (Telemetry):
+Pipeline emituje jednu `AiTaskTelemetryEvent` na průchod přes `telemetryRecorder` (platformní vrstva, žádný kód v business službách).
 
-- `recommendationCount` = `alternatives.length + 1`
-- `confidence` z DTO
-- `serviceId: "recommendation"`
+Pole zahrnují: `correlationId`, `serviceId`, `taskCategory`, `source` (`LIVE` \| `CACHE`), `outcome`, `provider`, `model`, `promptId`, `promptVersion`, token usage, `estimatedCostUsd`, `latencyMs`.
+
+- **Cache hit:** metadata z `CachedAiTelemetryMetadata` (AiLog metadata) — žádné tokeny ani cost
+- **Live success:** tokeny a cost z `gatewayTelemetryStore` (middleware stack v `getLlmGateway()`)
+- **Sink:** `AiTelemetrySink` — log v produkci; rozšiřitelné o DB / OpenTelemetry
 
 ---
 

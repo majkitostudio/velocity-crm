@@ -197,7 +197,7 @@ function createPorts(cache: AiCacheStore<FakeDto>): PipelinePorts<FakeDto> {
         stages.push("audit-failure");
       },
     },
-    metricsRecorder: noopPromptMetricsRecorder,
+    telemetryRecorder: noopPromptMetricsRecorder,
   };
 }
 

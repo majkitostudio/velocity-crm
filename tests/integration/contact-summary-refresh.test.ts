@@ -136,7 +136,7 @@ function createPorts(gatewayCallCounter: { count: number }): PipelinePorts<Conta
       },
     },
     auditLogger: createNoopContactSummaryAuditLogger(),
-    metricsRecorder: noopPromptMetricsRecorder,
+    telemetryRecorder: noopPromptMetricsRecorder,
   };
 }
 

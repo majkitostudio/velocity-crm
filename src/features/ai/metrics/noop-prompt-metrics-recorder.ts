@@ -1,7 +1,5 @@
-import type { PromptMetricsRecorder } from "./prompt-metrics-recorder";
+import { createNoopAiTelemetrySink } from "./ai-telemetry-sink";
+import { createAiTelemetryRecorder } from "./ai-telemetry-recorder";
 
-export const noopPromptMetricsRecorder: PromptMetricsRecorder = {
-  async record() {
-    // Slice 12.1 — no-op sink
-  },
-};
+/** @deprecated Use `createNoopAiTelemetrySink()` or `createCollectingAiTelemetrySink()` instead. */
+export const noopPromptMetricsRecorder = createAiTelemetryRecorder(createNoopAiTelemetrySink());

@@ -123,7 +123,7 @@ async function main() {
       recordSuccess: async () => ({ aiLogId: "smoke-log" }),
       recordFailure: async () => undefined,
     },
-    metricsRecorder: noopPromptMetricsRecorder,
+    telemetryRecorder: noopPromptMetricsRecorder,
   };
 
   const viewModel = await runAiServicePipeline(

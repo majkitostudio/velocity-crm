@@ -132,7 +132,7 @@ function createProductionPortsWithStubbedContext(
         return resolveCompatibleModel(descriptor, policy, resolveModelCapabilities);
       },
     },
-    metricsRecorder: noopPromptMetricsRecorder,
+    telemetryRecorder: noopPromptMetricsRecorder,
   };
 }
 

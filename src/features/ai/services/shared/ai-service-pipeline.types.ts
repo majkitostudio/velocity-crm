@@ -9,7 +9,7 @@ import type { LlmCompletionRequest } from "@/src/features/ai/llm/types/llm-reque
 import type { LlmStructuredResponse } from "@/src/features/ai/llm/types/llm-response";
 import type { LlmModelRef } from "@/src/features/ai/llm/types/llm-model";
 import type { ModelPolicyResult } from "@/src/features/ai/llm/policy/resolve-model-for-task";
-import type { PromptMetricsRecorder } from "@/src/features/ai/metrics/prompt-metrics-recorder";
+import type { AiTelemetryRecorder } from "@/src/features/ai/metrics/ai-telemetry-recorder";
 import type { PromptBuildInput, PromptBuildResult } from "@/src/features/ai/prompts/types/prompt-template";
 import type { CompatibleModelResult } from "@/src/features/ai/registry/ai-capability-matrix";
 import type { AiServiceDescriptor } from "@/src/features/ai/registry/ai-service-descriptor";
@@ -117,7 +117,7 @@ export type PipelinePorts<TDto> = {
   capabilityChecker: PipelineCapabilityChecker;
   gateway: PipelineGateway;
   auditLogger: PipelineAuditLogger;
-  metricsRecorder: PromptMetricsRecorder;
+  telemetryRecorder: AiTelemetryRecorder;
 };
 
 export type PipelineExecutionContext = {

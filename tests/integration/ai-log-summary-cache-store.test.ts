@@ -150,7 +150,7 @@ function createPorts(options: {
       },
     },
     auditLogger: options.persistence.auditLogger,
-    metricsRecorder: noopPromptMetricsRecorder,
+    telemetryRecorder: noopPromptMetricsRecorder,
   };
 }
 

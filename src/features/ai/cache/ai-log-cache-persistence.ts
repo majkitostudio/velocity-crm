@@ -136,6 +136,12 @@ export function createAiLogCachePersistence<TPayload>(
           payload,
           generatedAt: metadata.generatedAt,
           aiLogId: row.id,
+          telemetryMetadata: {
+            provider: metadata.vendor,
+            modelId: metadata.modelId,
+            promptVersion: metadata.promptVersion,
+            promptId: metadata.promptId,
+          },
         };
       } catch {
         return null;

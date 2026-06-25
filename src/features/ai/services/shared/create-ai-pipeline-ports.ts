@@ -7,7 +7,8 @@ import { resolveAiConfig } from "@/src/features/ai/config/resolve-ai-config";
 import { createEnvAiFeatureFlags } from "@/src/features/ai/flags/env-ai-feature-flags";
 import { createCorrelationId } from "@/src/features/ai/llm/gateway/llm-gateway-middleware";
 import { resolveModelForTask } from "@/src/features/ai/llm/policy/resolve-model-for-task";
-import { noopPromptMetricsRecorder } from "@/src/features/ai/metrics/noop-prompt-metrics-recorder";
+import { createAiTelemetryRecorder } from "@/src/features/ai/metrics/ai-telemetry-recorder";
+import { resolveAiTelemetrySink } from "@/src/features/ai/metrics/resolve-ai-telemetry-sink";
 import { resolveCompatibleModel } from "@/src/features/ai/registry/ai-capability-matrix";
 import { resolveModelCapabilities } from "@/src/features/ai/registry/model-capabilities";
 import { buildPrompt } from "@/src/features/ai/prompts/registry";
@@ -90,6 +91,6 @@ export function createAiPipelinePorts<TDto>(
     },
     gateway: getLlmGateway(),
     auditLogger: options.auditLogger,
-    metricsRecorder: noopPromptMetricsRecorder,
+    telemetryRecorder: createAiTelemetryRecorder(resolveAiTelemetrySink()),
   };
 }
