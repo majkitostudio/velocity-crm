@@ -1,16 +1,16 @@
 import type { ContactPriority, ContactSource } from "@/src/generated/prisma/client";
 
 const priorityLabels: Record<ContactPriority, string> = {
-  HIGH: "High",
-  NORMAL: "Normal",
-  LOW: "Low",
+  HIGH: "Vysoká",
+  NORMAL: "Normální",
+  LOW: "Nízká",
 };
 
 const sourceLabels: Record<ContactSource, string> = {
   CSV: "CSV import",
-  MANUAL: "Manual",
+  MANUAL: "Ruční",
   API: "API",
-  OTHER: "Other",
+  OTHER: "Jiné",
 };
 
 export function formatPriority(priority: ContactPriority): string {
@@ -40,5 +40,5 @@ export function formatContactChannel(input: {
     return input.email;
   }
 
-  return "No phone or email";
+  return "Bez telefonu nebo e-mailu";
 }

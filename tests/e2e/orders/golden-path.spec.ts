@@ -8,7 +8,10 @@ test("operator can complete the main order workflow", async ({ page }) => {
   await expect(page.getByTestId("operator-dashboard")).toBeVisible();
   await expect(page.getByTestId("operator-queue")).toBeVisible();
 
-  await page.getByTestId("queue-item-link").first().click();
+  const firstQueueItem = page.getByTestId("queue-item-link").first();
+  const firstContactName = await firstQueueItem.locator("h3").innerText();
+
+  await firstQueueItem.click();
   await waitForContactDetail(page);
   await expect(page.getByTestId("call-workflow-panel")).toBeVisible();
   await expect(page.getByTestId("activity-feed")).toBeVisible();
@@ -28,6 +31,11 @@ test("operator can complete the main order workflow", async ({ page }) => {
   await expect(page.getByTestId("activity-timeline")).toBeVisible();
   await expect(page.getByTestId("activity-call_finished-item").first()).toBeVisible();
 
-  await page.getByTestId("back-to-queue-link").click();
-  await expect(page.getByTestId("operator-dashboard")).toBeVisible();
+  const nextContactLink = page.getByTestId("next-contact-link");
+  await expect(nextContactLink).toBeVisible();
+
+  await nextContactLink.click();
+  await waitForContactDetail(page);
+  await expect(page.getByTestId("call-workflow-panel")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(firstContactName);
 });

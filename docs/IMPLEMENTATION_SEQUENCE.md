@@ -659,7 +659,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | `contacts/contact-recommendation.spec.ts` | AI Recommendation panel |
 | `contacts/contact-recommendation-flag-disabled.spec.ts` | Feature flag vypnutý |
 | `callbacks/schedule-from-contact.spec.ts` | Ruční plánování callbacku z detailu |
-| `orders/golden-path.spec.ts` | Dashboard → call → ORDER → objednávka → queue |
+| `orders/golden-path.spec.ts` | Dashboard → call → ORDER → Další kontakt (operátorský golden path) |
 | `dashboard/manager-assign-lead.spec.ts` | Manager assign nepřiřazeného leadu operátorovi |
 
 ### Integrační testy (`tests/integration/`) — výběr
@@ -677,7 +677,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 
 | Mezera | Poznámka |
 |--------|----------|
-| Call workflow outcomes CALL_LATER / SCHEDULE_CALL / FAIL | Chybí dedikovaný E2E; ORDER pokryt `golden-path.spec.ts` |
+| Call workflow outcomes CALL_LATER / SCHEDULE_CALL / FAIL | Chybí dedikovaný E2E; ORDER + next contact pokryt `golden-path.spec.ts` |
 | Neaktivní produkt v objednávce | Business pravidlo v `order-workflow.ts`; bez dedikovaného E2E |
 | Manager assign UI | ✅ `dashboard/manager-assign-lead.spec.ts` |
 | Produkční LLM vendor | OpenAI/Azure adaptéry stub; běží Fake LLM (Slice 12.11) |

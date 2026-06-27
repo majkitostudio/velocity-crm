@@ -41,10 +41,10 @@ export function OperatorDashboard({ user, queue, managerPanel }: OperatorDashboa
         <h1 className="text-2xl font-semibold text-zinc-900">Dashboard</h1>
         <p className="mt-1 text-sm text-zinc-600">
           {user.role === "OPERATOR"
-            ? "Your work queue for today."
+            ? "Vaše pracovní fronta na dnešek."
             : isManagerView
               ? "Správa fronty a nepřiřazených leadů."
-              : `Work queue for ${user.name ?? user.email}.`}
+              : `Pracovní fronta pro ${user.name ?? user.email}.`}
         </p>
       </div>
 
@@ -54,14 +54,14 @@ export function OperatorDashboard({ user, queue, managerPanel }: OperatorDashboa
 
       {queue.counts.total === 0 ? (
         <EmptyQueueState
-          title="Your queue is empty"
-          description="Due callbacks and assigned leads will appear here when they are ready to work."
+          title="Fronta je prázdná"
+          description="Callbacky k vyřízení a přiřazené leady se zde zobrazí, až budou připravené k volání."
         />
       ) : (
         <section className="space-y-4" data-testid="operator-queue">
           {queue.callbacks.length > 0 ? (
             <div className="space-y-2" data-testid="queue-callbacks-list">
-              <QueueGroupHeader title="Due callbacks" count={queue.callbacks.length} />
+              <QueueGroupHeader title="Callbacky k vyřízení" count={queue.callbacks.length} />
               {queue.callbacks.map((item, index) => (
                 <QueueItemRow key={item.callbackId} item={item} position={index + 1} />
               ))}
@@ -70,7 +70,7 @@ export function OperatorDashboard({ user, queue, managerPanel }: OperatorDashboa
 
           {queue.leads.length > 0 ? (
             <div className="space-y-2" data-testid="queue-leads-list">
-              <QueueGroupHeader title="Assigned leads" count={queue.leads.length} />
+              <QueueGroupHeader title="Přiřazené leady" count={queue.leads.length} />
               {queue.leads.map((item, index) => (
                 <QueueItemRow
                   key={item.contact.id}

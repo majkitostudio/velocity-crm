@@ -85,8 +85,8 @@ export function ManagerUnassignedLeadsPanel({ panel }: ManagerUnassignedLeadsPan
                   </p>
 
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
-                    <span>Source: {formatSource(contact.source)}</span>
-                    <span>Added: {formatDateTime(contact.createdAt)}</span>
+                    <span>Zdroj: {formatSource(contact.source)}</span>
+                    <span>Přidáno: {formatDateTime(contact.createdAt)}</span>
                   </div>
                 </div>
 

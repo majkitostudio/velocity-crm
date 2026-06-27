@@ -43,6 +43,7 @@ export function mapContactDetailView(
     sourceCallbackId?: string | null;
     sourceCallbackScheduledAt?: Date | null;
     sourceCallbackNote?: string | null;
+    nextContactHref?: string | null;
   },
 ): ContactDetailView {
   const contact = mapContactDetailContact(context);
@@ -83,6 +84,7 @@ export function mapContactDetailView(
       sourceCallbackId: options?.sourceCallbackId ?? null,
       sourceCallbackScheduledAt: options?.sourceCallbackScheduledAt ?? null,
       sourceCallbackNote: options?.sourceCallbackNote ?? null,
+      nextContactHref: options?.nextContactHref ?? null,
     },
   };
 }

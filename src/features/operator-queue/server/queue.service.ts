@@ -36,6 +36,7 @@ import {
   findOperatorsForCompany,
   findUnassignedLeadsForCompany,
 } from "./queue.repository";
+import { buildQueueContactHref } from "../lib/navigation";
 
 const priorityRank: Record<ContactPriority, number> = {
   HIGH: 0,
@@ -176,6 +177,28 @@ export async function getNextCallableContact(
 ): Promise<OperatorQueueItem | null> {
   const queue = await getOperatorQueue(operatorId, now);
   return queue[0] ?? null;
+}
+
+export async function getNextQueueContactHref(
+  currentContactId: string,
+  operatorId?: string,
+  now = new Date(),
+): Promise<string | null> {
+  const currentUser = await requireCurrentUser();
+  const targetOperatorId = operatorId ?? currentUser.id;
+
+  assertQueueAccess(currentUser, targetOperatorId);
+
+  const queue = await getOperatorQueue(targetOperatorId, now);
+  const currentIndex = queue.findIndex((item) => item.contact.id === currentContactId);
+
+  if (currentIndex >= 0) {
+    const nextItem = queue[currentIndex + 1];
+    return nextItem ? buildQueueContactHref(nextItem) : null;
+  }
+
+  const fallback = queue.find((item) => item.contact.id !== currentContactId);
+  return fallback ? buildQueueContactHref(fallback) : null;
 }
 
 export async function getUnassignedLeads(): Promise<QueueContact[]> {

@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { assertSourceCallbackForCall } from "@/src/features/callbacks/server/callbacks.service";
+import { getNextQueueContactHref } from "@/src/features/operator-queue/server/queue.service";
 import { CONTACT_DETAIL_CONTEXT_OPTIONS } from "@/src/features/contacts/context/types/build-options";
 
 import type { ContactDetailView } from "../types";
@@ -52,9 +53,12 @@ export const getContactDetailView = cache(async function getContactDetailView(
     }
   }
 
+  const nextContactHref = await getNextQueueContactHref(contactId);
+
   return mapContactDetailView(context, {
     sourceCallbackId,
     sourceCallbackScheduledAt,
     sourceCallbackNote,
+    nextContactHref,
   });
 });

@@ -33,25 +33,25 @@ const initialState: ActionResult<CompleteCallResult> | null = null;
 const outcomeOptions = [
   {
     value: CallOutcomeValue.ORDER,
-    label: "Order",
+    label: "Objednávka",
     disabled: false,
     hint: null,
   },
   {
     value: CallOutcomeValue.CALL_LATER,
-    label: "Call later",
+    label: "Zavolat později",
     disabled: false,
     hint: null,
   },
   {
     value: CallOutcomeValue.SCHEDULE_CALL,
-    label: "Schedule call",
+    label: "Naplánovat hovor",
     disabled: false,
     hint: null,
   },
   {
     value: CallOutcomeValue.FAIL,
-    label: "Fail",
+    label: "Neúspěch",
     disabled: false,
     hint: null,
   },
@@ -230,14 +230,14 @@ export function CallWorkflowPanel({
       className="rounded-xl border border-zinc-200 bg-white p-4"
       data-testid="call-workflow-panel"
     >
-      <h2 className="text-sm font-semibold text-zinc-900">Call workflow</h2>
+      <h2 className="text-sm font-semibold text-zinc-900">Průběh hovoru</h2>
 
       {sourceCallbackId && sourceCallbackDate ? (
         <div
           className="mt-3 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-900"
           data-testid="source-callback-context"
         >
-          <p className="font-medium">Due callback</p>
+          <p className="font-medium">Callback k vyřízení</p>
           <p className="mt-1 text-sky-800">{formatDateTime(sourceCallbackDate)}</p>
           {sourceCallbackNote ? (
             <p className="mt-1 text-sky-700">{sourceCallbackNote}</p>
@@ -256,14 +256,14 @@ export function CallWorkflowPanel({
             className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-800"
             data-testid="start-call-button"
           >
-            Start call
+            Začít hovor
           </button>
         </div>
       ) : null}
 
       {phase === "active" ? (
         <div className="mt-4 space-y-3">
-          <p className="text-sm text-zinc-600">Call in progress</p>
+          <p className="text-sm text-zinc-600">Hovor probíhá</p>
           <div
             className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-center"
             data-testid="call-timer-placeholder"
@@ -276,14 +276,14 @@ export function CallWorkflowPanel({
             className="w-full rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-amber-700"
             data-testid="end-call-button"
           >
-            End call
+            Ukončit hovor
           </button>
         </div>
       ) : null}
 
       {phase === "disposition" ? (
         <div className="mt-4 space-y-4">
-          <p className="text-sm font-medium text-amber-800">Select call outcome</p>
+          <p className="text-sm font-medium text-amber-800">Vyberte výsledek hovoru</p>
 
           <div className="grid grid-cols-2 gap-2">
             {outcomeOptions.map((option) => (
@@ -509,7 +509,7 @@ export function CallWorkflowPanel({
                 <input type="hidden" name="sourceCallbackId" value={sourceCallbackId} />
               ) : null}
               <label className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium text-zinc-700">Date and time</span>
+                <span className="text-sm font-medium text-zinc-700">Datum a čas</span>
                 <input
                   type="datetime-local"
                   name="scheduledAt"
@@ -533,20 +533,20 @@ export function CallWorkflowPanel({
                 <input type="hidden" name="sourceCallbackId" value={sourceCallbackId} />
               ) : null}
               <p className="text-sm text-zinc-600">
-                Failed attempts: {failCount} / {failThreshold}
+                Počet neúspěchů: {failCount} / {failThreshold}
                 {willBecomeLost ? (
                   <span className="mt-1 block font-medium text-red-700">
-                    This attempt will mark the contact as Lost.
+                    Tento pokus označí kontakt jako ztracený.
                   </span>
                 ) : null}
               </p>
               <label className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium text-zinc-700">Note</span>
+                <span className="text-sm font-medium text-zinc-700">Poznámka</span>
                 <textarea
                   name="note"
                   rows={3}
                   className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-emerald-600 focus:ring-2"
-                  placeholder="Optional note about this call…"
+                  placeholder="Volitelná poznámka k hovoru…"
                 />
               </label>
               <SubmitSection isPending={isPending} />
@@ -592,7 +592,7 @@ export function CallWorkflowPanel({
               className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
               data-testid="call-success-message"
             >
-              Call completed.
+              Hovor dokončen.
             </p>
           )}
           <div className="flex flex-col gap-2">
@@ -601,7 +601,7 @@ export function CallWorkflowPanel({
               className="inline-flex justify-center rounded-lg border border-emerald-700 bg-white px-4 py-2 text-sm font-medium text-emerald-800 transition-colors hover:bg-emerald-50"
               data-testid="back-to-queue-link"
             >
-              Back to queue
+              Zpět do fronty
             </Link>
             {nextContactHref ? (
               <Link
@@ -609,7 +609,7 @@ export function CallWorkflowPanel({
                 className="inline-flex justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-800"
                 data-testid="next-contact-link"
               >
-                Next contact
+                Další kontakt
               </Link>
             ) : null}
           </div>
@@ -631,7 +631,7 @@ function SubmitSection({ isPending }: SubmitSectionProps) {
       className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
       data-testid="confirm-call-button"
     >
-      {isPending ? "Saving…" : "Confirm"}
+      {isPending ? "Ukládám…" : "Potvrdit"}
     </button>
   );
 }

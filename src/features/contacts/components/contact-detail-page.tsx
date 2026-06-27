@@ -56,6 +56,7 @@ export function ContactDetailPage({
             sourceCallbackNote={view.callWorkflow.sourceCallbackNote}
             failCount={view.callWorkflow.failCount}
             failThreshold={view.callWorkflow.failThreshold}
+            nextContactHref={view.callWorkflow.nextContactHref}
           />
           <ContactCallbacksPanel view={callbacksPanel} />
         </aside>

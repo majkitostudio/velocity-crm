@@ -26,19 +26,19 @@ export function DashboardOverview({ counts }: DashboardOverviewProps) {
   return (
     <section className="grid gap-4 sm:grid-cols-3">
       <OverviewCard
-        label="Due callbacks"
+        label="Callbacky k vyřízení"
         value={counts.callbacks}
-        hint="Ready to call now"
+        hint="Připravené k volání"
       />
       <OverviewCard
-        label="Assigned leads"
+        label="Přiřazené leady"
         value={counts.leads}
-        hint="Waiting in your queue"
+        hint="Čekají ve frontě"
       />
       <OverviewCard
-        label="Total queue"
+        label="Celkem ve frontě"
         value={counts.total}
-        hint="Callbacks first, then leads"
+        hint="Nejdřív callbacky, pak leady"
       />
     </section>
   );

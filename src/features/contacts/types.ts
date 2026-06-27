@@ -142,6 +142,7 @@ export type ContactCallWorkflowContext = {
   sourceCallbackId: string | null;
   sourceCallbackScheduledAt: Date | null;
   sourceCallbackNote: string | null;
+  nextContactHref: string | null;
 };
 
 export type ContactDetailView = {
