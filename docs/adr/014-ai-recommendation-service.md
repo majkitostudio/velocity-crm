@@ -1,7 +1,8 @@
 # ADR-014: AI Recommendation Service
 
-**Stav:** Návrh (čeká na schválení)  
+**Stav:** Přijato  
 **Datum:** 2026-06-25  
+**Schváleno:** 2026-06-25  
 **Související:** [ADR-010](./010-ai-context-architecture.md), [ADR-011](./011-unified-contact-context-platform.md), [ADR-012](./012-llm-adapter-architecture.md), [ADR-013](./013-ai-contact-summary-service.md), [IMPLEMENTATION_SEQUENCE.md](../IMPLEMENTATION_SEQUENCE.md), [TARGET_ARCHITECTURE.md](../TARGET_ARCHITECTURE.md)
 
 ## Kontext
@@ -10,7 +11,7 @@ Slice 12 dodal první produkční AI službu — **Contact Summary** — jako vz
 
 **AI Recommendation Service** doporučuje operátorovi další postup při práci s kontaktem (priorita akce, důvod, rizika, timing, follow-up úkoly). Není to rozšíření Summary — jde o samostatný `AiTaskService` se vlastním DTO, promptem, cache klíčem a UI.
 
-Tento ADR **neimplementuje kód**. Definuje architekturu, platformní mezery a implementační plán.
+Tento ADR definuje architekturu a implementační plán. **Implementace Slice 13.0–13.4 je dokončena** (viz `IMPLEMENTATION_SEQUENCE.md`).
 
 ---
 
@@ -115,7 +116,7 @@ ViewModel **neobsahuje** sanitizovaný context — pouze DTO + metadata (stejná
 | **AI Configuration** | **ANO** | `defaultCacheTtlMs` + per-task override; env alias `AI_CACHE_SUMMARY_TTL_MS` |
 | **Metrics** | **ANO** | `PromptMetricEvent` je service-agnostický; `recommendationCount` pole připraveno |
 | **AI Service Registry** | **ANO** | Descriptor `recommendation` + `taskCategory` na všech službách |
-| **AiContextSanitizer** | **NE** | Profil `RECOMMENDATION` háže `NotImplementedError` |
+| **AiContextSanitizer** | **ANO** | Profily `SUMMARY` a `RECOMMENDATION` implementovány v `default-ai-context-sanitizer.ts`; ostatní profily zůstávají `NotImplementedError` |
 | **AiLog cache impl.** | **ANO** | `createAiLogCachePersistence<T>()` + tenký Summary wrapper (Slice 13.0) |
 | **Pipeline ports factory** | **ANO** | `createAiPipelinePorts()` + per-service wrapper (Slice 13.0) |
 | **Fake LLM adapter** | **ANO** | `fake-response-registry.ts` per `LlmTaskProfile` (Slice 13.0) |
@@ -407,20 +408,20 @@ Capability Matrix: `resolveCompatibleModel(descriptor, policy)` — beze změny.
 | Fáze | Slice | Úkol |
 |------|-------|------|
 | **13.0** | Platform | ✅ P1–P8 platformní generalizace (`AiLogCachePersistence<T>`, `createAiPipelinePorts`, feature flag registry, `defaultCacheTtlMs`, `AiTaskCategory`, fake registry, `buildAiServiceExecuteInput`, workspace types) |
-| **13.1** | Service | `AiRecommendationService`, DTO, prompt `recommendation@v1`, sanitizer RECOMMENDATION |
-| **13.2** | Integration | Fake adapter, cache integrační testy, E2E |
-| **13.3** | UI | `ContactAiWorkspace`, Recommendation panel, Server Action, Playwright |
-| **13.4** | Telemetry | Prompt Metrics enrichment (pokud 12.8 ještě není hotové) |
+| **13.1** | Service | ✅ `AiRecommendationService`, DTO, prompt `recommendation@v1`, sanitizer RECOMMENDATION |
+| **13.2** | Integration | ✅ Fake adapter, cache integrační testy, E2E |
+| **13.3** | UI | ✅ `ContactAiWorkspace`, Recommendation panel, Server Action, Playwright |
+| **13.4** | Telemetry | ✅ Prompt Metrics enrichment (Slice 13.4) |
 
 ### Definition of Done — Slice 13
 
-- [ ] Recommendation jako druhý `AiTaskService` bez změny `runAiServicePipeline`
-- [ ] Vlastní DTO, ViewModel, prompt, sanitizer
-- [ ] Cache přes zobecněný `AiLogCachePersistence`
-- [ ] Feature flags `ai.recommendation` + `.refresh`
-- [ ] UI v AI Workspace; `contacts/` AI-agnostický
-- [ ] Integrační + E2E testy
-- [ ] Platformní generalizace (P1–P5) — žádný Summary-specific hack v Recommendation
+- [x] Recommendation jako druhý `AiTaskService` bez změny `runAiServicePipeline`
+- [x] Vlastní DTO, ViewModel, prompt, sanitizer
+- [x] Cache přes zobecněný `AiLogCachePersistence`
+- [x] Feature flags `ai.recommendation` + `.refresh`
+- [x] UI v AI Workspace; `contacts/` AI-agnostický
+- [x] Integrační + E2E testy
+- [x] Platformní generalizace (P1–P5) — žádný Summary-specific hack v Recommendation
 
 ---
 
@@ -530,10 +531,15 @@ Copilot je první služba, která **vyžaduje rozšíření pipeline** (streamin
 
 ## Schválení
 
-| Otázka | Návrh |
-|--------|-------|
-| Recommendation jako druhý `AiTaskService` | **Navrhováno** |
-| DTO struktura s `primaryAction` | **Navrhováno** |
-| AI Workspace compositor | **Navrhováno** |
-| Platform P1–P5 před service impl. | **Navrhováno** |
-| `taskType: NEXT_ACTION` pro Recommendation | **Navrhováno** |
+| Otázka | Rozhodnutí |
+|--------|------------|
+| Recommendation jako druhý `AiTaskService` | **Schváleno** |
+| DTO struktura s `primaryAction` | **Schváleno** |
+| AI Workspace compositor (`ContactAiWorkspace`) | **Schváleno** |
+| Platform P1–P5 před service impl. (Slice 13.0) | **Schváleno — implementováno** |
+| `taskType: NEXT_ACTION` pro Recommendation | **Schváleno** |
+| Cache přes `AiLogCachePersistence<T>` | **Schváleno** |
+| Feature flags `ai.recommendation` + `ai.recommendation.refresh` | **Schváleno** |
+| Telemetry přes gateway middleware (Slice 13.4) | **Schváleno** |
+
+Detailní pravidla a implementační mapování: [IMPLEMENTATION_SEQUENCE.md](../IMPLEMENTATION_SEQUENCE.md#slice-13-ai-recommendation-service).

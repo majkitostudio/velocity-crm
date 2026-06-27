@@ -177,10 +177,10 @@ ContactPage → completeCallAction → CallWorkflow → services/repos → trans
 ### Definition of Done
 
 - [x] Bez outcome nelze dokončit hovor
-- [x] `ORDER` tlačítko viditelné, dokončení odloženo do Slice 6
+- [x] `ORDER` tlačítko a dokončení — implementováno ve Slice 6 (`tests/e2e/orders/golden-path.spec.ts`)
 - [x] Callback outcomes vytvoří callback dle schváleného ADR
 - [x] Navigace „Back to queue" po dokončení hovoru
-- [ ] Integrační test: všechny outcomes v transakci (Slice 9)
+- [ ] Integrační test: všechny call outcomes v transakci (E2E pokrývá ORDER; CALL_LATER / SCHEDULE_CALL / FAIL — viz audit níže)
 
 ---
 
@@ -199,9 +199,9 @@ ContactPage → completeCallAction → CallWorkflow → services/repos → trans
 
 ### Definition of Done
 
-- [ ] Admin může spravovat katalog
-- [ ] Operátor vidí aktivní produkty při tvorbě objednávky
-- [ ] Neaktivní produkt nelze objednat
+- [x] Admin/manager může spravovat katalog — `app/(crm)/products/`, role guard v actions
+- [x] Operátor vidí aktivní produkty při tvorbě objednávky — order form v call workflow
+- [x] Neaktivní produkt nelze objednat — `getActiveProductPriceSnapshots` v `order-workflow.ts`
 
 ---
 
@@ -222,9 +222,10 @@ ContactPage → completeCallAction → CallWorkflow → services/repos → trans
 
 ### Definition of Done
 
-- [ ] Objednávka vznikne z call flow nebo samostatného formuláře
-- [ ] `ORDER` outcome bez objednávky není možný (po schválení pravidla)
-- [ ] Order items validují produkty v rámci company
+- [x] Objednávka vznikne z call flow — `OrderWorkflow` + ORDER outcome UI
+- [x] `ORDER` outcome bez objednávky není možný — validace v schema + workflow
+- [x] Order items validují produkty v rámci company — `getActiveProductPriceSnapshots`
+- [x] E2E golden path — `tests/e2e/orders/golden-path.spec.ts`
 
 ---
 
@@ -244,9 +245,10 @@ ContactPage → completeCallAction → CallWorkflow → services/repos → trans
 
 ### Definition of Done
 
-- [ ] Operátor může ručně naplánovat callback
-- [ ] Due callbacky se objeví ve frontě
-- [ ] Dokončený callback zmizí z fronty
+- [x] Operátor může ručně naplánovat callback — panel na contact detail + `callbacks/actions.ts`
+- [x] Due callbacky se objeví ve frontě — queue service (Slice 2)
+- [x] Dokončený callback zmizí z fronty — status transitions + queue refresh
+- [x] E2E plánování z detailu — `tests/e2e/callbacks/schedule-from-contact.spec.ts`
 
 ---
 
@@ -271,9 +273,10 @@ ContactPage → completeCallAction → CallWorkflow → services/repos → trans
 
 ### Definition of Done
 
-- [ ] Manager importuje CSV s validací a deduplikací
-- [ ] Contacts list filtruje podle status, source, priority
+- [x] Manager importuje CSV s validací a deduplikací — `tests/e2e/contacts/import-csv.spec.ts`
+- [x] Contacts list filtruje podle status, source, priority — `tests/e2e/contacts/contacts-list.spec.ts`
 - [x] Import neporuší tenant isolation — E2E + tenant seed `seed-company-other`
+- [ ] Tags — pouze pokud ADR-004 schválí (odloženo)
 
 ---
 
@@ -467,7 +470,7 @@ Prompt Metrics        → success rate, latency per prompt version
 ### Definition of Done — Slice 12.2 (AiContactSummaryService)
 
 - [x] `ContactSummary` Zod schema + `SummaryViewModel` s `source: LIVE | CACHE`
-- [x] `SanitizerProfile` enum (`SUMMARY`, `RECOMMENDATION`, `CALL_PREPARATION`, `EMAIL_DRAFT`, `SMS_DRAFT`) — implementován pouze `SUMMARY`
+- [x] `SanitizerProfile` enum — profily `SUMMARY` a `RECOMMENDATION` implementovány v `defaultAiContextSanitizer`
 - [x] Sdílený `computeContactContextHash()` v `context/context-hash/` (ne v `contact-summary/`)
 - [x] `AiContactSummaryService` implementuje `AiTaskService<ContactSummary, SummaryViewModel>`
 - [x] Jediná factory `getContactSummaryService()` — žádné přímé `new AiContactSummaryService()` mimo factory
@@ -534,7 +537,7 @@ Prompt Metrics        → success rate, latency per prompt version
 
 - [x] Operátor vidí AI shrnutí na detailu kontaktu (feature flag `ai.contact_summary`)
 - [x] Výstupy uloženy v `AiLog` s prompt versioning a metadata (fáze 1 cache)
-- [ ] PII v promptech ošetřena (`AiContextSanitizer` SUMMARY profile)
+- [x] PII v promptech ošetřena — `defaultAiContextSanitizer` profily `SUMMARY` a `RECOMMENDATION` (ostatní profily zatím `NotImplementedError`)
 - [x] AI Service Pipeline (`runAiServicePipeline`) prochází integračním testem
 - [x] AI Service Registry registruje `contact-summary` s plným descriptor metadata
 - [x] Capability Matrix validuje model před LLM voláním
@@ -551,7 +554,7 @@ Prompt Metrics        → success rate, latency per prompt version
 
 **Cíl:** Druhá AI služba nad platformou Slice 10–12 — ověření generalizace architektury. Operátor dostane strukturované doporučení dalšího postupu s kontaktem.
 
-**ADR gate:** [ADR-014](./adr/014-ai-recommendation-service.md) — **čeká na schválení**
+**ADR gate:** [ADR-014](./adr/014-ai-recommendation-service.md) — **Přijato**
 
 ### Předpoklad
 
@@ -563,9 +566,9 @@ Prompt Metrics        → success rate, latency per prompt version
 | # | Úkol | Soubory (cíl) |
 |---|------|----------------|
 | 13.0 | ✅ **Platform generalization** — `AiLogCachePersistence<T>`, `createAiPipelinePorts()`, `buildAiServiceExecuteInput`, `ai-service-feature-flag-registry`, `defaultCacheTtlMs`, `AiTaskCategory`, `fake-response-registry`, `contact-ai-workspace.types` | `cache/`, `services/shared/`, `flags/`, `components/` |
-| 13.1 | **AiRecommendationService** — DTO, sanitizer RECOMMENDATION, prompt `recommendation@v1` | `services/recommendation/`, `prompts/recommendation/` |
-| 13.2 | **Integration** — fake adapter, cache/force testy | `tests/integration/` |
-| 13.3 | **UI** — `ContactAiWorkspace`, Recommendation panel, Server Action, Playwright | `components/`, `actions/` |
+| 13.1 | ✅ **AiRecommendationService** — DTO, sanitizer RECOMMENDATION, prompt `recommendation@v1` | `services/recommendation/`, `prompts/recommendation/` |
+| 13.2 | ✅ **Integration** — fake adapter, cache/force testy | `tests/integration/` |
+| 13.3 | ✅ **UI** — `ContactAiWorkspace`, Recommendation panel, Server Action, Playwright | `components/`, `actions/` |
 | 13.4 | **Telemetry** — `AiTelemetryRecorder`, gateway middleware stack, cost wiring | `metrics/`, `llm/gateway/` ✅ |
 
 ### Slice 13.0 — Definition of Done ✅
@@ -582,13 +585,13 @@ Prompt Metrics        → success rate, latency per prompt version
 
 ### Definition of Done — Slice 13 (celý slice)
 
-- [ ] Druhý `AiTaskService` bez změny `runAiServicePipeline`
-- [ ] Žádný Summary-specific hack v Recommendation kódu
-- [ ] Cache přes zobecněný `AiLogCachePersistence`
-- [ ] Feature flags `ai.recommendation` + `ai.recommendation.refresh`
-- [ ] UI v AI Workspace; `contacts/` AI-agnostický
-- [ ] Integrační + E2E testy
-- [ ] ADR-014 schváleno
+- [x] Druhý `AiTaskService` bez změny `runAiServicePipeline`
+- [x] Žádný Summary-specific hack v Recommendation kódu
+- [x] Cache přes zobecněný `AiLogCachePersistence`
+- [x] Feature flags `ai.recommendation` + `ai.recommendation.refresh`
+- [x] UI v AI Workspace; `contacts/` AI-agnostický
+- [x] Integrační + E2E testy — viz audit níže
+- [x] ADR-014 schváleno
 
 ### Co Slice 13 neřeší
 
@@ -635,6 +638,49 @@ buildContactAiContextForTenant → (wrapper) → ContactContextBuilder → toCon
 - [x] Integrační testy (partial load, tenant isolation, AI determinismus)
 
 > Původní plán „Slice 10: AI V1“ byl rozdělen na Slice 10 (Context Builder), Slice 10.5 (Unified Platform), Slice 11 (LLM Adapter) a Slice 12 (AI Services/UI).
+
+---
+
+## E2E a integrační pokrytí (audit, sync 2026-06-25)
+
+Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouží jako rychlá kontrola mezery mezi kódem a dokumentací.
+
+### Playwright (`tests/e2e/`)
+
+| Soubor | Pokrývá |
+|--------|---------|
+| `auth/auth-roles.spec.ts` | Role admin / manager / operator |
+| `contacts/contacts-list.spec.ts` | Seznam kontaktů, filtry, tenant scope operátora |
+| `contacts/create-contact.spec.ts` | Vytvoření kontaktu |
+| `contacts/import-csv.spec.ts` | CSV import (manager), deduplikace, validace |
+| `contacts/activity-timeline.spec.ts` | Activity feed na detailu |
+| `contacts/activity-tenant-isolation.spec.ts` | Cross-tenant 404 |
+| `contacts/contact-summary.spec.ts` | AI Summary panel (fake LLM) |
+| `contacts/contact-recommendation.spec.ts` | AI Recommendation panel |
+| `contacts/contact-recommendation-flag-disabled.spec.ts` | Feature flag vypnutý |
+| `callbacks/schedule-from-contact.spec.ts` | Ruční plánování callbacku z detailu |
+| `orders/golden-path.spec.ts` | Dashboard → call → ORDER → objednávka → queue |
+
+### Integrační testy (`tests/integration/`) — výběr
+
+| Oblast | Klíčové soubory |
+|--------|-----------------|
+| Contact activity & audit | `contact-activity-tenant-isolation.test.ts` |
+| Contact context (Slice 10.5) | `contact-context.test.ts` |
+| AI platform | `ai-platform-*.test.ts`, `ai-platform-generalization.test.ts` |
+| Contact Summary | `contact-summary-*.test.ts`, `ai-log-summary-cache-store.test.ts` |
+| Recommendation | `recommendation-*.test.ts`, `ai-log-recommendation-cache-store.test.ts` |
+| LLM gateway | `llm-gateway.test.ts`, `ai-platform-telemetry-gateway.test.ts` |
+
+### Známé mezery (záměrně otevřené)
+
+| Mezera | Poznámka |
+|--------|----------|
+| Call workflow outcomes CALL_LATER / SCHEDULE_CALL / FAIL | Chybí dedikovaný E2E; ORDER pokryt `golden-path.spec.ts` |
+| Neaktivní produkt v objednávce | Business pravidlo v `order-workflow.ts`; bez dedikovaného E2E |
+| Manager assign UI | Backend hotový; UI odloženo (Slice 2 backlog) |
+| Produkční LLM vendor | OpenAI/Azure adaptéry stub; běží Fake LLM (Slice 12.11) |
+| Tags u kontaktů | ADR-004 otevřené |
 
 ---
 
