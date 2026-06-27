@@ -120,7 +120,7 @@ dashboard/page.tsx → getOperatorQueueAction → queue.service → queue.reposi
 ### Definition of Done
 
 - [x] Operátor vidí svou frontu
-- [ ] Manager vidí nepřiřazené leady a může assignovat (odloženo — mimo scope Slice 2 request)
+- [x] Manager vidí nepřiřazené leady a může assignovat — dashboard panel + `assignContactAction`
 - [x] Tenant isolation test: operátor nevidí data jiné company — `tests/e2e/contacts/activity-tenant-isolation.spec.ts`
 
 ---
@@ -660,6 +660,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | `contacts/contact-recommendation-flag-disabled.spec.ts` | Feature flag vypnutý |
 | `callbacks/schedule-from-contact.spec.ts` | Ruční plánování callbacku z detailu |
 | `orders/golden-path.spec.ts` | Dashboard → call → ORDER → objednávka → queue |
+| `dashboard/manager-assign-lead.spec.ts` | Manager assign nepřiřazeného leadu operátorovi |
 
 ### Integrační testy (`tests/integration/`) — výběr
 
@@ -678,7 +679,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 |--------|----------|
 | Call workflow outcomes CALL_LATER / SCHEDULE_CALL / FAIL | Chybí dedikovaný E2E; ORDER pokryt `golden-path.spec.ts` |
 | Neaktivní produkt v objednávce | Business pravidlo v `order-workflow.ts`; bez dedikovaného E2E |
-| Manager assign UI | Backend hotový; UI odloženo (Slice 2 backlog) |
+| Manager assign UI | ✅ `dashboard/manager-assign-lead.spec.ts` |
 | Produkční LLM vendor | OpenAI/Azure adaptéry stub; běží Fake LLM (Slice 12.11) |
 | Tags u kontaktů | ADR-004 otevřené |
 

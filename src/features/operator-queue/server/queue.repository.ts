@@ -96,6 +96,21 @@ export async function findUnassignedLeadsForCompany(
   });
 }
 
+export async function findOperatorsForCompany(companyId: string) {
+  return prisma.user.findMany({
+    where: {
+      companyId,
+      role: "OPERATOR",
+    },
+    orderBy: [{ name: "asc" }, { email: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  });
+}
+
 export async function findOperatorInCompany(input: {
   companyId: string;
   operatorId: string;

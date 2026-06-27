@@ -26,3 +26,12 @@ export async function loginAs(page: Page, userKey: SeedUserKey) {
   await expect(page.getByTestId("crm-shell")).toBeVisible();
   await expect(page.getByTestId("crm-user-role")).toHaveText(user.role);
 }
+
+export async function logout(page: Page) {
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.waitForURL(/\/login(?:\/)?$/, {
+    timeout: 30_000,
+    waitUntil: "commit",
+  });
+  await expect(page.getByTestId("login-email-input")).toBeVisible();
+}

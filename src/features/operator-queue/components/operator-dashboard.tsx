@@ -1,12 +1,18 @@
 import type { CurrentUser } from "@/src/server/auth/guards";
-import type { OperatorQueueSnapshot } from "@/src/features/operator-queue/types";
+import { canManageCompanyData } from "@/src/server/auth/guards";
+import type {
+  ManagerAssignmentPanelView,
+  OperatorQueueSnapshot,
+} from "@/src/features/operator-queue/types";
 import { DashboardOverview } from "@/src/features/operator-queue/components/dashboard-overview";
 import { EmptyQueueState } from "@/src/features/operator-queue/components/empty-queue-state";
+import { ManagerUnassignedLeadsPanel } from "@/src/features/operator-queue/components/manager-unassigned-leads-panel";
 import { QueueItemRow } from "@/src/features/operator-queue/components/queue-item-row";
 
 type OperatorDashboardProps = {
   user: CurrentUser;
   queue: OperatorQueueSnapshot;
+  managerPanel?: ManagerAssignmentPanelView | null;
 };
 
 function QueueGroupHeader({
@@ -26,7 +32,9 @@ function QueueGroupHeader({
   );
 }
 
-export function OperatorDashboard({ user, queue }: OperatorDashboardProps) {
+export function OperatorDashboard({ user, queue, managerPanel }: OperatorDashboardProps) {
+  const isManagerView = canManageCompanyData(user.role);
+
   return (
     <div className="space-y-8" data-testid="operator-dashboard">
       <div>
@@ -34,9 +42,13 @@ export function OperatorDashboard({ user, queue }: OperatorDashboardProps) {
         <p className="mt-1 text-sm text-zinc-600">
           {user.role === "OPERATOR"
             ? "Your work queue for today."
-            : `Work queue for ${user.name ?? user.email}.`}
+            : isManagerView
+              ? "Správa fronty a nepřiřazených leadů."
+              : `Work queue for ${user.name ?? user.email}.`}
         </p>
       </div>
+
+      {managerPanel ? <ManagerUnassignedLeadsPanel panel={managerPanel} /> : null}
 
       <DashboardOverview counts={queue.counts} />
 

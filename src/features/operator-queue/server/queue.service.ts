@@ -19,6 +19,8 @@ import { buildContactAssignedPayload } from "@/src/features/contacts/lib/activit
 import { recordContactBusinessEvent } from "@/src/features/contacts/server/record-contact-business-event";
 
 import type {
+  AssignableOperatorOption,
+  ManagerAssignmentPanelView,
   OperatorQueueCallbackItem,
   OperatorQueueItem,
   OperatorQueueLeadItem,
@@ -31,6 +33,7 @@ import {
   findAssignedLeadsForOperator,
   findDueCallbacksForOperator,
   findOperatorInCompany,
+  findOperatorsForCompany,
   findUnassignedLeadsForCompany,
 } from "./queue.repository";
 
@@ -57,6 +60,46 @@ function assertQueueAccess(currentUser: CurrentUser, targetOperatorId: string): 
   if (targetOperatorId !== currentUser.id && !canManageCompanyData(currentUser.role)) {
     throw new ForbiddenError();
   }
+}
+
+function sortQueueContacts(contacts: QueueContact[]): QueueContact[] {
+  return [...contacts].sort((left, right) => {
+    const priorityDiff = priorityRank[left.priority] - priorityRank[right.priority];
+
+    if (priorityDiff !== 0) {
+      return priorityDiff;
+    }
+
+    return left.createdAt.getTime() - right.createdAt.getTime();
+  });
+}
+
+function mapAssignableOperators(
+  operators: Awaited<ReturnType<typeof findOperatorsForCompany>>,
+): AssignableOperatorOption[] {
+  return operators.map((operator) => ({
+    id: operator.id,
+    name: operator.name,
+    email: operator.email,
+  }));
+}
+
+export async function getManagerAssignmentPanelView(): Promise<ManagerAssignmentPanelView | null> {
+  const currentUser = await requireCurrentUser();
+
+  if (!canManageCompanyData(currentUser.role)) {
+    return null;
+  }
+
+  const [unassignedLeads, assignableOperators] = await Promise.all([
+    findUnassignedLeadsForCompany(currentUser.companyId),
+    findOperatorsForCompany(currentUser.companyId),
+  ]);
+
+  return {
+    unassignedLeads: sortQueueContacts(unassignedLeads),
+    assignableOperators: mapAssignableOperators(assignableOperators),
+  };
 }
 
 function buildSnapshot(

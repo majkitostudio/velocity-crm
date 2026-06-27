@@ -39,3 +39,14 @@ export type OperatorQueueSnapshot = {
     total: number;
   };
 };
+
+export type AssignableOperatorOption = {
+  id: string;
+  name: string | null;
+  email: string;
+};
+
+export type ManagerAssignmentPanelView = {
+  unassignedLeads: QueueContact[];
+  assignableOperators: AssignableOperatorOption[];
+};
