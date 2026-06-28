@@ -641,6 +641,40 @@ buildContactAiContextForTenant → (wrapper) → ContactContextBuilder → toCon
 
 ---
 
+## Slice 14: Reporting & Dashboard Analytics
+
+**Cíl:** Manažerské statistiky hovorů, objednávek a výkonu operátorů nad existujícími daty (`CallActivity`, `Order`).
+
+### Úkoly
+
+| # | Úkol | Soubory (cíl) |
+|---|------|----------------|
+| 14.1 | Reporting query service + repository | `src/features/reporting/server/` |
+| 14.2 | Období 7 / 30 / 90 dní | `reporting/lib/reporting-period.ts` |
+| 14.3 | Stránka `/reports` (MANAGER, ADMIN) | `app/(crm)/reports/page.tsx` |
+| 14.4 | KPI karty, výsledky hovorů, tabulka operátorů | `reporting/components/` |
+| 14.5 | Navigace Přehledy v CRM shellu | `app/(crm)/layout.tsx` |
+| 14.6 | Integrační test tenant isolation | `tests/integration/reporting-tenant-isolation.test.ts` |
+| 14.7 | E2E manager reports | `tests/e2e/reports/manager-reports.spec.ts` |
+
+### Vrstvy
+
+```
+reports/page.tsx → getReportingDashboardView → reporting.service → reporting.repository → Prisma
+```
+
+### Definition of Done
+
+- [x] MANAGER/ADMIN vidí `/reports` s KPI (hovory, objednávky, tržby, konverze)
+- [x] Rozpad hovorů podle `CallOutcome`
+- [x] Tabulka výkonu operátorů ve zvoleném období
+- [x] OPERATOR nemá odkaz Přehledy v navigaci
+- [x] Všechny dotazy tenant-scoped (`companyId`)
+- [x] Integrační test tenant isolation
+- [x] E2E manager reports
+
+---
+
 ## E2E a integrační pokrytí (audit, sync 2026-06-25)
 
 Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouží jako rychlá kontrola mezery mezi kódem a dokumentací.
@@ -661,6 +695,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | `callbacks/schedule-from-contact.spec.ts` | Ruční plánování callbacku z detailu |
 | `orders/golden-path.spec.ts` | Dashboard → call → ORDER → Další kontakt (operátorský golden path) |
 | `dashboard/manager-assign-lead.spec.ts` | Manager assign nepřiřazeného leadu operátorovi |
+| `reports/manager-reports.spec.ts` | Manažerské přehledy, přepínání období, operator bez nav |
 
 ### Integrační testy (`tests/integration/`) — výběr
 
@@ -671,7 +706,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | AI platform | `ai-platform-*.test.ts`, `ai-platform-generalization.test.ts` |
 | Contact Summary | `contact-summary-*.test.ts`, `ai-log-summary-cache-store.test.ts` |
 | Recommendation | `recommendation-*.test.ts`, `ai-log-recommendation-cache-store.test.ts` |
-| LLM gateway | `llm-gateway.test.ts`, `ai-platform-telemetry-gateway.test.ts` |
+| Reporting | `reporting-tenant-isolation.test.ts` |
 
 ### Známé mezery (záměrně otevřené)
 
@@ -734,7 +769,7 @@ Před merge každého slice ověřit:
 | Phase 9 | Slice 10 + 10.5 (AI Context + Platform) |
 | Phase 10 | Slice 11 (LLM Adapter) |
 | Phase 11 | Slice 12 (AI Services / UI) |
-| Phase 12 | Reporting — nový slice |
+| Phase 12 | Slice 14 (Reporting) |
 | Phase 11 | Po MVP (SaaS foundation) |
 
 ---

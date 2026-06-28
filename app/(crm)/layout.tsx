@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { LogoutButton } from "@/src/features/auth/components/logout-button";
-import { requireCurrentUser } from "@/src/server/auth/guards";
+import { canManageCompanyData, requireCurrentUser } from "@/src/server/auth/guards";
 
 export default async function CrmLayout({
   children,
@@ -9,6 +9,7 @@ export default async function CrmLayout({
   children: React.ReactNode;
 }>) {
   const user = await requireCurrentUser();
+  const showReportsNav = canManageCompanyData(user.role);
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-zinc-50" data-testid="crm-shell">
@@ -43,6 +44,15 @@ export default async function CrmLayout({
               >
                 Produkty
               </Link>
+              {showReportsNav ? (
+                <Link
+                  href="/reports"
+                  className="text-sm text-zinc-600 transition-colors hover:text-zinc-900"
+                  data-testid="crm-nav-reports"
+                >
+                  Přehledy
+                </Link>
+              ) : null}
             </nav>
           </div>
           <div className="flex items-center gap-3">
