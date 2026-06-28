@@ -5,6 +5,7 @@ import { ContactDetailPage } from "@/src/features/contacts/components/contact-de
 import { getContactDetailView } from "@/src/features/contacts/server/contact-detail.service";
 import { getContactActivityTimelineFromSearchParams } from "@/src/features/contacts/server/contact-activity.service";
 import { getContactCallbacksPanelView } from "@/src/features/callbacks/server/callbacks.service";
+import { getContactTagsPanelView } from "@/src/features/tags/server/tags.service";
 import { parseReturnToPath } from "@/src/features/contacts/lib/list-navigation";
 import { ContactAiWorkspace } from "@/src/features/ai/components/contact-ai-workspace";
 import { isContactSummaryRefreshEnabled, isContactSummaryUiEnabled } from "@/src/features/ai/server/contact-summary-ui";
@@ -61,13 +62,14 @@ export default async function ContactDetailRoute({
   let view;
   let activityTimeline;
   let callbacksPanel;
+  let tagsPanel;
   let showAiSummary = false;
   let showAiSummaryRefresh = false;
   let showRecommendation = false;
   let showRecommendationRefresh = false;
 
   try {
-    [view, activityTimeline, callbacksPanel, showAiSummary, showAiSummaryRefresh, showRecommendation, showRecommendationRefresh] = await Promise.all([
+    [view, activityTimeline, callbacksPanel, tagsPanel, showAiSummary, showAiSummaryRefresh, showRecommendation, showRecommendationRefresh] = await Promise.all([
       getContactDetailView(contactId, {
         sourceCallbackId,
       }),
@@ -79,6 +81,7 @@ export default async function ContactDetailRoute({
         contactId,
         highlightedCallbackId: sourceCallbackId,
       }),
+      getContactTagsPanelView(contactId),
       isContactSummaryUiEnabled(),
       isContactSummaryRefreshEnabled(),
       isContactRecommendationUiEnabled(),
@@ -97,6 +100,7 @@ export default async function ContactDetailRoute({
       view={view}
       activityTimeline={activityTimeline}
       callbacksPanel={callbacksPanel}
+      tagsPanel={tagsPanel}
       returnTo={contactsReturnTo}
       showCreatedMessage={showCreatedMessage}
       sidebarSlot={

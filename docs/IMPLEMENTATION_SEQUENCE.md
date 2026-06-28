@@ -675,6 +675,37 @@ reports/page.tsx → getReportingDashboardView → reporting.service → reporti
 
 ---
 
+## Slice 15: Tags & Contact Segmentation
+
+**Cíl:** Normalizované tagy pro segmentaci kontaktů a filtrování seznamu.
+
+**ADR gate:** [ADR-004](./adr/004-contact-tags-scope.md) — **Přijato**, varianta A
+
+### Úkoly
+
+| # | Úkol | Soubory (cíl) |
+|---|------|----------------|
+| 15.1 | Prisma `Tag` + `ContactTag` | `prisma/schema.prisma`, migrace |
+| 15.2 | Tags service + repository | `src/features/tags/server/` |
+| 15.3 | Panel tagů na detailu kontaktu | `tags/components/contact-tags-panel.tsx` |
+| 15.4 | Filtr tagů na seznamu kontaktů | `contacts-filter-bar.tsx`, `contacts-list.service.ts` |
+| 15.5 | Activity `CONTACT_TAG_*` | `activity-payloads.ts`, `activity-kinds.ts` |
+| 15.6 | Seed demo tagů | `prisma/seed.ts` |
+| 15.7 | Integrační + E2E testy | `tests/integration/`, `tests/e2e/contacts/` |
+
+### Definition of Done
+
+- [x] `Tag` + `ContactTag` M:N, tenant-scoped
+- [x] Manager/admin přiřazuje/odebírá tagy na detailu kontaktu
+- [x] Operátor tagy vidí, nemůže měnit
+- [x] Filtr `/contacts?tag=` funguje
+- [x] Activity timeline zaznamenává přidání/odebrání tagu
+- [x] Integrační test tenant isolation
+- [x] E2E manager tag assign + list filter
+- [ ] CSV import tag sloupce (Slice 15.1 — follow-up)
+
+---
+
 ## E2E a integrační pokrytí (audit, sync 2026-06-25)
 
 Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouží jako rychlá kontrola mezery mezi kódem a dokumentací.
@@ -684,7 +715,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | Soubor | Pokrývá |
 |--------|---------|
 | `auth/auth-roles.spec.ts` | Role admin / manager / operator |
-| `contacts/contacts-list.spec.ts` | Seznam kontaktů, filtry, tenant scope operátora |
+| `contacts/contact-tags.spec.ts` | Tag assign na detailu + filtr seznamu |
 | `contacts/create-contact.spec.ts` | Vytvoření kontaktu |
 | `contacts/import-csv.spec.ts` | CSV import (manager), deduplikace, validace |
 | `contacts/activity-timeline.spec.ts` | Activity feed na detailu |
@@ -706,7 +737,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | AI platform | `ai-platform-*.test.ts`, `ai-platform-generalization.test.ts` |
 | Contact Summary | `contact-summary-*.test.ts`, `ai-log-summary-cache-store.test.ts` |
 | Recommendation | `recommendation-*.test.ts`, `ai-log-recommendation-cache-store.test.ts` |
-| Reporting | `reporting-tenant-isolation.test.ts` |
+| Tags | `tags-tenant-isolation.test.ts` |
 
 ### Známé mezery (záměrně otevřené)
 
@@ -716,7 +747,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | Neaktivní produkt v objednávce | Business pravidlo v `order-workflow.ts`; bez dedikovaného E2E |
 | Manager assign UI | ✅ `dashboard/manager-assign-lead.spec.ts` |
 | Produkční LLM vendor | **Odloženo** — Fake LLM pro testy/dev; stub adaptéry; viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
-| Tags u kontaktů | ADR-004 otevřené |
+| Tags u kontaktů | ✅ Slice 15 (ADR-004) |
 
 ---
 

@@ -10,11 +10,14 @@ import { ContactActivityTimeline } from "./contact-activity-timeline";
 import { ContactContextCards } from "./contact-context-cards";
 import { ContactDetailHeader } from "./contact-detail-header";
 import { ContactNotesSection } from "./contact-notes-section";
+import type { ContactTagsPanelView } from "@/src/features/tags/types";
+import { ContactTagsPanel } from "@/src/features/tags/components/contact-tags-panel";
 
 type ContactDetailPageProps = {
   view: ContactDetailView;
   activityTimeline: ContactActivityTimelineView;
   callbacksPanel: ContactCallbacksPanelView;
+  tagsPanel: ContactTagsPanelView;
   returnTo: string;
   showCreatedMessage?: boolean;
   sidebarSlot?: ReactNode;
@@ -24,6 +27,7 @@ export function ContactDetailPage({
   view,
   activityTimeline,
   callbacksPanel,
+  tagsPanel,
   returnTo,
   showCreatedMessage = false,
   sidebarSlot = null,
@@ -38,6 +42,7 @@ export function ContactDetailPage({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
+          <ContactTagsPanel view={tagsPanel} />
           <ContactContextCards context={view.context} />
           <ContactActivityTimeline
             contactId={view.contact.id}

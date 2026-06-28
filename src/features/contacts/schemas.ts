@@ -46,6 +46,7 @@ export const listContactsQuerySchema = z.object({
   operator: z.string().trim().optional(),
   q: z.string().trim().optional(),
   importBatch: z.string().trim().min(1).optional(),
+  tag: z.string().trim().min(1).optional(),
 });
 
 export type ListContactsQuery = z.infer<typeof listContactsQuerySchema>;

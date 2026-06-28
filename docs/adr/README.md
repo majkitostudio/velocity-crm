@@ -9,7 +9,7 @@ Tento adresář obsahuje architektonická rozhodnutí pro Velocity CRM.
 | [001](./001-lead-workflow-model.md) | Lead workflow vs. Contact status | **Přijato** |
 | [002](./002-call-outcome-callback-semantics.md) | `CALL_LATER` vs. `SCHEDULE_CALL` | **Přijato** |
 | [003](./003-fail-outcome-behavior.md) | Chování outcome `FAIL` | **Přijato** |
-| [004](./004-contact-tags-scope.md) | Tags u kontaktů v MVP | **Otevřené** |
+| [004](./004-contact-tags-scope.md) | Tags u kontaktů v MVP | **Přijato** |
 | [005](./005-saas-bootstrap-v1.md) | SaaS bootstrap pro V1 | **Přijato** |
 | [006](./006-contacts-list-and-navigation.md) | Seznam kontaktů, filtry URL, breadcrumb | **Přijato** |
 | [007](./007-contact-phone-normalization.md) | Normalizace telefonu a e-mailu | **Přijato** |

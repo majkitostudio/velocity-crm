@@ -13,6 +13,8 @@ export const CONTACT_ACTIVITY_KINDS = [
   "CONTACT_STATUS_CHANGED",
   "CONTACT_ASSIGNED",
   "CONTACT_UPDATED",
+  "CONTACT_TAG_ADDED",
+  "CONTACT_TAG_REMOVED",
   "NOTE_CREATED",
   "CALLBACK_CREATED",
   "CALLBACK_COMPLETED",
@@ -30,6 +32,7 @@ export const ACTIVITY_SOURCE_ENTITIES = [
   "ORDER",
   "CALLBACK",
   "IMPORT_BATCH",
+  "TAG",
 ] as const;
 
 export type ActivitySourceEntityValue =

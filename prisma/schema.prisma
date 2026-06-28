@@ -76,6 +76,8 @@ enum ContactActivityKind {
   CONTACT_STATUS_CHANGED
   CONTACT_ASSIGNED
   CONTACT_UPDATED
+  CONTACT_TAG_ADDED
+  CONTACT_TAG_REMOVED
   NOTE_CREATED
   CALLBACK_CREATED
   CALLBACK_COMPLETED
@@ -90,6 +92,7 @@ enum ActivitySourceEntity {
   ORDER
   CALLBACK
   IMPORT_BATCH
+  TAG
 }
 
 model Company {
@@ -111,6 +114,8 @@ model Company {
   contactImportBatches ContactImportBatch[]
   contactActivities ContactActivity[]
   auditEvents       AuditEvent[]
+  tags              Tag[]
+  contactTags       ContactTag[]
 }
 
 model User {
@@ -206,6 +211,7 @@ model Contact {
   aiLogs         AiLog[]
   activities     ContactActivity[]
   auditEvents    AuditEvent[]
+  contactTags    ContactTag[]
 
   @@unique([companyId, phone])
   @@unique([companyId, email])
@@ -428,4 +434,33 @@ model AuditEvent {
   @@index([companyId, contactId, createdAt(sort: Desc)])
   @@index([companyId, entityType, entityId])
   @@index([companyId, actorUserId, createdAt(sort: Desc)])
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  companyId String
+  name      String
+  createdAt DateTime @default(now())
+
+  company  Company      @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  contacts ContactTag[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model ContactTag {
+  id        String   @id @default(cuid())
+  companyId String
+  contactId String
+  tagId     String
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, tagId])
+  @@index([companyId, contactId])
+  @@index([companyId, tagId])
 }

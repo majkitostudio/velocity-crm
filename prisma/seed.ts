@@ -110,6 +110,52 @@ function daysAgo(days: number): Date {
   return date;
 }
 
+const SEED_TAG_IDS = {
+  campaignSpring: "seed-tag-campaign-spring",
+  vipFollowUp: "seed-tag-vip-follow-up",
+} as const;
+
+async function upsertTag(input: {
+  id: string;
+  companyId: string;
+  name: string;
+}) {
+  return prisma.tag.upsert({
+    where: { id: input.id },
+    update: {
+      companyId: input.companyId,
+      name: input.name,
+    },
+    create: {
+      id: input.id,
+      companyId: input.companyId,
+      name: input.name,
+    },
+  });
+}
+
+async function upsertContactTag(input: {
+  id: string;
+  companyId: string;
+  contactId: string;
+  tagId: string;
+}) {
+  return prisma.contactTag.upsert({
+    where: { id: input.id },
+    update: {
+      companyId: input.companyId,
+      contactId: input.contactId,
+      tagId: input.tagId,
+    },
+    create: {
+      id: input.id,
+      companyId: input.companyId,
+      contactId: input.contactId,
+      tagId: input.tagId,
+    },
+  });
+}
+
 async function upsertUser(input: {
   email: string;
   password: string;
@@ -725,6 +771,34 @@ async function main() {
         authorId: operator.id,
         body: "Due callback from API lead. Check previous web inquiry.",
       },
+    }),
+  ]);
+
+  const [campaignTag, vipTag] = await Promise.all([
+    upsertTag({
+      id: SEED_TAG_IDS.campaignSpring,
+      companyId: company.id,
+      name: "Kampaň Jaro 2026",
+    }),
+    upsertTag({
+      id: SEED_TAG_IDS.vipFollowUp,
+      companyId: company.id,
+      name: "VIP follow-up",
+    }),
+  ]);
+
+  await Promise.all([
+    upsertContactTag({
+      id: "seed-contact-tag-lead-high-campaign",
+      companyId: company.id,
+      contactId: leadHigh.id,
+      tagId: campaignTag.id,
+    }),
+    upsertContactTag({
+      id: "seed-contact-tag-customer-vip",
+      companyId: company.id,
+      contactId: customer.id,
+      tagId: vipTag.id,
     }),
   ]);
 

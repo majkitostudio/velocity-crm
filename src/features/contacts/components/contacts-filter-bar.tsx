@@ -73,6 +73,7 @@ export function ContactsFilterBar({ view }: ContactsFilterBarProps) {
     priority: view.priorityFilter !== "ALL" ? view.priorityFilter : undefined,
     operator: view.selectedOperatorId ?? undefined,
     importBatch: importBatchParam,
+    tag: view.tagFilter ?? undefined,
   };
 
   return (
@@ -168,6 +169,41 @@ export function ContactsFilterBar({ view }: ContactsFilterBarProps) {
           ))}
         </div>
       </div>
+
+      {view.availableTags.length > 0 ? (
+        <div className="space-y-2">
+          <span className="text-sm font-medium text-zinc-700">Tag</span>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={buildContactsListPath({
+                ...searchListParams,
+                tag: undefined,
+                page: undefined,
+                q: view.searchQuery || undefined,
+              })}
+              className={`rounded-full px-3 py-1 text-xs font-medium ${filterChipClassName(!view.tagFilter)}`}
+              data-testid="contacts-tag-filter-all"
+            >
+              Vše
+            </Link>
+            {view.availableTags.map((tag) => (
+              <Link
+                key={tag.id}
+                href={buildContactsListPath({
+                  ...searchListParams,
+                  tag: tag.id,
+                  page: undefined,
+                  q: view.searchQuery || undefined,
+                })}
+                className={`rounded-full px-3 py-1 text-xs font-medium ${filterChipClassName(view.tagFilter === tag.id)}`}
+                data-testid={`contacts-tag-filter-${tag.id}`}
+              >
+                {tag.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {view.canManageAssignments ? (
         <div className="space-y-2">

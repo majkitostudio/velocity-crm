@@ -44,6 +44,18 @@ const CONTACT_ACTIVITY_KIND_DEFINITIONS: Record<
     aiVisible: true,
     filterToken: "system",
   },
+  [ContactActivityKind.CONTACT_TAG_ADDED]: {
+    label: "Tag přidán",
+    filterGroup: "system",
+    aiVisible: true,
+    filterToken: "system",
+  },
+  [ContactActivityKind.CONTACT_TAG_REMOVED]: {
+    label: "Tag odebrán",
+    filterGroup: "system",
+    aiVisible: true,
+    filterToken: "system",
+  },
   [ContactActivityKind.NOTE_CREATED]: {
     label: "Poznámka",
     filterGroup: "notes",

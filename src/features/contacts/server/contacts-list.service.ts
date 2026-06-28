@@ -11,6 +11,10 @@ import { buildContactsListPath } from "../lib/list-navigation";
 import { parseImportBatchStats } from "../lib/import-batch-stats";
 import { UNASSIGNED_OPERATOR_FILTER } from "../lib/list-labels";
 import {
+  listContactIdsForTagFilter,
+  listTagsForCompanyFilter,
+} from "@/src/features/tags/server/tags.service";
+import {
   CONTACT_LIST_DEFAULT_LIMIT,
   CONTACT_LIST_MIN_SEARCH_LENGTH,
   listContactsQuerySchema,
@@ -78,6 +82,7 @@ function buildListPath(query: ListContactsQuery): string {
     operator: query.operator,
     q: query.q,
     importBatch: query.importBatch,
+    tag: query.tag,
   });
 }
 
@@ -90,6 +95,7 @@ function buildAllContactsPath(query: ListContactsQuery): string {
     priority: query.priority !== "ALL" ? query.priority : undefined,
     operator: query.operator,
     q: query.q,
+    tag: query.tag,
   });
 }
 
@@ -115,6 +121,7 @@ export async function getContactsPageView(
     importBatch: Array.isArray(rawQuery.importBatch)
       ? rawQuery.importBatch[0]
       : rawQuery.importBatch,
+    tag: Array.isArray(rawQuery.tag) ? rawQuery.tag[0] : rawQuery.tag,
   });
 
   if (parsed.importBatch && !canManageCompanyData(currentUser.role)) {
@@ -128,7 +135,7 @@ export async function getContactsPageView(
   };
 
   let importBatchFilter: ImportBatchListFilter | null = null;
-  let importBatchContactIds: string[] | undefined;
+  let scopedContactIds: string[] | undefined;
 
   if (query.importBatch) {
     const batch = await findImportBatchByIdForCompany({
@@ -141,7 +148,7 @@ export async function getContactsPageView(
         batchId: query.importBatch,
         kind: "not_found",
       };
-      importBatchContactIds = [];
+      scopedContactIds = [];
     } else {
       const stats = parseImportBatchStats(batch.stats);
 
@@ -152,7 +159,25 @@ export async function getContactsPageView(
         createdCount: stats?.created ?? 0,
         kind: "active",
       };
-      importBatchContactIds = stats?.createdContactIds ?? [];
+      scopedContactIds = stats?.createdContactIds ?? [];
+    }
+  }
+
+  if (query.tag) {
+    const tagContactIds = await listContactIdsForTagFilter({
+      companyId: currentUser.companyId,
+      tagId: query.tag,
+    });
+
+    if (tagContactIds.length === 0) {
+      scopedContactIds = [];
+    } else if (scopedContactIds) {
+      const tagContactIdSet = new Set(tagContactIds);
+      scopedContactIds = scopedContactIds.filter((contactId) =>
+        tagContactIdSet.has(contactId),
+      );
+    } else {
+      scopedContactIds = tagContactIds;
     }
   }
 
@@ -177,7 +202,7 @@ export async function getContactsPageView(
     source: query.source !== "ALL" ? query.source : undefined,
     priority: query.priority !== "ALL" ? query.priority : undefined,
     searchQuery: searchQuery || undefined,
-    contactIds: importBatchContactIds,
+    contactIds: scopedContactIds,
   };
 
   const [total] = await Promise.all([countContactsForCompany(where)]);
@@ -219,6 +244,7 @@ export async function getContactsPageView(
 
   const listPath = buildListPath({ ...query, page });
   const allContactsPath = buildAllContactsPath(query);
+  const availableTags = await listTagsForCompanyFilter(currentUser.companyId);
   const selectedOperatorId =
     currentUser.role === "OPERATOR"
       ? currentUser.id
@@ -246,5 +272,7 @@ export async function getContactsPageView(
     returnTo: listPath,
     importBatchFilter,
     allContactsPath,
+    tagFilter: query.tag ?? null,
+    availableTags,
   };
 }

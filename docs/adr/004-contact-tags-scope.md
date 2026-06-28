@@ -1,8 +1,9 @@
 # ADR-004: Contact Tags Scope
 
-**Stav:** Otevřené  
+**Stav:** Přijato  
 **Datum:** 2026-06-18  
-**Související:** [ROADMAP.md](../ROADMAP.md) Phase 3, [TARGET_ARCHITECTURE.md](../TARGET_ARCHITECTURE.md)
+**Schváleno:** 2026-06-28  
+**Související:** [ROADMAP.md](../ROADMAP.md) Phase 3, [TARGET_ARCHITECTURE.md](../TARGET_ARCHITECTURE.md), Slice 15
 
 ## Kontext
 
@@ -83,4 +84,12 @@ Doporučuji **Variantu B** pro MVP:
 
 ## Rozhodnutí
 
-_Pending — čeká na společné schválení._
+**Přijata varianta A** — normalizovaný model `Tag` + `ContactTag` (Slice 15).
+
+Schválená pravidla:
+
+- Tag je tenant-scoped entita (`companyId`), unikátní název v rámci firmy
+- Přiřazení/odebrání tagu pouze MANAGER/ADMIN; operátor tagy vidí read-only
+- Activity timeline: `CONTACT_TAG_ADDED`, `CONTACT_TAG_REMOVED`
+- Filtr tagů na `/contacts` přes URL param `tag`
+- CSV import tagů — samostatný follow-up (Slice 15.1)

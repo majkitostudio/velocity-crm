@@ -80,6 +80,11 @@ const orderCreatedDataV1Schema = z.object({
   status: z.string(),
 });
 
+const contactTagChangedDataV1Schema = z.object({
+  tagId: z.string(),
+  tagName: z.string(),
+});
+
 export const contactActivityPayloadSchemasV1 = {
   [ContactActivityKind.CONTACT_CREATED]: payloadEnvelopeSchema.extend({
     data: contactCreatedDataV1Schema,
@@ -92,6 +97,12 @@ export const contactActivityPayloadSchemasV1 = {
   }),
   [ContactActivityKind.CONTACT_UPDATED]: payloadEnvelopeSchema.extend({
     data: contactUpdatedDataV1Schema,
+  }),
+  [ContactActivityKind.CONTACT_TAG_ADDED]: payloadEnvelopeSchema.extend({
+    data: contactTagChangedDataV1Schema,
+  }),
+  [ContactActivityKind.CONTACT_TAG_REMOVED]: payloadEnvelopeSchema.extend({
+    data: contactTagChangedDataV1Schema,
   }),
   [ContactActivityKind.NOTE_CREATED]: payloadEnvelopeSchema.extend({
     data: noteCreatedDataV1Schema,

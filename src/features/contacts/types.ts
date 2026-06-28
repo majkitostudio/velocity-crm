@@ -134,6 +134,8 @@ export type ContactsPageView = {
   returnTo: string;
   importBatchFilter: ImportBatchListFilter | null;
   allContactsPath: string;
+  tagFilter: string | null;
+  availableTags: Array<{ id: string; name: string }>;
 };
 
 export type ContactCallWorkflowContext = {
