@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
-const BUSINESS_DIRS = ["src/features/ai/services/contact-summary"];
+const BUSINESS_DIRS = [
+  "src/features/ai/services/contact-summary",
+  "src/features/ai/services/recommendation",
+];
 
 const FORBIDDEN_PROVIDER_IMPORT_PATTERNS = [
   /llm\/adapters/,
@@ -20,8 +23,7 @@ const FORBIDDEN_PROVIDER_IMPORT_PATTERNS = [
   /llm\/gateway\/llm-gateway(?!-middleware|-service)/,
 ];
 
-const ALLOWED_GATEWAY_ENTRY = /getLlmGateway/;
-const GATEWAY_ENTRY_FILE = "create-contact-summary-pipeline-ports.ts";
+const FORBIDDEN_GATEWAY_ENTRY = /getLlmGateway/;
 
 function collectTypeScriptFiles(directory: string): string[] {
   const entries = readdirSync(directory);
@@ -58,33 +60,23 @@ function assertNoForbiddenProviderImports(filePath: string): void {
   }
 }
 
-function assertGatewayEntryPointDiscipline(root: string, filePath: string): void {
+function assertBusinessLayerDiscipline(root: string, filePath: string): void {
   const relativePath = relative(root, filePath).replaceAll("\\", "/");
-  const fileName = relativePath.split("/").pop() ?? "";
   const content = readFileSync(filePath, "utf8");
   const importLines = content
     .split("\n")
     .filter((line) => line.trim().startsWith("import "));
 
-  const importsGatewayEntry = importLines.some((line) => ALLOWED_GATEWAY_ENTRY.test(line));
-
-  if (fileName === GATEWAY_ENTRY_FILE) {
+  for (const line of importLines) {
     assert.ok(
-      importsGatewayEntry,
-      `${relativePath} must import getLlmGateway() as the sole LLM entry point`,
+      !FORBIDDEN_GATEWAY_ENTRY.test(line),
+      `${relativePath} must not import getLlmGateway(); gateway is wired in createAiPipelinePorts()`,
     );
-    return;
   }
-
-  assert.ok(
-    !importsGatewayEntry,
-    `${relativePath} must not import getLlmGateway(); use port factory wiring only`,
-  );
 }
 
 async function main() {
   const root = join(import.meta.dirname, "..", "..");
-  let gatewayEntryCount = 0;
 
   for (const relativeDir of BUSINESS_DIRS) {
     const absoluteDir = join(root, relativeDir);
@@ -93,20 +85,9 @@ async function main() {
 
     for (const file of files) {
       assertNoForbiddenProviderImports(file);
-      assertGatewayEntryPointDiscipline(root, file);
-
-      const fileName = relative(root, file).replaceAll("\\", "/").split("/").pop() ?? "";
-      if (fileName === GATEWAY_ENTRY_FILE) {
-        gatewayEntryCount += 1;
-      }
+      assertBusinessLayerDiscipline(root, file);
     }
   }
-
-  assert.equal(
-    gatewayEntryCount,
-    1,
-    "Exactly one business composition file must wire getLlmGateway()",
-  );
 
   console.log("ai-business-no-provider-dependency: ok");
 }
