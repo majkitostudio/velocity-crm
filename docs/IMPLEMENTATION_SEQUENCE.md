@@ -419,7 +419,7 @@ ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → Llm
 | 12.8 | **Telemetry** — `AiTaskTelemetryEvent` + pipeline recorder | `metrics/` ✅ (Slice 13.4) |
 | 12.9 | **Testy** — integrační + golden prompt | `tests/integration/` |
 | 12.10 | AiLog migrace (rozšíření) + `AiContextSanitizer` | Prisma, `context/sanitizers/` |
-| 12.11 | První produkční vendor adapter | `llm/adapters/` |
+| 12.11 | První produkční vendor adapter (OpenAI **Responses API**) | `llm/adapters/` — **odloženo**, viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
 
 ### Platform vrstva (Slice 12)
 
@@ -680,7 +680,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | Call workflow outcomes CALL_LATER / SCHEDULE_CALL / FAIL | Chybí dedikovaný E2E; ORDER + next contact pokryt `golden-path.spec.ts` |
 | Neaktivní produkt v objednávce | Business pravidlo v `order-workflow.ts`; bez dedikovaného E2E |
 | Manager assign UI | ✅ `dashboard/manager-assign-lead.spec.ts` |
-| Produkční LLM vendor | OpenAI/Azure adaptéry stub; běží Fake LLM (Slice 12.11) |
+| Produkční LLM vendor | **Odloženo** — Fake LLM pro testy/dev; stub adaptéry; viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
 | Tags u kontaktů | ADR-004 otevřené |
 
 ---

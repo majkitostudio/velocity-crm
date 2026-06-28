@@ -2,6 +2,7 @@ import type { LlmModelRef, LlmTaskProfile } from "../types/llm-model";
 import {
   findLlmModelRegistryEntry,
   getDefaultModelForProfile,
+  listLlmModelRegistryEntries,
 } from "../models/llm-model-registry";
 
 export type ModelPolicyInput = {
@@ -19,17 +20,37 @@ export type ModelPolicyResult = {
   reason: string;
 };
 
+function findStructuredOutputFallback(primary: LlmModelRef): LlmModelRef | null {
+  const sameVendor = listLlmModelRegistryEntries().find(
+    (entry) =>
+      entry.ref.vendor === primary.vendor && entry.capabilities.structuredOutput,
+  );
+
+  if (sameVendor) {
+    return sameVendor.ref;
+  }
+
+  const anyVendor = listLlmModelRegistryEntries().find(
+    (entry) => entry.capabilities.structuredOutput,
+  );
+
+  return anyVendor?.ref ?? null;
+}
+
 export function resolveModelForTask(input: ModelPolicyInput): ModelPolicyResult {
   const primary = getDefaultModelForProfile(input.taskProfile);
   const entry = findLlmModelRegistryEntry(primary);
 
   if (input.hints?.requireStructuredOutput && entry && !entry.capabilities.structuredOutput) {
-    const fallback: LlmModelRef = { vendor: "openai", modelId: "gpt-4o" };
-    return {
-      model: fallback,
-      fallback: primary,
-      reason: "Primary model lacks structured output; using OpenAI fallback",
-    };
+    const fallback = findStructuredOutputFallback(primary);
+
+    if (fallback) {
+      return {
+        model: fallback,
+        fallback: primary,
+        reason: "Primary model lacks structured output; using registry fallback",
+      };
+    }
   }
 
   if (input.hints?.preferLowCost) {

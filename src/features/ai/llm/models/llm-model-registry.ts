@@ -91,6 +91,12 @@ export function getDefaultModelForProfile(profile: LlmTaskProfile): LlmModelRef 
   const fromEnv = readEnvModel(profile);
 
   if (fromEnv) {
+    if (!findLlmModelRegistryEntry(fromEnv)) {
+      throw new Error(
+        `LLM model ${fromEnv.vendor}:${fromEnv.modelId} is not registered for profile ${profile}.`,
+      );
+    }
+
     return fromEnv;
   }
 
@@ -98,5 +104,7 @@ export function getDefaultModelForProfile(profile: LlmTaskProfile): LlmModelRef 
     return { vendor: "fake", modelId: "fake-1" };
   }
 
-  return { vendor: "openai", modelId: "gpt-4o" };
+  throw new Error(
+    `LLM model policy is not configured for profile ${profile}. Set LLM_${profile}_VENDOR and LLM_${profile}_MODEL (see docs/AI_PRODUCTION_LLM.md).`,
+  );
 }
