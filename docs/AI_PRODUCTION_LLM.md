@@ -1,4 +1,4 @@
-# Production AI Providers — vize a scope (Slice 12.11+)
+# Production AI Providers — vize a scope (Slice 18)
 
 **Stav:** **Deferred** — produkční vendor adaptéry nejsou implementovány; plánováno po MVP  
 **Datum:** 2026-06-28  
@@ -62,7 +62,7 @@ flowchart TD
 
 ---
 
-## Cíl Slice 12.11 (až bude implementován)
+## Cíl Slice 18.1 (až bude implementován)
 
 Minimální produkční adaptér, který:
 
@@ -75,12 +75,12 @@ Minimální produkční adaptér, který:
 
 ### Transport: Responses API vs Chat Completions
 
-| Aspekt | Chat Completions (legacy) | Responses API (cíl 12.11) |
+| Aspekt | Chat Completions (legacy) | Responses API (cíl 18.1) |
 |--------|---------------------------|---------------------------|
 | SDK volání | `chat.completions.create` | `client.responses.create` |
 | Vstup | `messages[]` | `input` (items / structured turn) |
 | Structured JSON | `response_format: json_schema` | `text.format` / JSON schema v Responses API |
-| Streaming | `stream: true` | `stream: true` na Responses — **mimo scope 12.11** |
+| Streaming | `stream: true` | `stream: true` na Responses — **mimo scope 18.1** |
 
 Adaptér mapuje existující `LlmMessage[]` z prompt builderu do formátu Responses API. Business vrstva tento překlad nezná.
 
@@ -109,24 +109,24 @@ Přidání nového modelu = nový záznam v registry + env proměnné, **ne** zm
 
 ---
 
-## Production AI Providers — roadmap (post-MVP)
+## Production AI Providers — roadmap (Slice 18)
 
-Milestone **Production AI Providers** (dříve „Production LLM“) — samostatné slice nad hotovou abstrakcí. **Neimplementováno.**
+Milestone **Production AI Providers** — samostatný product slice nad hotovou AI platformou (Phase 1 uzavřena). **Neimplementováno.**
 
-> **Poznámka k číslování:** Slice **14** v produktové řadě = Reporting & Dashboard Analytics (hotovo). Provider adaptéry používají pod-číslování **14.x** v rámci milestone *Production AI Providers*.
+> **Číslování:** Slice **14** = Reporting, **15** = Tags, **16** = Dashboard v2, **17** = Automation. Provider adaptéry jsou výhradně **Slice 18** (pod-slice 18.1–18.4). Historické číslo 12.11 = původní umbrella uvnitř AI platformy — nahrazeno Slice 18.
 
 | Slice | Scope | Transport |
 |-------|--------|-----------|
-| **14.1** | OpenAI Responses Adapter | `client.responses.create`, structured JSON |
-| **14.2** | Azure OpenAI Adapter | Azure-hosted Responses / chat compat dle ADR-012 |
-| **14.3** | Anthropic Adapter | Messages API |
-| **14.4** | Ollama Adapter | Lokální inference |
+| **18.1** | OpenAI Responses Adapter | `client.responses.create`, structured JSON |
+| **18.2** | Azure OpenAI Adapter | Azure-hosted Responses / chat compat dle ADR-012 |
+| **18.3** | Anthropic Adapter | Messages API |
+| **18.4** | Ollama Adapter | Lokální inference |
 
-Slice **12.11** v implementation sequence = umbrella / první krok (OpenAI 14.1). Každý další provider = samostatný reviewable PR.
+První implementace = **18.1** (OpenAI). Každý další provider = samostatný reviewable PR.
 
 ---
 
-## In scope (Slice 12.11 / 14.1 — budoucí implementace)
+## In scope (Slice 18.1 — budoucí implementace)
 
 - OpenAI vendor adaptér přes **Responses API**
 - `complete()` + structured JSON pro Summary a Recommendation
@@ -215,6 +215,6 @@ Bez `LLM_*` env (mimo test) policy **nesmí** tiše fallbackovat na produkční 
 
 | Symptom | Příčina | Řešení |
 |---------|---------|--------|
-| `LlmProviderNotConfiguredError` pro `openai` | Produkční adaptér je stub | Nastav `LLM_*_VENDOR=fake` nebo implementuj Slice 14.1 |
+| `LlmProviderNotConfiguredError` pro `openai` | Produkční adaptér je stub | Nastav `LLM_*_VENDOR=fake` nebo implementuj Slice 18.1 |
 | AI panel negeneruje | Chybí `LLM_*` env | Doplň fake nebo budoucí produkční env |
 | E2E AI testy padají | Fake LLM env | Ověř `playwright.config.ts` webServer env |

@@ -81,6 +81,8 @@ Centrální databáze kontaktů.
 * Tagy
 * Historie aktivit
 
+**Implementation:** Slice 15 ✅
+
 ### Statusy
 
 * LEAD
@@ -231,22 +233,74 @@ Manažerské statistiky.
 
 * Manažerský dashboard
 
+**Implementation:** Slice 14 ✅ — viz [IMPLEMENTATION_SEQUENCE.md](./IMPLEMENTATION_SEQUENCE.md)
+
 ---
 
-# Post-MVP — Production AI Providers
+# Implementation track — další product slices
+
+Product roadmap po uzavření AI platformy (Slice 10–13). Detailní scope v [IMPLEMENTATION_SEQUENCE.md](./IMPLEMENTATION_SEQUENCE.md).
+
+| Slice | Název | Stav |
+|-------|-------|------|
+| 14 | Reporting & Dashboard Analytics | ✅ Hotovo |
+| 15 | Tags & Contact Segmentation | ✅ Hotovo |
+| 16 | Dashboard v2 — denní výsledky, KPI, týmové přehledy | Plánováno |
+| 17 | Automation & Workflows | Plánováno (ADR) |
+| 18 | Production AI Providers | Deferred (planned after MVP) |
+
+---
+
+# Slice 16 — Dashboard v2
+
+### Cíl
+
+Obohatit úvodní obrazovku operátora a manažera o denní KPI a týmové přehledy.
+
+### Úkoly
+
+* Osobní denní výsledky operátora (hovory, objednávky, konverze)
+* Prioritní práce — leady, callbacky
+* Manager: týmový snapshot na `/dashboard` (sdílená logika s `/reports`)
+
+### Výstup
+
+* Akční dashboard místo statického přehledu
+
+---
+
+# Slice 17 — Automation & Workflows
+
+### Cíl
+
+Pravidla a automatizace nad call workflow.
+
+### Úkoly
+
+* Callback připomínky
+* Automatické přechody (např. FAIL threshold)
+* Rozšíření pravidel přiřazení leadů
+
+### Výstup
+
+* Méně manuální operátorské práce, konzistentní workflow
+
+**Předpoklad:** ADR pro scope automatizace
+
+---
+
+# Slice 18 — Production AI Providers
 
 **Stav:** Deferred (planned after MVP) — viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md)
 
-Provider abstraction je hotová; produkční adaptéry vzniknou jako samostatné implementace `LlmVendorAdapter`. Vývoj a CI dnes používají **Fake LLM** jako oficiální development provider.
+Provider abstraction je hotová (AI Platform Phase 1). Produkční adaptéry vzniknou jako samostatné implementace `LlmVendorAdapter`. Vývoj a CI používají **Fake LLM** jako oficiální development provider.
 
-| Slice | Provider |
-|-------|----------|
-| 14.1 | OpenAI Responses Adapter |
-| 14.2 | Azure OpenAI Adapter |
-| 14.3 | Anthropic Adapter |
-| 14.4 | Ollama Adapter |
-
-> Číslování 14.x se vztahuje k milestone *Production AI Providers*, ne k produktovému Slice 14 (Reporting).
+| Pod-slice | Provider |
+|-----------|----------|
+| 18.1 | OpenAI Responses Adapter |
+| 18.2 | Azure OpenAI Adapter |
+| 18.3 | Anthropic Adapter |
+| 18.4 | Ollama Adapter |
 
 ---
 

@@ -10,7 +10,7 @@ AI-first CRM for call centers. Internal V1 with multi-tenant-ready architecture.
 | [docs/TARGET_ARCHITECTURE.md](./docs/TARGET_ARCHITECTURE.md) | Layered architecture standard |
 | [docs/WORKFLOW_RULES.md](./docs/WORKFLOW_RULES.md) | Approved operator & call workflow rules |
 | [docs/IMPLEMENTATION_SEQUENCE.md](./docs/IMPLEMENTATION_SEQUENCE.md) | Vertical implementation slices |
-| [docs/AI_PRODUCTION_LLM.md](./docs/AI_PRODUCTION_LLM.md) | Production AI Providers vision (Slice 12.11+, deferred) |
+| [docs/AI_PRODUCTION_LLM.md](./docs/AI_PRODUCTION_LLM.md) | Production AI Providers (Slice 18, deferred) |
 | [docs/adr/](./docs/adr/) | Architecture decision records |
 
 ## Tech stack

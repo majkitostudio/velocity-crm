@@ -35,7 +35,25 @@ flowchart TD
   S10 --> S105[Slice 10.5: Unified Contact Context]
   S105 --> S11[Slice 11: LLM Adapter]
   S11 --> S12[Slice 12: AI Services and UI]
+  S12 --> S13[Slice 13: AI Recommendation]
+  S13 --> S14[Slice 14: Reporting]
+  S14 --> S15[Slice 15: Tags]
+  S15 --> S16[Slice 16: Dashboard v2]
+  S16 --> S17[Slice 17: Automation]
+  S17 --> S18[Slice 18: Production AI Providers]
 ```
+
+### Product track (slices 14–18)
+
+| Slice | Název | Stav |
+|-------|-------|------|
+| 14 | Reporting & Dashboard Analytics | ✅ Hotovo |
+| 15 | Tags & Contact Segmentation | ✅ Hotovo (CSV tagy = 15.1 open) |
+| 16 | Dashboard v2 — denní výsledky, KPI, týmové přehledy | Plánováno |
+| 17 | Automation & Workflows | Plánováno (ADR gate) |
+| 18 | Production AI Providers (OpenAI, Azure, Anthropic, Ollama) | Deferred (planned after MVP) |
+
+AI platforma (Slice 10–13) je **uzavřená** — viz sekce [AI Platform — Phase 1](#ai-platform--phase-1-uzavřeno). Produkční LLM transport je výhradně **Slice 18**, ne 12.11.
 
 ---
 
@@ -419,20 +437,9 @@ ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → Llm
 | 12.8 | **Telemetry** — `AiTaskTelemetryEvent` + pipeline recorder | `metrics/` ✅ (Slice 13.4) |
 | 12.9 | **Testy** — integrační + golden prompt | `tests/integration/` |
 | 12.10 | AiLog migrace (rozšíření) + `AiContextSanitizer` | Prisma, `context/sanitizers/` |
-| 12.11 | První produkční vendor adapter (OpenAI **Responses API**) | `llm/adapters/` — **Deferred** (planned after MVP), viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
+| 12.11 | První produkční vendor adapter | → přesunuto na **Slice 18** (dříve umbrella 12.11), viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
 
-### Slice 12.11 — Production AI Providers (Deferred)
-
-**Stav:** **Deferred** — plánováno po MVP. **Není zrušeno.**
-
-| Pod-slice | Provider | Stav |
-|-----------|----------|------|
-| 14.1 | OpenAI Responses Adapter | Deferred |
-| 14.2 | Azure OpenAI Adapter | Deferred |
-| 14.3 | Anthropic Adapter | Deferred |
-| 14.4 | Ollama Adapter | Deferred |
-
-Umbrella slice 12.11 = první implementace (14.1). Každý provider = samostatný PR. Viz milestone **Production AI Providers** v [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md).
+> **12.11 → 18:** Původní číslo 12.11 označovalo první produkční adaptér uvnitř AI platformy. Produktová roadmapa nyní vyčleňuje providery do samostatného **Slice 18**, aby nedocházelo ke kolizi s produktovými slice 14–17.
 
 ### Platform vrstva (Slice 12)
 
@@ -615,6 +622,24 @@ Prompt Metrics        → success rate, latency per prompt version
 
 ---
 
+## AI Platform — Phase 1 (uzavřeno)
+
+**Stav:** Dokončeno (Slice 10 → 13)
+
+První etapa AI platformy je kompletní. Summary a Recommendation běží nad **Fake LLM** (oficiální development provider). Produkční vendor adaptéry jsou **Slice 18** — deferred, plánováno po product slice 16–17.
+
+| Vrstva | Slice | Stav |
+|--------|-------|------|
+| Contact AI Context + Unified Context Platform | 10, 10.5 | ✅ |
+| LLM Adapter, Gateway, Registry, Policy | 11 | ✅ |
+| AI Service Pipeline + Contact Summary | 12 | ✅ |
+| Recommendation + platform generalization + telemetry | 13 | ✅ |
+| Production AI Providers | **18** (historicky 12.11) | Deferred |
+
+**Co dál:** Obchodní hodnota před placenou inference — Slice 16 (Dashboard v2) → 17 (Automation) → 18 (Providers). Viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md).
+
+---
+
 ## Slice 10.5: Unified Contact Context Platform
 
 **Cíl:** Sjednotit `getContactDetailView` a `buildContactAiContext` do jedné datové platformy (`ContactContext`) se sub-section granularitou.
@@ -719,6 +744,89 @@ reports/page.tsx → getReportingDashboardView → reporting.service → reporti
 
 ---
 
+## Slice 16: Dashboard v2
+
+**Cíl:** Obohatit `/dashboard` o denní výsledky, osobní KPI operátora a týmové přehledy pro manažera — bez duplikace reporting logiky.
+
+**Stav:** Plánováno
+
+### Scope (návrh)
+
+| Role | Cíl |
+|------|-----|
+| **OPERATOR** | Dnešní leady, callbacky, osobní denní KPI (hovory, objednávky, konverze) |
+| **MANAGER / ADMIN** | Zkrácený týmový přehled na dashboardu — sdílená data s `/reports` přes `reporting.service`, ne kopie dotazů |
+
+### Architektonické pravidla
+
+- Reporting query logika zůstává v `src/features/reporting/` — dashboard pouze komponuje view modely
+- Tenant-scoped, role guards jako u Slice 14
+- Žádná závislost dashboardu na konkrétním LLM provideru
+
+### Definition of Done (návrh)
+
+- [ ] Operátor vidí denní KPI a prioritní práci na `/dashboard`
+- [ ] Manager vidí týmový snapshot (bez nutnosti otevírat `/reports` pro základní přehled)
+- [ ] Sdílené KPI komponenty mezi dashboardem a reportingem kde to dává smysl
+- [ ] Integrační test tenant isolation + E2E pro obě role
+
+---
+
+## Slice 17: Automation & Workflows
+
+**Cíl:** Pravidla a automatizace nad existujícím call workflow — callback remindery, eskalace FAIL, přiřazovací pravidla (scope dle ADR).
+
+**Stav:** Plánováno — **ADR gate před implementací**
+
+### Předpoklad
+
+- ADR pro automation scope (co je in/out pro MVP automatizace)
+- Stávající workflow v `call-workflow`, callback služby a ADR-002/003 jako základ
+
+### Scope (návrh — k potvrzení v ADR)
+
+- Notifikace / připomínky callbacků
+- Automatické přechody dle pravidel (např. FAIL threshold → LOST dle ADR-003)
+- Manager pravidla přiřazení leadů (rozšíření existujícího assign flow)
+
+### Co Slice 17 neřeší (návrh)
+
+- Obecný workflow engine / visual builder
+- Externí integrace (email, SMS) — Roadmap Phase 14 Integrace
+
+---
+
+## Slice 18: Production AI Providers
+
+**Cíl:** Produkční `LlmVendorAdapter` implementace nad hotovou abstrakcí — bez změn business služeb Summary/Recommendation.
+
+**Stav:** **Deferred** — plánováno po MVP. **Není zrušeno.**
+
+**Dokumentace:** [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md)
+
+| Pod-slice | Provider | Transport | Stav |
+|-----------|----------|-----------|------|
+| 18.1 | OpenAI Responses Adapter | `client.responses.create`, structured JSON | Deferred |
+| 18.2 | Azure OpenAI Adapter | Azure-hosted Responses / compat dle ADR-012 | Deferred |
+| 18.3 | Anthropic Adapter | Messages API | Deferred |
+| 18.4 | Ollama Adapter | Lokální inference | Deferred |
+
+### Pravidla
+
+- Každý provider = samostatný reviewable PR
+- Fake LLM zůstává plnohodnotným development providerem (dev, CI, Playwright)
+- Model vždy z registry + policy — adaptér nevolí `modelId`
+- CI bez live API a bez produkčních klíčů
+
+### Definition of Done — Slice 18.1 (OpenAI, až implementace)
+
+- [ ] `openAiVendorAdapter` volá Responses API při `OPENAI_API_KEY`
+- [ ] Summary + Recommendation projdou `completeStructured` bez změn business služeb
+- [ ] Integrační testy adaptéru (mock SDK)
+- [ ] Fake LLM zůstává default pro dev/CI
+
+---
+
 ## E2E a integrační pokrytí (audit, sync 2026-06-25)
 
 Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouží jako rychlá kontrola mezery mezi kódem a dokumentací.
@@ -814,7 +922,10 @@ Před merge každého slice ověřit:
 | Phase 10 | Slice 11 (LLM Adapter) |
 | Phase 11 | Slice 12 (AI Services / UI) |
 | Phase 12 | Slice 14 (Reporting) |
-| Post-MVP | Slice 12.11 / Production AI Providers 14.1–14.4 (deferred) |
+| Phase 3 (tags) | Slice 15 (Tags) |
+| — | Slice 16 (Dashboard v2) — plánováno |
+| — | Slice 17 (Automation) — plánováno |
+| Post-MVP | Slice 18 / Production AI Providers 18.1–18.4 (deferred) |
 | Phase 11 | Po MVP (SaaS foundation) |
 
 ---
