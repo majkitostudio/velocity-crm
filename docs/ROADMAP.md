@@ -252,8 +252,8 @@ Product roadmap po uzavření AI platformy (Slice 10–13). Detailní scope v [I
 
 | # | Položka | Stav |
 |---|---------|------|
-| **1** | E2E pro `CALL_LATER` / `SCHEDULE_CALL` / `FAIL` | **Další** |
-| **2** | Slice 15.1 — CSV import tagů | Plánováno |
+| **1** | E2E pro `CALL_LATER` / `SCHEDULE_CALL` / `FAIL` | ✅ Hotovo |
+| **2** | Slice 15.1 — CSV import tagů | **Další** |
 | **3** | Slice 16 — Dashboard v2 (kompletní redesign) | Plánováno — návrh TBD |
 | **4** | ADR pro Slice 17 (Automation) | Plánováno |
 | **5** | Slice 17 — Automation & Workflows | Plánováno |
@@ -270,6 +270,8 @@ Playwright pokrytí výsledků hovoru `CALL_LATER`, `SCHEDULE_CALL` a `FAIL` (dn
 ### Výstup
 
 * Jistota, že celý call workflow je pokrytý před dalšími feature slice
+
+**Implementation:** ✅ `tests/e2e/workflow/call-outcomes.spec.ts`
 
 ---
 

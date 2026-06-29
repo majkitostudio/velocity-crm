@@ -57,8 +57,8 @@ flowchart TD
 
 | # | Položka | Typ | Stav |
 |---|---------|-----|------|
-| **1** | E2E pro `CALL_LATER` / `SCHEDULE_CALL` / `FAIL` | Quality gate | **Další** |
-| **2** | Slice 15.1 — CSV import tagů | Feature follow-up | Plánováno |
+| **1** | E2E pro `CALL_LATER` / `SCHEDULE_CALL` / `FAIL` | Quality gate | ✅ Hotovo |
+| **2** | Slice 15.1 — CSV import tagů | Feature follow-up | **Další** |
 | **3** | Slice 16 — Dashboard v2 (kompletní redesign) | Feature | Plánováno — produktový návrh TBD |
 | **4** | ADR pro Slice 17 (Automation scope) | ADR gate | Plánováno |
 | **5** | Slice 17 — Automation & Workflows | Feature | Plánováno |
@@ -758,7 +758,7 @@ reports/page.tsx → getReportingDashboardView → reporting.service → reporti
 
 ## Call outcome E2E (quality gate)
 
-**Pořadí:** **#1** — další úkol po Slice 15  
+**Pořadí:** **#1** — ✅ hotovo  
 **Cíl:** Playwright pokrytí zbývajících výsledků hovoru dle ADR-002 a ADR-003. Dnes je E2E pokrytý pouze `ORDER` (`golden-path.spec.ts`).
 
 ### Scope
@@ -776,9 +776,10 @@ reports/page.tsx → getReportingDashboardView → reporting.service → reporti
 
 ### Definition of Done
 
-- [ ] E2E pro každý ze tří outcomes projde v CI (Fake LLM env beze změny)
-- [ ] Žádná duplikace business logiky v testech — assertuje UI + DB stav přes existující workflow
-- [ ] Audit tabulka „Známé mezery“ aktualizována
+- [x] E2E pro každý ze tří outcomes projde v CI (Fake LLM env beze změny)
+- [x] Žádná duplikace business logiky v testech — assertuje UI + activity/callback stav
+- [x] `tests/e2e/workflow/call-outcomes.spec.ts` + helper `tests/e2e/helpers/call-workflow.ts`
+- [x] Audit tabulka „Známé mezery“ aktualizována
 
 ---
 
@@ -926,6 +927,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | `contacts/contact-recommendation-flag-disabled.spec.ts` | Feature flag vypnutý |
 | `callbacks/schedule-from-contact.spec.ts` | Ruční plánování callbacku z detailu |
 | `orders/golden-path.spec.ts` | Dashboard → call → ORDER → Další kontakt (operátorský golden path) |
+| `workflow/call-outcomes.spec.ts` | CALL_LATER, SCHEDULE_CALL, FAIL (+ FAIL threshold → LOST) |
 | `dashboard/manager-assign-lead.spec.ts` | Manager assign nepřiřazeného leadu operátorovi |
 | `reports/manager-reports.spec.ts` | Manažerské přehledy, přepínání období, operator bez nav |
 
@@ -944,7 +946,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 
 | Mezera | Poznámka |
 |--------|----------|
-| Call workflow outcomes CALL_LATER / SCHEDULE_CALL / FAIL | **Další (#1)** — dedikovaný E2E; ORDER pokryt `golden-path.spec.ts` |
+| Call workflow outcomes CALL_LATER / SCHEDULE_CALL / FAIL | ✅ `workflow/call-outcomes.spec.ts` |
 | Neaktivní produkt v objednávce | Business pravidlo v `order-workflow.ts`; bez dedikovaného E2E |
 | Manager assign UI | ✅ `dashboard/manager-assign-lead.spec.ts` |
 | Produkční AI Providers | **Deferred** (planned after MVP) — Fake LLM = oficiální dev provider; viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
@@ -1003,8 +1005,8 @@ Před merge každého slice ověřit:
 | Phase 11 | Slice 12 (AI Services / UI) |
 | Phase 12 | Slice 14 (Reporting) |
 | Phase 3 (tags) | Slice 15 (Tags) |
-| — | E2E call outcomes (#1) — další |
-| — | Slice 15.1 (CSV tagy) |
+| — | E2E call outcomes (#1) — ✅ |
+| — | Slice 15.1 (CSV tagy) — další |
 | — | Slice 16 (Dashboard v2 redesign) |
 | — | ADR + Slice 17 (Automation) |
 | Post-MVP | Slice 18 / Production AI Providers 18.1–18.4 (deferred) |
