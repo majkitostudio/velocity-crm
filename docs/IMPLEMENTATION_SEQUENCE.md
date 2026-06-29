@@ -209,7 +209,7 @@ ContactPage → completeCallAction → CallWorkflow → services/repos → trans
 - [x] `ORDER` tlačítko a dokončení — implementováno ve Slice 6 (`tests/e2e/orders/golden-path.spec.ts`)
 - [x] Callback outcomes vytvoří callback dle schváleného ADR
 - [x] Navigace „Back to queue" po dokončení hovoru
-- [ ] Integrační test: všechny call outcomes v transakci (E2E pokrývá ORDER; CALL_LATER / SCHEDULE_CALL / FAIL — viz audit níže)
+- [ ] Integrační test: všechny call outcomes v transakci (E2E: ORDER `golden-path.spec.ts`; CALL_LATER / SCHEDULE_CALL / FAIL `call-outcomes.spec.ts`)
 
 ---
 
