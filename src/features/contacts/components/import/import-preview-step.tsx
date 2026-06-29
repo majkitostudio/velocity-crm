@@ -5,6 +5,7 @@ import type {
   ImportPreviewSections,
   PreviewRow,
 } from "../../lib/import-types";
+import { formatImportTagPreview } from "../../lib/parse-import-tags";
 
 type ImportPreviewStepProps = {
   preview: ImportPreviewResult & { sections: ImportPreviewSections };
@@ -32,6 +33,8 @@ function PreviewTable({
     error: "border-red-200 bg-red-50",
   } as const;
 
+  const showTags = rows.some((row) => row.preview.tagNames.length > 0);
+
   return (
     <section
       className={`rounded-xl border p-4 ${toneClasses[tone]}`}
@@ -55,6 +58,7 @@ function PreviewTable({
                 <th className="px-2 py-1 font-medium">Jméno</th>
                 <th className="px-2 py-1 font-medium">Telefon</th>
                 <th className="px-2 py-1 font-medium">E-mail</th>
+                {showTags ? <th className="px-2 py-1 font-medium">Tagy</th> : null}
                 <th className="px-2 py-1 font-medium">Poznámka</th>
               </tr>
             </thead>
@@ -65,6 +69,9 @@ function PreviewTable({
                   <td className="px-2 py-1">{row.preview.name}</td>
                   <td className="px-2 py-1 font-mono">{row.preview.phone ?? "—"}</td>
                   <td className="px-2 py-1">{row.preview.email ?? "—"}</td>
+                  {showTags ? (
+                    <td className="px-2 py-1">{formatImportTagPreview(row.preview.tagNames)}</td>
+                  ) : null}
                   <td className="px-2 py-1">{row.message ?? "—"}</td>
                 </tr>
               ))}

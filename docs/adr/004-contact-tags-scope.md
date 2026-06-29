@@ -92,4 +92,4 @@ Schválená pravidla:
 - Přiřazení/odebrání tagu pouze MANAGER/ADMIN; operátor tagy vidí read-only
 - Activity timeline: `CONTACT_TAG_ADDED`, `CONTACT_TAG_REMOVED`
 - Filtr tagů na `/contacts` přes URL param `tag`
-- CSV import tagů — samostatný follow-up (Slice 15.1)
+- CSV import tagů — ✅ Slice 15.1

@@ -14,6 +14,7 @@ export const CONTACT_FIELD_KEYS = [
   "city",
   "zipCode",
   "country",
+  "tags",
 ] as const;
 
 export type ContactFieldKey = (typeof CONTACT_FIELD_KEYS)[number];
@@ -119,6 +120,16 @@ const CONTACT_FIELD_DEFINITIONS: Record<ContactFieldKey, ContactFieldDefinition>
     aiVisible: false,
     aliases: ["country", "zeme", "země", "state"],
     importOrder: 90,
+  },
+  tags: {
+    label: "Tagy",
+    requiredOnImport: false,
+    exportable: false,
+    searchable: false,
+    filterable: false,
+    aiVisible: false,
+    aliases: ["tags", "tag", "stitky", "štítky", "labels", "campaign", "kampaň", "kampan"],
+    importOrder: 95,
   },
 };
 

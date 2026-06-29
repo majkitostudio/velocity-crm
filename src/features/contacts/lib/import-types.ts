@@ -24,6 +24,7 @@ export type MappedContactDraft = {
   city?: string;
   zipCode?: string;
   country?: string;
+  tags?: string;
 };
 
 export type NormalizedContactDraft = {
@@ -37,6 +38,7 @@ export type NormalizedContactDraft = {
   city: string | null;
   zipCode: string | null;
   country: string | null;
+  tagNames: string[];
 };
 
 export type PreviewRowStatus = "ready" | "skip" | "error";
@@ -54,6 +56,7 @@ export type PreviewRow = {
     name: string;
     phone: string | null;
     email: string | null;
+    tagNames: string[];
   };
 };
 

@@ -58,8 +58,8 @@ flowchart TD
 | # | Položka | Typ | Stav |
 |---|---------|-----|------|
 | **1** | E2E pro `CALL_LATER` / `SCHEDULE_CALL` / `FAIL` | Quality gate | ✅ Hotovo |
-| **2** | Slice 15.1 — CSV import tagů | Feature follow-up | **Další** |
-| **3** | Slice 16 — Dashboard v2 (kompletní redesign) | Feature | Plánováno — produktový návrh TBD |
+| **2** | Slice 15.1 — CSV import tagů | Feature follow-up | ✅ Hotovo |
+| **3** | Slice 16 — Dashboard v2 (kompletní redesign) | Feature | **Další** — produktový návrh TBD |
 | **4** | ADR pro Slice 17 (Automation scope) | ADR gate | Plánováno |
 | **5** | Slice 17 — Automation & Workflows | Feature | Plánováno |
 | **6** | Slice 18 — Production AI Providers | Deferred | Planned after MVP |
@@ -785,7 +785,7 @@ reports/page.tsx → getReportingDashboardView → reporting.service → reporti
 
 ## Slice 15.1: CSV import tagů
 
-**Pořadí:** **#2**  
+**Pořadí:** **#2** — ✅ hotovo  
 **Cíl:** Import tagů z CSV sloupce při hromadném importu kontaktů (follow-up k Slice 15).
 
 **ADR:** Rozšíření [ADR-004](./adr/004-contact-tags-scope.md) — tagy z importu
@@ -801,10 +801,11 @@ reports/page.tsx → getReportingDashboardView → reporting.service → reporti
 
 ### Definition of Done
 
-- [ ] Manager importuje kontakty s tagy z CSV
-- [ ] Duplicitní tag jména v rámci tenantu — konzistentní chování (reuse existujícího `Tag`)
-- [ ] Tenant isolation zachována
-- [ ] E2E rozšíření import-csv spec
+- [x] Manager importuje kontakty s tagy z CSV
+- [x] Duplicitní tag jména v rámci tenantu — reuse existujícího `Tag` (case-insensitive)
+- [x] Tenant isolation zachována
+- [x] E2E rozšíření `import-csv.spec.ts` + integrační test `import-tags.test.ts`
+- [x] Preview zobrazuje sloupec Tagy při namapovaném sloupci
 
 ---
 
@@ -919,7 +920,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | `auth/auth-roles.spec.ts` | Role admin / manager / operator |
 | `contacts/contact-tags.spec.ts` | Tag assign na detailu + filtr seznamu |
 | `contacts/create-contact.spec.ts` | Vytvoření kontaktu |
-| `contacts/import-csv.spec.ts` | CSV import (manager), deduplikace, validace |
+| `contacts/import-csv.spec.ts` | CSV import (manager), deduplikace, validace, **tagy z CSV** |
 | `contacts/activity-timeline.spec.ts` | Activity feed na detailu |
 | `contacts/activity-tenant-isolation.spec.ts` | Cross-tenant 404 |
 | `contacts/contact-summary.spec.ts` | AI Summary panel (fake LLM) |
@@ -950,7 +951,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | Neaktivní produkt v objednávce | Business pravidlo v `order-workflow.ts`; bez dedikovaného E2E |
 | Manager assign UI | ✅ `dashboard/manager-assign-lead.spec.ts` |
 | Produkční AI Providers | **Deferred** (planned after MVP) — Fake LLM = oficiální dev provider; viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
-| Tags u kontaktů | ✅ Slice 15 (ADR-004); CSV tagy → Slice 15.1 (#2) |
+| Tags u kontaktů | ✅ Slice 15 + 15.1 (CSV import tagů) |
 
 ---
 

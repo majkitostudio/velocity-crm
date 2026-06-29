@@ -15,6 +15,7 @@ import { prisma } from "@/src/server/db";
 
 import { buildContactCreatedPayload } from "../../lib/activity-payload-builders";
 import { recordContactBusinessEvent } from "../record-contact-business-event";
+import { assignImportedContactTags } from "./import-contact-tags";
 import type { ImportBatchStats, NormalizedContactDraft } from "./import.types";
 
 export async function createImportBatchRecord(input: {
@@ -101,6 +102,14 @@ export async function createImportedContactsChunk(input: {
       });
 
       createdIds.push(contact.id);
+
+      await assignImportedContactTags(transaction, {
+        companyId: input.companyId,
+        contactId: contact.id,
+        actorUserId: input.actorUserId,
+        tagNames: draft.tagNames,
+        correlationId: input.correlationId,
+      });
 
       await recordContactBusinessEvent({
         tx: transaction,

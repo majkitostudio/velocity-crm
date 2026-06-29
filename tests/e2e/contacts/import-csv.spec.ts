@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { loginAs } from "../helpers/auth";
+import { loginAs, waitForContactDetail } from "../helpers/auth";
 
 function uniqueImportSuffix(): string {
   return Date.now().toString().slice(-7);
@@ -61,6 +61,51 @@ async function runImportWizard(
   await expect(page.getByTestId("import-result-panel")).toBeVisible({ timeout: 60_000 });
 }
 
+async function runTaggedImportWizard(
+  page: import("@playwright/test").Page,
+  importFilePath: string,
+) {
+  await page.goto("/contacts/import?returnTo=%2Fcontacts%3Fstatus%3DLEAD");
+  await expect(page.getByTestId("contacts-import-page")).toBeVisible();
+
+  await page.getByTestId("import-upload-input").setInputFiles(importFilePath);
+  await expect(page.getByTestId("import-mapping-form")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("import-mapping-tags")).toHaveValue("tags");
+
+  await page.getByTestId("import-mapping-continue-button").click();
+  await expect(page.getByTestId("import-preview-summary")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("import-preview-ready")).toContainText("VIP");
+
+  const continueButton = page.getByTestId("import-preview-continue-button");
+  await continueButton.click();
+  await expect(page.getByTestId("import-confirm-checkbox")).toBeVisible();
+
+  await page.getByTestId("import-confirm-checkbox").check();
+  await page.getByTestId("import-execute-button").click();
+
+  await expect(page.getByTestId("import-result-panel")).toBeVisible({ timeout: 60_000 });
+}
+
+function buildTaggedImportCsv(suffix: string): {
+  filePath: string;
+  leadName: string;
+  tagName: string;
+} {
+  const phone = `+420604${suffix.padStart(7, "0").slice(0, 7)}`;
+  const leadName = `E2E Tagged Lead ${suffix}`;
+  const tagName = `E2E Import Tag ${suffix}`;
+
+  const content = [
+    "name,phone,tags",
+    `${leadName},${phone},"${tagName};VIP"`,
+  ].join("\n");
+
+  const filePath = path.join(os.tmpdir(), `import-tags-${suffix}.csv`);
+  fs.writeFileSync(filePath, content, "utf8");
+
+  return { filePath, leadName, tagName };
+}
+
 test.describe("csv contact import", () => {
   test.describe("manager flow", () => {
     test.use({ storageState: { cookies: [], origins: [] } });
@@ -86,6 +131,30 @@ test.describe("csv contact import", () => {
       await expect(
         page.getByTestId("contact-list-link").filter({ hasText: lead1Name }),
       ).toBeVisible();
+    });
+
+    test("manager can import contacts with tags from csv", async ({ page }) => {
+      const suffix = uniqueImportSuffix();
+      const { filePath, leadName, tagName } = buildTaggedImportCsv(suffix);
+
+      await loginAs(page, "manager");
+      await runTaggedImportWizard(page, filePath);
+
+      await expect(page.getByTestId("import-result-created")).toHaveText("1");
+
+      await page.getByTestId("import-result-view-contacts-button").click();
+      await expect(page.getByTestId("contacts-list")).toBeVisible();
+      await page.getByTestId("contact-list-link").filter({ hasText: leadName }).click();
+      await waitForContactDetail(page);
+
+      await expect(page.getByTestId("contact-tags-list")).toContainText(tagName);
+      await expect(page.getByTestId("contact-tags-list")).toContainText("VIP");
+      await expect(page.getByTestId("activity-contact_tag_added-item").first()).toBeVisible();
+
+      await page.goto("/contacts");
+      await page.getByText(tagName).click();
+      await expect(page.getByTestId("contact-list-link")).toHaveCount(1);
+      await expect(page.getByTestId("contact-list-link")).toContainText(leadName);
     });
 
     test("shows empty state for unknown import batch", async ({ page }) => {

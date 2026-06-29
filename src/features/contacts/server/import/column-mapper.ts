@@ -31,5 +31,6 @@ export function mapRowsToDrafts(input: {
     city: readMappedValue(row, input.mapping, "city"),
     zipCode: readMappedValue(row, input.mapping, "zipCode"),
     country: readMappedValue(row, input.mapping, "country"),
+    tags: readMappedValue(row, input.mapping, "tags"),
   }));
 }

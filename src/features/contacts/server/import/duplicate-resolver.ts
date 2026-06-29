@@ -28,7 +28,7 @@ export function resolveImportDuplicates(input: {
         status: "error",
         reason: "validation_error",
         message: row.message,
-        preview: { name: "", phone: null, email: null },
+        preview: { name: "", phone: null, email: null, tagNames: [] },
       });
       continue;
     }
@@ -38,6 +38,7 @@ export function resolveImportDuplicates(input: {
       name: draft.name,
       phone: draft.phone,
       email: draft.email,
+      tagNames: draft.tagNames,
     };
 
     if (input.existing.phones.has(draft.phone)) {

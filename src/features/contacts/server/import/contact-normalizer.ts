@@ -11,6 +11,7 @@ import {
   validateContactPhone,
   validateOptionalContactEmail,
 } from "../../lib/contact-field-validation";
+import { parseImportTagCell } from "../../lib/parse-import-tags";
 import type { MappedContactDraft, NormalizedContactDraft } from "./import.types";
 
 export type NormalizedDraftResult =
@@ -53,6 +54,11 @@ export function normalizeContactDraft(
     return { ok: false, message: statusResult.message };
   }
 
+  const tagsResult = parseImportTagCell(draft.tags);
+  if (!tagsResult.ok) {
+    return { ok: false, message: tagsResult.message };
+  }
+
   return {
     ok: true,
     draft: {
@@ -66,6 +72,7 @@ export function normalizeContactDraft(
       city: normalizeOptionalText(draft.city),
       zipCode: normalizeOptionalText(draft.zipCode),
       country: normalizeOptionalText(draft.country),
+      tagNames: tagsResult.tagNames,
     },
   };
 }

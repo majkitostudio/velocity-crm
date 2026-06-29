@@ -33,7 +33,8 @@ export function ImportMappingStep({
       <div>
         <h2 className="text-lg font-semibold text-zinc-900">Mapování sloupců</h2>
         <p className="mt-1 text-sm text-zinc-600">
-          Přiřaďte sloupce CSV polím CRM. Nalezeno {totalRows.toLocaleString("cs-CZ")} řádků.
+          Přiřaďte sloupce CSV polím CRM. Volitelný sloupec Tagy podporuje více hodnot oddělených
+          čárkou nebo středníkem. Nalezeno {totalRows.toLocaleString("cs-CZ")} řádků.
         </p>
       </div>
 

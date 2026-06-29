@@ -5,6 +5,10 @@ import { prisma } from "@/src/server/db";
 
 type TransactionClient = Prisma.TransactionClient;
 
+function getClient(tx?: TransactionClient) {
+  return tx ?? prisma;
+}
+
 export async function findTagsForCompany(companyId: string) {
   return prisma.tag.findMany({
     where: { companyId },
@@ -54,11 +58,14 @@ export async function findTagByIdForCompany(input: {
   });
 }
 
-export async function findTagByNameForCompany(input: {
-  companyId: string;
-  name: string;
-}) {
-  return prisma.tag.findFirst({
+export async function findTagByNameForCompany(
+  input: {
+    companyId: string;
+    name: string;
+  },
+  tx?: TransactionClient,
+) {
+  return getClient(tx).tag.findFirst({
     where: {
       companyId: input.companyId,
       name: {
