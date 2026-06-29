@@ -233,6 +233,23 @@ Manažerské statistiky.
 
 ---
 
+# Post-MVP — Production AI Providers
+
+**Stav:** Deferred (planned after MVP) — viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md)
+
+Provider abstraction je hotová; produkční adaptéry vzniknou jako samostatné implementace `LlmVendorAdapter`. Vývoj a CI dnes používají **Fake LLM** jako oficiální development provider.
+
+| Slice | Provider |
+|-------|----------|
+| 14.1 | OpenAI Responses Adapter |
+| 14.2 | Azure OpenAI Adapter |
+| 14.3 | Anthropic Adapter |
+| 14.4 | Ollama Adapter |
+
+> Číslování 14.x se vztahuje k milestone *Production AI Providers*, ne k produktovému Slice 14 (Reporting).
+
+---
+
 # Fáze 11 — SaaS Foundation
 
 ### Cíl

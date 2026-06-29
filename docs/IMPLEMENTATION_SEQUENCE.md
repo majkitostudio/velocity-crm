@@ -419,7 +419,20 @@ ContactAiContext → Prompt Builder → LlmRequestBuilder → LlmGateway → Llm
 | 12.8 | **Telemetry** — `AiTaskTelemetryEvent` + pipeline recorder | `metrics/` ✅ (Slice 13.4) |
 | 12.9 | **Testy** — integrační + golden prompt | `tests/integration/` |
 | 12.10 | AiLog migrace (rozšíření) + `AiContextSanitizer` | Prisma, `context/sanitizers/` |
-| 12.11 | První produkční vendor adapter (OpenAI **Responses API**) | `llm/adapters/` — **odloženo**, viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
+| 12.11 | První produkční vendor adapter (OpenAI **Responses API**) | `llm/adapters/` — **Deferred** (planned after MVP), viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
+
+### Slice 12.11 — Production AI Providers (Deferred)
+
+**Stav:** **Deferred** — plánováno po MVP. **Není zrušeno.**
+
+| Pod-slice | Provider | Stav |
+|-----------|----------|------|
+| 14.1 | OpenAI Responses Adapter | Deferred |
+| 14.2 | Azure OpenAI Adapter | Deferred |
+| 14.3 | Anthropic Adapter | Deferred |
+| 14.4 | Ollama Adapter | Deferred |
+
+Umbrella slice 12.11 = první implementace (14.1). Každý provider = samostatný PR. Viz milestone **Production AI Providers** v [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md).
 
 ### Platform vrstva (Slice 12)
 
@@ -746,7 +759,7 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 | Call workflow outcomes CALL_LATER / SCHEDULE_CALL / FAIL | Chybí dedikovaný E2E; ORDER + next contact pokryt `golden-path.spec.ts` |
 | Neaktivní produkt v objednávce | Business pravidlo v `order-workflow.ts`; bez dedikovaného E2E |
 | Manager assign UI | ✅ `dashboard/manager-assign-lead.spec.ts` |
-| Produkční LLM vendor | **Odloženo** — Fake LLM pro testy/dev; stub adaptéry; viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
+| Produkční AI Providers | **Deferred** (planned after MVP) — Fake LLM = oficiální dev provider; viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
 | Tags u kontaktů | ✅ Slice 15 (ADR-004) |
 
 ---
@@ -801,6 +814,7 @@ Před merge každého slice ověřit:
 | Phase 10 | Slice 11 (LLM Adapter) |
 | Phase 11 | Slice 12 (AI Services / UI) |
 | Phase 12 | Slice 14 (Reporting) |
+| Post-MVP | Slice 12.11 / Production AI Providers 14.1–14.4 (deferred) |
 | Phase 11 | Po MVP (SaaS foundation) |
 
 ---

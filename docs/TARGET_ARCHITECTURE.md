@@ -298,7 +298,11 @@ src/
 
 **Contact Context Platform (Slice 10.5):** Neutrální read vrstva v `contacts/context/`. Context Providers orchestrují tenant-scoped načtení do `ContactContext`. AI modul konzumuje platformu přes `toContactAiContext()` — Contact Detail UI **nesmí** importovat `features/ai`.
 
-**LLM Adapter (Slice 11, ADR-012):** Transport vrstva v `ai/llm/` — `LlmGateway`, vendor adaptéry, model registry/policy, middleware. Prompt šablony v `ai/prompts/`. Produkční OpenAI adaptér (Slice 12.11, **Responses API**) je odložen — viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md); runtime používá Fake LLM pro testy a explicitně nakonfigurovaný dev.
+**LLM Adapter (Slice 11, ADR-012):** Transport vrstva v `ai/llm/` — `LlmGateway`, vendor adaptéry, model registry/policy, middleware. Prompt šablony v `ai/prompts/`.
+
+**Provider abstraction (dokončeno):** Rozhraní `LlmVendorAdapter`, vendor registry, model registry a policy jsou implementovány. Business služby neznají konkrétní provider ani model ID. Produkční implementace providerů (milestone **Production AI Providers**, slice 12.11 / 14.x) vzniknou jako **samostatné adaptéry** nad existujícím rozhraním — bez změn `runAiServicePipeline`, Summary ani Recommendation.
+
+**Runtime dnes:** **Fake LLM** je oficiální development provider (lokální dev, integrační testy, Playwright, CI). Produkční OpenAI/Azure/Anthropic/Ollama adaptéry jsou **Deferred** (planned after MVP) — viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md).
 
 **AI Services Platform (Slice 12, ADR-013):** Business AI vrstva v `ai/services/`. **`services/shared/`** obsahuje **AI Service Pipeline** — jednotný 14-krokový životní cyklus všech AI služeb a **`createAiPipelinePorts()`** (Slice 13.0). Cross-cutting: `ai/config/` (`defaultCacheTtlMs`, per-task TTL), `ai/registry/` (`AiTaskCategory`, Service Registry + Capability Matrix), `ai/flags/` (`ai-service-feature-flag-registry`), `ai/cache/` (`createAiLogCachePersistence<T>`), `ai/metrics/` (Slice 13.4 — viz níže). Každá služba implementuje `AiTaskService` contract. První služba: `contact-summary/` (Slice 12). Druhá služba: `recommendation/` (Slice 13, ADR-014). Cache fáze 1 přes zobecněný `AiLogCachePersistence`; fáze 2 dedikované cache tabulky. Contact Detail: **AI Workspace** — typy panelů v `contact-ai-workspace.types.ts` (13.0), compositor UI ve Slice 13.3; `contacts/` zůstává AI-agnostický.
 
@@ -682,6 +686,7 @@ Budoucí SaaS a AI rozšíření staví na stejných hranicích:
 - Audit log jako first-class systémová entita (Prisma model `AuditEvent`)
 - Billing/subscriptions pod `Company`, ne v user modelu
 - Reporting nad read modely nebo optimalizovanými query services
+- **Production AI Providers** (post-MVP, deferred) — OpenAI Responses, Azure OpenAI, Anthropic, Ollama jako samostatné adaptéry nad hotovým `LlmVendorAdapter`; Fake LLM zůstává development provider
 - AI context service sestavující data z contacts, notes, calls, orders a callbacks
 - AI prompt/output audit odděleně od obecného audit logu
 - Integrace přes API routes/webhooks až ve fázi integrací (Roadmap Phase 14)
