@@ -38,22 +38,33 @@ flowchart TD
   S12 --> S13[Slice 13: AI Recommendation]
   S13 --> S14[Slice 14: Reporting]
   S14 --> S15[Slice 15: Tags]
-  S15 --> S16[Slice 16: Dashboard v2]
-  S16 --> S17[Slice 17: Automation]
+  S15 --> E2E[E2E call outcomes]
+  E2E --> S151[Slice 15.1: CSV tags]
+  S151 --> S16[Slice 16: Dashboard v2]
+  S16 --> ADR17[ADR Slice 17]
+  ADR17 --> S17[Slice 17: Automation]
   S17 --> S18[Slice 18: Production AI Providers]
 ```
 
-### Product track (slices 14–18)
+### Dokončeno (product track)
 
 | Slice | Název | Stav |
 |-------|-------|------|
 | 14 | Reporting & Dashboard Analytics | ✅ Hotovo |
-| 15 | Tags & Contact Segmentation | ✅ Hotovo (CSV tagy = 15.1 open) |
-| 16 | Dashboard v2 — denní výsledky, KPI, týmové přehledy | Plánováno |
-| 17 | Automation & Workflows | Plánováno (ADR gate) |
-| 18 | Production AI Providers (OpenAI, Azure, Anthropic, Ollama) | Deferred (planned after MVP) |
+| 15 | Tags & Contact Segmentation | ✅ Hotovo (jádro) |
 
-AI platforma (Slice 10–13) je **uzavřená** — viz sekce [AI Platform — Phase 1](#ai-platform--phase-1-uzavřeno). Produkční LLM transport je výhradně **Slice 18**, ne 12.11.
+### Pořadí další práce
+
+| # | Položka | Typ | Stav |
+|---|---------|-----|------|
+| **1** | E2E pro `CALL_LATER` / `SCHEDULE_CALL` / `FAIL` | Quality gate | **Další** |
+| **2** | Slice 15.1 — CSV import tagů | Feature follow-up | Plánováno |
+| **3** | Slice 16 — Dashboard v2 (kompletní redesign) | Feature | Plánováno — produktový návrh TBD |
+| **4** | ADR pro Slice 17 (Automation scope) | ADR gate | Plánováno |
+| **5** | Slice 17 — Automation & Workflows | Feature | Plánováno |
+| **6** | Slice 18 — Production AI Providers | Deferred | Planned after MVP |
+
+AI platforma (Slice 10–13) je **uzavřená** — viz sekce [AI Platform — Phase 1](#ai-platform--phase-1-uzavřeno). Produkční LLM transport je výhradně **Slice 18**.
 
 ---
 
@@ -636,7 +647,7 @@ První etapa AI platformy je kompletní. Summary a Recommendation běží nad **
 | Recommendation + platform generalization + telemetry | 13 | ✅ |
 | Production AI Providers | **18** (historicky 12.11) | Deferred |
 
-**Co dál:** Obchodní hodnota před placenou inference — Slice 16 (Dashboard v2) → 17 (Automation) → 18 (Providers). Viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md).
+**Co dál (pořadí):** E2E call outcomes → Slice 15.1 (CSV tagy) → Slice 16 (Dashboard v2 redesign) → ADR Slice 17 → Slice 17 (Automation) → Slice 18 (Providers). Viz [Pořadí další práce](#pořadí-další-práce).
 
 ---
 
@@ -740,17 +751,76 @@ reports/page.tsx → getReportingDashboardView → reporting.service → reporti
 - [x] Activity timeline zaznamenává přidání/odebrání tagu
 - [x] Integrační test tenant isolation
 - [x] E2E manager tag assign + list filter
-- [ ] CSV import tag sloupce (Slice 15.1 — follow-up)
+
+> CSV import tagů přesunut do samostatného [Slice 15.1](#slice-151-csv-import-tagů).
+
+---
+
+## Call outcome E2E (quality gate)
+
+**Pořadí:** **#1** — další úkol po Slice 15  
+**Cíl:** Playwright pokrytí zbývajících výsledků hovoru dle ADR-002 a ADR-003. Dnes je E2E pokrytý pouze `ORDER` (`golden-path.spec.ts`).
+
+### Scope
+
+| Outcome | Ověřit |
+|---------|--------|
+| `CALL_LATER` | Ukončení hovoru, callback/plánování, správný stav kontaktu |
+| `SCHEDULE_CALL` | Naplánovaný follow-up, activity / callback |
+| `FAIL` | FAIL counter, případný přechod dle ADR-003 (práh 3×) |
+
+### Soubory (cíl)
+
+- `tests/e2e/orders/` nebo `tests/e2e/workflow/` — dedikované spec soubory per outcome
+- Sdílené helpery z existujícího golden path (login operátor, start call)
+
+### Definition of Done
+
+- [ ] E2E pro každý ze tří outcomes projde v CI (Fake LLM env beze změny)
+- [ ] Žádná duplikace business logiky v testech — assertuje UI + DB stav přes existující workflow
+- [ ] Audit tabulka „Známé mezery“ aktualizována
+
+---
+
+## Slice 15.1: CSV import tagů
+
+**Pořadí:** **#2**  
+**Cíl:** Import tagů z CSV sloupce při hromadném importu kontaktů (follow-up k Slice 15).
+
+**ADR:** Rozšíření [ADR-004](./adr/004-contact-tags-scope.md) — tagy z importu
+
+### Úkoly (návrh)
+
+| # | Úkol | Soubory (cíl) |
+|---|------|----------------|
+| 15.1.1 | Mapování CSV sloupce → tagy (delimiter, normalizace jmen) | `import-mapping-step.tsx`, `import-types.ts` |
+| 15.1.2 | Vytvoření / přiřazení tagů při importu | `import` service, `tags` service |
+| 15.1.3 | Preview a validace v import wizardu | `import-preview-step.tsx` |
+| 15.1.4 | E2E CSV import s tagy | `tests/e2e/contacts/import-csv.spec.ts` |
+
+### Definition of Done
+
+- [ ] Manager importuje kontakty s tagy z CSV
+- [ ] Duplicitní tag jména v rámci tenantu — konzistentní chování (reuse existujícího `Tag`)
+- [ ] Tenant isolation zachována
+- [ ] E2E rozšíření import-csv spec
 
 ---
 
 ## Slice 16: Dashboard v2
 
-**Cíl:** Obohatit `/dashboard` o denní výsledky, osobní KPI operátora a týmové přehledy pro manažera — bez duplikace reporting logiky.
+**Pořadí:** **#3**  
+**Cíl:** Kompletní redesign `/dashboard` — denní výsledky, osobní KPI operátora a týmové přehledy pro manažera.
 
-**Stav:** Plánováno
+**Stav:** Plánováno — **produktový návrh redesignu připravuje product owner**; po předložení návrhu architektonický review, poté implementace.
 
-### Scope (návrh)
+### Proces
+
+1. **Návrh** — wireframe / spec od product ownera (layout, role, KPI, akce)
+2. **Review** — připomínky k architektuře, sdílení s `reporting.service`, scope Slice 16
+3. **Implementace** — vertikální řez dle schváleného návrhu
+
+### Scope (návrh — upřesní se po redesign briefu)
 
 | Role | Cíl |
 |------|-----|
@@ -774,14 +844,23 @@ reports/page.tsx → getReportingDashboardView → reporting.service → reporti
 
 ## Slice 17: Automation & Workflows
 
+**Pořadí:** **#5** (předchází **#4 ADR** — viz níže)  
 **Cíl:** Pravidla a automatizace nad existujícím call workflow — callback remindery, eskalace FAIL, přiřazovací pravidla (scope dle ADR).
 
-**Stav:** Plánováno — **ADR gate před implementací**
+**Stav:** Plánováno — **implementace až po schválení ADR (#4)**
+
+### ADR gate (#4)
+
+Před začátkem Slice 17 vytvořit ADR:
+
+- Co je in-scope pro MVP automatizace (remindery, FAIL → LOST, assign rules)
+- Co je explicitně out-of-scope (visual workflow builder, externí kanály)
+- Vazba na ADR-002, ADR-003 a existující `call-workflow`
 
 ### Předpoklad
 
-- ADR pro automation scope (co je in/out pro MVP automatizace)
-- Stávající workflow v `call-workflow`, callback služby a ADR-002/003 jako základ
+- ADR pro automation scope schválen
+- E2E call outcomes (#1) — stabilní workflow baseline
 
 ### Scope (návrh — k potvrzení v ADR)
 
@@ -798,6 +877,7 @@ reports/page.tsx → getReportingDashboardView → reporting.service → reporti
 
 ## Slice 18: Production AI Providers
 
+**Pořadí:** **#6** — deferred (planned after MVP)  
 **Cíl:** Produkční `LlmVendorAdapter` implementace nad hotovou abstrakcí — bez změn business služeb Summary/Recommendation.
 
 **Stav:** **Deferred** — plánováno po MVP. **Není zrušeno.**
@@ -864,11 +944,11 @@ Shrnutí automatizovaných testů odpovídajících dokončeným slicům. Slouž
 
 | Mezera | Poznámka |
 |--------|----------|
-| Call workflow outcomes CALL_LATER / SCHEDULE_CALL / FAIL | Chybí dedikovaný E2E; ORDER + next contact pokryt `golden-path.spec.ts` |
+| Call workflow outcomes CALL_LATER / SCHEDULE_CALL / FAIL | **Další (#1)** — dedikovaný E2E; ORDER pokryt `golden-path.spec.ts` |
 | Neaktivní produkt v objednávce | Business pravidlo v `order-workflow.ts`; bez dedikovaného E2E |
 | Manager assign UI | ✅ `dashboard/manager-assign-lead.spec.ts` |
 | Produkční AI Providers | **Deferred** (planned after MVP) — Fake LLM = oficiální dev provider; viz [AI_PRODUCTION_LLM.md](./AI_PRODUCTION_LLM.md) |
-| Tags u kontaktů | ✅ Slice 15 (ADR-004) |
+| Tags u kontaktů | ✅ Slice 15 (ADR-004); CSV tagy → Slice 15.1 (#2) |
 
 ---
 
@@ -923,8 +1003,10 @@ Před merge každého slice ověřit:
 | Phase 11 | Slice 12 (AI Services / UI) |
 | Phase 12 | Slice 14 (Reporting) |
 | Phase 3 (tags) | Slice 15 (Tags) |
-| — | Slice 16 (Dashboard v2) — plánováno |
-| — | Slice 17 (Automation) — plánováno |
+| — | E2E call outcomes (#1) — další |
+| — | Slice 15.1 (CSV tagy) |
+| — | Slice 16 (Dashboard v2 redesign) |
+| — | ADR + Slice 17 (Automation) |
 | Post-MVP | Slice 18 / Production AI Providers 18.1–18.4 (deferred) |
 | Phase 11 | Po MVP (SaaS foundation) |
 

@@ -113,7 +113,7 @@ Přidání nového modelu = nový záznam v registry + env proměnné, **ne** zm
 
 Milestone **Production AI Providers** — samostatný product slice nad hotovou AI platformou (Phase 1 uzavřena). **Neimplementováno.**
 
-> **Číslování:** Slice **14** = Reporting, **15** = Tags, **16** = Dashboard v2, **17** = Automation. Provider adaptéry jsou výhradně **Slice 18** (pod-slice 18.1–18.4). Historické číslo 12.11 = původní umbrella uvnitř AI platformy — nahrazeno Slice 18.
+> **Číslování:** Slice **14** = Reporting, **15** = Tags, **16** = Dashboard v2, **17** = Automation. Provider adaptéry jsou výhradně **Slice 18** (pod-slice 18.1–18.4).
 
 | Slice | Scope | Transport |
 |-------|--------|-----------|

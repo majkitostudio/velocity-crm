@@ -237,17 +237,51 @@ Manažerské statistiky.
 
 ---
 
-# Implementation track — další product slices
+# Implementation track — další práce
 
 Product roadmap po uzavření AI platformy (Slice 10–13). Detailní scope v [IMPLEMENTATION_SEQUENCE.md](./IMPLEMENTATION_SEQUENCE.md).
 
-| Slice | Název | Stav |
-|-------|-------|------|
-| 14 | Reporting & Dashboard Analytics | ✅ Hotovo |
-| 15 | Tags & Contact Segmentation | ✅ Hotovo |
-| 16 | Dashboard v2 — denní výsledky, KPI, týmové přehledy | Plánováno |
-| 17 | Automation & Workflows | Plánováno (ADR) |
-| 18 | Production AI Providers | Deferred (planned after MVP) |
+### Dokončeno
+
+| Slice | Název |
+|-------|-------|
+| 14 | Reporting & Dashboard Analytics ✅ |
+| 15 | Tags & Contact Segmentation ✅ |
+
+### Pořadí další práce
+
+| # | Položka | Stav |
+|---|---------|------|
+| **1** | E2E pro `CALL_LATER` / `SCHEDULE_CALL` / `FAIL` | **Další** |
+| **2** | Slice 15.1 — CSV import tagů | Plánováno |
+| **3** | Slice 16 — Dashboard v2 (kompletní redesign) | Plánováno — návrh TBD |
+| **4** | ADR pro Slice 17 (Automation) | Plánováno |
+| **5** | Slice 17 — Automation & Workflows | Plánováno |
+| **6** | Slice 18 — Production AI Providers | Deferred |
+
+---
+
+# Call outcome E2E (quality gate)
+
+### Cíl
+
+Playwright pokrytí výsledků hovoru `CALL_LATER`, `SCHEDULE_CALL` a `FAIL` (dnes E2E pouze `ORDER`).
+
+### Výstup
+
+* Jistota, že celý call workflow je pokrytý před dalšími feature slice
+
+---
+
+# Slice 15.1 — CSV import tagů
+
+### Cíl
+
+Tagy z CSV sloupce při hromadném importu kontaktů.
+
+### Výstup
+
+* Import s segmentací v jednom kroku
 
 ---
 
@@ -255,13 +289,19 @@ Product roadmap po uzavření AI platformy (Slice 10–13). Detailní scope v [I
 
 ### Cíl
 
-Obohatit úvodní obrazovku operátora a manažera o denní KPI a týmové přehledy.
+Kompletní redesign úvodní obrazovky — denní KPI, prioritní práce, týmové přehledy.
 
-### Úkoly
+### Proces
 
-* Osobní denní výsledky operátora (hovory, objednávky, konverze)
+1. Produktový návrh redesignu (product owner)
+2. Architektonický review a scope
+3. Implementace
+
+### Úkoly (upřesní se po návrhu)
+
+* Osobní denní výsledky operátora
 * Prioritní práce — leady, callbacky
-* Manager: týmový snapshot na `/dashboard` (sdílená logika s `/reports`)
+* Manager: týmový snapshot (sdílená logika s `/reports`)
 
 ### Výstup
 
@@ -285,7 +325,7 @@ Pravidla a automatizace nad call workflow.
 
 * Méně manuální operátorské práce, konzistentní workflow
 
-**Předpoklad:** ADR pro scope automatizace
+**Předpoklad:** ADR pro scope automatizace (**pořadí #4**, před implementací Slice 17)
 
 ---
 
