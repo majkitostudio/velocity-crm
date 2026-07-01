@@ -17,12 +17,12 @@
     "source": "MANUAL",
     "priority": "NORMAL",
     "assignedUser": {
-      "id": "cmqm4mk110000wk7entrqyjs5",
+      "id": "<USER_ID>",
       "name": "Test Operator",
       "email": "operator@velocity.local"
     },
-    "createdAt": "2026-05-29T02:08:34.307Z",
-    "updatedAt": "2026-06-28T02:08:34.309Z"
+    "createdAt": "<TIMESTAMP>",
+    "updatedAt": "<TIMESTAMP>"
   },
   "snapshot": {
     "workflow": {
@@ -32,7 +32,7 @@
         "id": "seed-call-schedule-call",
         "outcome": "SCHEDULE_CALL",
         "operatorName": "Test Operator",
-        "createdAt": "2026-06-23T02:08:34.344Z",
+        "createdAt": "<TIMESTAMP>",
         "note": "Follow-up on delivery."
       }
     },
@@ -47,7 +47,7 @@
           "status": "CREATED",
           "note": "Seed order with one product.",
           "operatorName": "Test Operator",
-          "createdAt": "2026-06-24T02:08:34.376Z",
+          "createdAt": "<TIMESTAMP>",
           "items": [
             {
               "productId": "seed-product-omega-3",
@@ -107,7 +107,7 @@
           "productId": "seed-product-omega-3",
           "productName": "Omega 3",
           "totalQuantity": 1,
-          "lastPurchasedAt": "2026-06-24T02:08:34.376Z"
+          "lastPurchasedAt": "<TIMESTAMP>"
         }
       ],
       "lastPurchased": {
@@ -115,7 +115,7 @@
         "productName": "Omega 3",
         "quantity": 1,
         "unitPrice": "499",
-        "purchasedAt": "2026-06-24T02:08:34.376Z",
+        "purchasedAt": "<TIMESTAMP>",
         "orderId": "seed-order-single-product"
       }
     }
