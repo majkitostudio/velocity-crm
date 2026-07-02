@@ -69,6 +69,9 @@ jobs:
             echo "AUTH_SECRET=${AUTH_SECRET}"
           } > .env
 
+      - name: Seed database
+        run: npm run prisma:seed
+
       - name: Integration tests
         run: npm run test:integration
 
