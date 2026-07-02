@@ -230,7 +230,11 @@ export function ContactAiRecommendationPanel({
               </h3>
               <div className="mt-2 space-y-2">
                 {viewModel.alternatives.map((action) => (
-                  <ActionCard key={`${action.actionType}-${action.title}`} action={action} />
+                  <ActionCard
+                    key={`${action.actionType}-${action.title}`}
+                    action={action}
+                    variant="alternative"
+                  />
                 ))}
               </div>
             </div>
