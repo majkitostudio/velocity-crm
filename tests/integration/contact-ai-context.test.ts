@@ -27,6 +27,32 @@ const WRAPPER_GOLDEN_PATH = join(
   "contact-ai-context-wrapper-golden.json",
 );
 
+const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+// The seed assigns a random user id and relative (daysAgo/now) timestamps, so
+// these values change on every reseed. Normalize only those fields before
+// comparing against the committed golden; every other value stays strictly
+// asserted.
+function normalizeDynamicSnapshotFields(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(normalizeDynamicSnapshotFields);
+  }
+
+  if (value !== null && typeof value === "object") {
+    const normalized: Record<string, unknown> = {};
+    for (const [key, entry] of Object.entries(value)) {
+      normalized[key] = normalizeDynamicSnapshotFields(entry);
+    }
+    return normalized;
+  }
+
+  if (typeof value === "string" && ISO_TIMESTAMP_PATTERN.test(value)) {
+    return "<TIMESTAMP>";
+  }
+
+  return value;
+}
+
 async function assertWrapperMatchesCommittedGoldenSnapshot() {
   const actual = await buildContactAiContextForTenant({
     companyId: SEED_COMPANY_ID,
@@ -34,7 +60,14 @@ async function assertWrapperMatchesCommittedGoldenSnapshot() {
     options: WRAPPER_GOLDEN_OPTIONS,
   });
 
-  const serialized = JSON.stringify(actual);
+  const normalized = normalizeDynamicSnapshotFields(actual) as {
+    contact?: { assignedUser?: { id?: string } | null };
+  };
+  if (normalized.contact?.assignedUser) {
+    normalized.contact.assignedUser.id = "<USER_ID>";
+  }
+
+  const serialized = JSON.stringify(normalized);
 
   if (process.env.UPDATE_GOLDEN === "1") {
     writeFileSync(WRAPPER_GOLDEN_PATH, `${JSON.stringify(JSON.parse(serialized), null, 2)}\n`);
